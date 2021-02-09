@@ -1,0 +1,55 @@
+
+body {
+    line-height: 150%;
+    width: 95%; 
+    padding-left: 40px;
+}
+
+#about {
+    font-size: 50%;
+    width: 90%; 
+    padding-left: 20px;
+}
+
+h1 {
+    color: #000080;
+}
+
+h2 {
+    color: #000080;
+}
+
+h3 {
+    padding: 0.4em 0.5em;   /*文字の上下 左右の余白*/
+    color: #494949;         /*文字色*/
+    background: #ededfa;    /*背景色*/
+    border-left: solid 15px #000080;    
+    border-bottom: solid 1px #000080; 
+    margin-top: 25px;
+    box-shadow: 3px 3px 5px #aaaaaa; /* 5px 5px #cccccc outset;  */
+}
+
+ul {
+    margin-left: -13px; 
+    margin-top: 3px; 
+    margin-bottom: 0px; 
+}
+
+.hdln {
+    font-weight: bold;
+    margin-right: 5px; 
+    background: linear-gradient(transparent 70%, #a8eaff 30%);
+}
+
+.noline {
+    text-decoration: none; 
+}
+
+a {
+    color: #1060ff; 
+}
+
+a:hover {
+    color: #0000ff; 
+}
+
