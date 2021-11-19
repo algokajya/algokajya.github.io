@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <title>AlgoKajya Guile入門／Guileの準備</title>
+   <link rel="stylesheet" type="text/css" href="gi.css">
+   <!---%%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+   <style type="text/css">
+      .date0:before{ content: "2020.11.19"; }
+   </style>
+</head>
+<body>
+
+
+<!---%%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="next.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!---%%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<div id="title">
+<div class="titlename">
+Guile入門／Guileの準備
+</div>
+<div class="date"><span class="date0"></span></div>
+</div>
+
+<div id="abstract">
+<ul>
+<li>
+Guileをインストールして，REPLを使って動作確認を行います．
+<li>
+REPLの履歴機能を設定したり，プロンプトを変更する方法を解説します．
+<li>
+目次
+<ul>
+<li><a class="noline" href="#install">Guileのインストール</a>
+<li><a class="noline" href="#check">動作確認：REPLを動かしてみる</a>
+   <ul>
+   <li><a class="noline" href="#startup">REPLの起動</a>
+   <li><a class="noline" href="#quit">REPLの終了</a>
+   </ul>
+<li><a class="noline" href="#setup">REPLの設定変更</a>
+   <ul>
+   <li><a class="noline" href="#history">履歴機能の設定</a>
+   <li><a class="noline" href="#prompt">プロンプトの変更</a>
+   </ul>
+<!--- <li><a class="noline" href="#references">参考資料</a> --->
+<li><a class="noline" href="#revise">変更履歴</a>
+</ul>
+<li>
+参考資料
+<ul>
+<li>
+<a class="noline" href="https://www.gnu.org/software/guile/manual/">
+GNU Guile Reference Manual（最新版）
+</a>
+<li> 
+<a class="noline" href="https://github.com/algokajya/Scheme-Guile/blob/Scheme/guile-manual-3.0.5.pdf">
+GNU Guile Reference Manual（Edition 3.0.5, revision 1）
+</a>
+</ul>
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="install">
+<h3>Guileのインストール</h3>
+<ul>
+<li> 
+Debian 11(bullseye)用のGuileの公式バッケージとして <em>guile-3.0</em> が配布されています．そこで，次のコマンドを実行してこのパッケージをインストールします．ドル記号はシェルのプロンプトを表しています．
+<pre class="shell">
+$ <mycmd>sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</mycmd> &crarr; 
+</pre>
+<span class="date0"></span>時点のGuileの最新版は Guile 3.0.7 ですが，上記の公式パッケージは Guile 3.0.5 です．
+
+<li>
+<em>guile-3.0-doc</em>はInfo形式のマニュアルです．公式サイトで公開されているマニュアルと，Guileのバージョンは異なりますが，内容的には同じだと思います（少なくとも目次は同じです）．
+<li>
+<em>guile-3.0-dev</em>はGuileを利用しているソフトウェアをコンパイルするときなどに必要になります．おそらく，C言語と連携するときにも必要になるだろうと思います．
+</ul>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="check">
+<h3>動作確認：REPLを動かしてみる</h3>
+<span class="hdln" id="startup">REPLの起動</span>
+<ul class="man">
+<li> GuileのREPLを起動するにはターミナル上で次のコマンドを実行します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr; 
+</pre>
+これを実行すると，次のようなメッセージのあとにプロンプトが表示されてプログラムを入力できるようになります．<em>scheme@(guile-user)&gt;</em> がプロンプトです．
+<pre class="shell">
+GNU Guile 3.0.5
+Copyright (C) 1995-2021 Free Software Foundation, Inc.
+
+Guile comes with ABSOLUTELY NO WARRANTY; for details type `,show w'.
+This program is free software, and you are welcome to redistribute it
+under certain conditions; type `,show c' for details.
+
+Enter `,help' for help.
+scheme@(guile-user)> 
+</pre>
+試しに簡単な式を入力して実行してみます．
+<pre class="shell">
+scheme@(guile-user)&gt; (+ 10 20) &crarr;
+$1 = 30
+scheme@(guile-user)&gt; (* 10 20) &crarr;
+$2 = 200
+</pre>
+</ul>
+
+<p></p>
+<span class="hdln" id="quit">REPLの終了</span>
+<ul>
+<li>
+REPLは次のいずれかによって終了できます．
+<pre class="shell">
+scheme@(guile-user)&gt; (quit) &crarr;
+scheme@(guile-user)&gt; (exit) &crarr;
+scheme@(guile-user)&gt; Ctrl-Dを押す
+scheme@(guile-user)&gt; ,quit &crarr;
+scheme@(guile-user)&gt; ,q &crarr;
+</pre>
+<em>exit</em>は<em>quit</em>の別名です．<em>,quit</em>はREPL固有のコマンドです．<em>,q</em>は,quitの省略形です．GuileのREPL固有のコマンドは，Schemeの変数名や構文キーワードなどと確実に区別するため，カンマで始めることになっています．
+</ul>
+</section>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="setup">
+<h3>REPLの設定変更</h3>
+<span class="hdln" id="history">履歴機能の設定</span>
+<ul>
+<li>
+<em>~/.guile</em>（ホームディレクトリ上の.guile）というファイルに次のコードを保存すると，GuileのREPLで履歴機能が使えるようになります．このファイルがなければ新たに作ります．実行属性は不要です．
+<pre class="prog">
+(use-modules (ice-9 readline))
+(activate-readline)
+</pre>
+<li>
+~/.guileはGuileの初期化ファイルで，Schemeのプログラムを保存しておきます．Guileを起動したときに，初期設定の一環として，これに保存してあるプログラムが実行されます．上で示した1行目は(ice-9 readline)というモジュールをロードして，2行目はその中のactivate-readline手続きを実行します．
+<li>
+履歴は <em>~/.guile_history</em> に保存されます．このファイルは自動的に生成されます．
+<li>
+上の設定を行うと，タブキーによる<em>補完機能</em>も使えるようになります．ただし，この補完機能は，REPLの実行環境における定義済みの変数名（標準的な手続きの名前など）を補完する機能であって，ファイル名やコマンド名を補完する機能ではありません．
+</ul>
+
+<p></p>
+<span class="hdln" id="prompt">プロンプトの変更</span>
+<ul>
+<li>
+初期化ファイル（~/.guile）に次のコードを保存すると，REPLのプロンプトを変えることができます．
+<pre class="prog">
+(use-modules (system repl common))
+(repl-default-prompt-set! 
+   (lambda (repl)
+    (format #f "guile~A&gt; " 
+      (let ((level (length (cond
+                            ((fluid-ref *repl-stack*) =&gt; cdr)
+                            (else '())))))
+        (if (zero? level) "" (format #f " [~a]" level))))))
+</pre>
+これを設定すると，以下のように，REPLのプロンプトが <em>guile&gt;</em> に変わります．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+Copyright (C) 1995-2021 Free Software Foundation, Inc.
+
+Guile comes with ABSOLUTELY NO WARRANTY; for details type `,show w'.
+This program is free software, and you are welcome to redistribute it
+under certain conditions; type `,show c' for details.
+
+Enter `,help' for help.
+<em>guile&gt;</em>
+</pre>
+上のコードの中の "guile~A>" という文字列の中の "guile" という文字列を変更することによってプロンプトを変えることができます．
+<li>
+（参考）元々のプロンプトの設定は次のようになっています．
+<pre class="prog">
+(repl-default-prompt-set! 
+   (lambda (repl)
+    (format #f "~A@\ATAT{}@~A~A&gt; " 
+      (language-name (repl-language repl))
+      (module-name (current-module))
+      (let ((level (length (cond
+                            ((fluid-ref *repl-stack*) =&gt; cdr)
+                            (else '())))))
+        (if (zero? level) "" (format #f " [~a]" level))))))
+</pre>
+これは，language-name手続きによってREPLが処理中の言語の名前（'scheme'）を求め，module-name手続きによってREPLの実行環境としてロードしたモジュールの名前（'(guile-user)'）を求めて，format手続きを使ってそれらの情報からなるプロンプト（'scheme@(guile-user)&gt;'）を文字列として作っています．その文字列がプロンプトとして自動的に表示されます．さらに，上のlet式（注：これは先に示したコードでも同じです）は，エラーが発生したときのネストの深さを求めていて，エラーが発生しているときにはその深さもプロンプトの一部にしています．
+</ul>
+</section>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+変更履歴
+<ul>
+<li> <span class="date0"></span>：初出
+</ul>
+</section>
+
+
+</div> <!-- END of main division -->
+</body>
+</html>
+
