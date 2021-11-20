@@ -1,8 +1,14 @@
 
+
+body {
+    line-height: 150%;
+    width: 90%; 
+    padding-left: 30px;
+}
+
+
 #header {
-    /* float: top; */
     width: 100%;  
-    /* padding-left: 20px; */
     margin-top: 10px;
     margin-bottom: 10px;
     font-size: 90%;
@@ -14,19 +20,10 @@
 }
 
 #title {
-    /* float: top; */
     width: 100%;  
-    /* padding-left: 30px; */
     margin-top: 0px;
     margin-bottom: 0px;
-   /* background: #dc143c; */   /*背景色*/
-   /*  background: #000080; */    /*背景色*/
     color: #000080;
-   /*  color: #ffffff; */
-   /*  box-shadow: 3px 3px 5px #aaaaaa; /* /* 5px 5px #cccccc outset;  */
-  /*  border-bottom: 5px outset #ffffff;  
-    border-right: 5px outset  #ffffff;
-    border-left: 5px solid  #ffffff; */
 }
 
 .titlename {
@@ -56,7 +53,6 @@
     font-size: 95%;
 }
 
-
 #main {
     /* float: left;  */
     width: 100%; 
@@ -70,20 +66,11 @@
     border-bottom: 1px solid #aaaaaa;  
     padding-top: 3px;
     padding-bottom: 3px;
+    margin-bottom: 10px; 
  }
-
-.notice {
-    font-size: 85%;
-    margin-bottom: 30px; 
-}
 
 .noline {
     text-decoration: none; 
-}
-
-.mlist {
-    color: #000080; 
-    margin-left: -6%;
 }
 
 a {
@@ -121,20 +108,28 @@ h3 {
     background: linear-gradient(transparent 70%, #a8eaff 30%);
 }
 
-em {
-    font-weight: bold;
-    font-style: normal;
-    /* color: darkviolet;  */
-    /* color: red;  */
-    color: #DD00DD;  
+ul {
+    margin-left: -5px;
+    margin-top: 0px; 
+    margin-bottom: 0px; 
 }
 
 ul li {
     padding-bottom: 3px;
 }
 
-pre.prog { 
-    line-height: 150%;
+ol {
+    margin-left: -5px; 
+    margin-top: 0px; 
+    margin-bottom: 0px; 
+}
+
+ol li {
+    padding-bottom: 3px;
+}
+
+pre.list { 
+    line-height: 130%;
     background-color: #f8f8e0; /* #f0f0f0; */ /* #f0fff0; */
     font-family: monospace;
     padding-top: 5px; 
@@ -149,8 +144,10 @@ pre.prog {
 }
 
 pre.shell { 
-    line-height: 150%;
-    background-color: #f4fff4; /* #f0f0f0; */ /* #f0fff0; */
+    line-height: 130%;
+    background-color: #f4fff4; 
+    /* background-color: #f0f0f0; */
+    /* background-color: #f0fff0; */
     font-family: monospace;
     padding-top: 5px; 
     padding-bottom: 5px; 
@@ -176,110 +173,24 @@ blockquote {
     /* box-shadow: 3px 3px 5px #aaaaaa; */ /* 5px 5px #cccccc outset;  */
 }
 
-
-/* ++++ hidden information +++++++++++++++++++++++++ */
-
-/*全体*/
-.hidden_box {
-    margin: 2em 0; /*前後の余白*/
-    padding: 0;
+em {
+    font-weight: bold;
+    font-style: normal;
+    /* color: darkviolet;  */
+    /* color: red;  */
+    color: #dd00dd;  
 }
 
-/*ボタン装飾*/
-.hidden_box label {
-    padding-left: 2px;
-    padding-right: 2px;
-    /* font-weight: bold; */
-    border: solid 1px black;
-    cursor :pointer;
-    font-size: 30%;
-}
-
-/*ボタンホバー時*/
-.hidden_box label:hover {
-    background: #dddddd;
-}
-
-/*チェックは見えなくする*/
-.hidden_box input {
-    display: none; 
-}
-
-/*中身を非表示にしておく*/
-.hidden_box .hidden_show {
-    height: 0;
-    padding: 0;
-    overflow: hidden;
-    opacity: 0;
-  /*  transition: 0.8s; */
-}
-
-/*クリックで中身表示*/
-.hidden_box input:checked ~ .hidden_show {
-    /* padding: 0px 0; */
-    height: auto;
-    opacity: 1; 
-}
-
-
-
-/* ++ in consideration ++++++++++++++++++++++++++++++ */ 
-
-body {
-    line-height: 150%;
-    width: 90%; 
-    padding-left: 40px;
-}
-pre.list { 
-    line-height: 100%;
-    background-color: #f0f0e8;
-    font-family: monospace;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 5px;    
-    width: 90%;
-}
-div.author { 
-    text-align: right; 
-    font-size: 85%;
-}
-div.title {
-    margin-bottom: -10px; 
-}
-div.quiz {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 10px;
-    padding-right: 20px;
-    background-color: #ffe4e4;
-    width: 87%; 
-}
 hr {
     border-width: 2px 0 0 0; /* 太さ */
     border-style: solid; /* 種類 */
     border-color: silver; /* 色 */
 }
-ul {
-    margin-left: -13px; 
-    margin-top: 0px; 
-    margin-bottom: 0px; 
-}
-ol {
-    margin-left: -20px; 
-}
-dd {
-    margin-left: 10px; 
-}
-my-kw { color: darkviolet; }
+
+mycmd { color: blue; }
+mytt { font-family: monospace; }
 mykw { 
     font-weight: bold;
     color: darkviolet; 
 }
-my-cmd { color: blue; }
-mycmd { color: blue; }
-my-tt { font-family: monospace; }
-mytt { font-family: monospace; }
+

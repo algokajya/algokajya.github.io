@@ -9,8 +9,9 @@
       .date0:before{ content: "2020.11.19"; }
    </style>
 </head>
-<body>
 
+
+<body>
 
 <!---%%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
 <div id="header">
@@ -103,13 +104,13 @@ $ <mycmd>sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</mycmd> &crarr;
 <pre class="shell">
 $ <mycmd>guile</mycmd> &crarr; 
 </pre>
-これを実行すると，次のようなメッセージのあとにプロンプトが表示されてプログラムを入力できるようになります．<em>scheme@(guile-user)&gt;</em> がプロンプトです．
+これを実行すると，次のようなメッセージのあとにプロンプトが表示されて，プログラムが入力できるようになります．以下の <em>scheme@(guile-user)&gt;</em> がプロンプトです．
 <pre class="shell">
 GNU Guile 3.0.5
 Copyright (C) 1995-2021 Free Software Foundation, Inc.
 
 Guile comes with ABSOLUTELY NO WARRANTY; for details type `,show w'.
-This program is free software, and you are welcome to redistribute it
+This listram is free software, and you are welcome to redistribute it
 under certain conditions; type `,show c' for details.
 
 Enter `,help' for help.
@@ -149,12 +150,12 @@ scheme@(guile-user)&gt; ,q &crarr;
 <ul>
 <li>
 <em>~/.guile</em>（ホームディレクトリ上の.guile）というファイルに次のコードを保存すると，GuileのREPLで履歴機能が使えるようになります．このファイルがなければ新たに作ります．実行属性は不要です．
-<pre class="prog">
+<pre class="list">
 (use-modules (ice-9 readline))
 (activate-readline)
 </pre>
 <li>
-~/.guileはGuileの初期化ファイルで，Schemeのプログラムを保存しておきます．Guileを起動したときに，初期設定の一環として，これに保存してあるプログラムが実行されます．上で示した1行目は(ice-9 readline)というモジュールをロードして，2行目はその中のactivate-readline手続きを実行します．
+<em>~/.guile</em>はGuileの初期化ファイルで，Schemeのプログラムを保存しておきます．Guileを起動したときに，初期設定の一環として，これに保存してあるプログラムが実行されます．上で示した1行目は(ice-9 readline)というモジュールをロードして，2行目はその中のactivate-readline手続きを実行します．
 <li>
 履歴は <em>~/.guile_history</em> に保存されます．このファイルは自動的に生成されます．
 <li>
@@ -166,7 +167,7 @@ scheme@(guile-user)&gt; ,q &crarr;
 <ul>
 <li>
 初期化ファイル（~/.guile）に次のコードを保存すると，REPLのプロンプトを変えることができます．
-<pre class="prog">
+<pre class="list">
 (use-modules (system repl common))
 (repl-default-prompt-set! 
    (lambda (repl)
@@ -187,12 +188,12 @@ This program is free software, and you are welcome to redistribute it
 under certain conditions; type `,show c' for details.
 
 Enter `,help' for help.
-<em>guile&gt;</em>
+guile&gt;
 </pre>
 上のコードの中の "guile~A>" という文字列の中の "guile" という文字列を変更することによってプロンプトを変えることができます．
 <li>
 （参考）元々のプロンプトの設定は次のようになっています．
-<pre class="prog">
+<pre class="list">
 (repl-default-prompt-set! 
    (lambda (repl)
     (format #f "~A@\ATAT{}@~A~A&gt; " 
@@ -203,7 +204,9 @@ Enter `,help' for help.
                             (else '())))))
         (if (zero? level) "" (format #f " [~a]" level))))))
 </pre>
-これは，language-name手続きによってREPLが処理中の言語の名前（'scheme'）を求め，module-name手続きによってREPLの実行環境としてロードしたモジュールの名前（'(guile-user)'）を求めて，format手続きを使ってそれらの情報からなるプロンプト（'scheme@(guile-user)&gt;'）を文字列として作っています．その文字列がプロンプトとして自動的に表示されます．さらに，上のlet式（注：これは先に示したコードでも同じです）は，エラーが発生したときのネストの深さを求めていて，エラーが発生しているときにはその深さもプロンプトの一部にしています．
+これは，language-name手続きによってREPLが処理中の言語の名前（'scheme'）を求め，module-name手続きによってREPLの実行環境としてロードしたモジュールの名前（'(guile-user)'）を求めて，format手続きを使ってそれらの情報からなるプロンプト（'scheme@(guile-user)&gt;'）を文字列として作っています．その文字列がプロンプトとして自動的に表示されます．さらに，上のlet式（注：これは先に示したコードでも同じです）は，エラーが発生したときのネストの深さを求めていて，エラーが発生しているときにはその深さもプロンプトの一部にしています．エラーが発生したときのプロンプトの形式やREPLの動作については 
+「<a class="noline" href="next.html">REPLによるプログラムの実行</a>」
+を参照して下さい．
 </ul>
 </section>
 
