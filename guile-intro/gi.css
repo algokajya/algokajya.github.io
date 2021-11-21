@@ -160,6 +160,16 @@ pre.shell {
     overflow: auto; 
 }
 
+.ref{
+    margin-left: 10%;
+    color: blue;
+/*
+    display: inline-block; 
+    width: 100%; 
+    text-align: right; 
+*/
+}
+
 blockquote {
     padding: 0.4em 0.5em;   /*文字の上下 左右の余白*/
     /* color: #494949;  */        /*文字色*/
@@ -193,4 +203,4 @@ mykw {
     font-weight: bold;
     color: darkviolet; 
 }
-
+myred { color: red; }

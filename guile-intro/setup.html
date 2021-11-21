@@ -19,7 +19,7 @@
 &ensp; 
 <a class="noline" href="index.html">[Up]</a>
 &ensp; 
-<a class="noline" href="next.html">[Next]</a>
+<a class="noline" href="repl.html">[Next]</a>
 &ensp; 
 <a class="noline" href="../index.html">ホーム</a><br>
 </div>
@@ -205,7 +205,7 @@ guile&gt;
         (if (zero? level) "" (format #f " [~a]" level))))))
 </pre>
 これは，language-name手続きによってREPLが処理中の言語の名前（'scheme'）を求め，module-name手続きによってREPLの実行環境としてロードしたモジュールの名前（'(guile-user)'）を求めて，format手続きを使ってそれらの情報からなるプロンプト（'scheme@(guile-user)&gt;'）を文字列として作っています．その文字列がプロンプトとして自動的に表示されます．さらに，上のlet式（注：これは先に示したコードでも同じです）は，エラーが発生したときのネストの深さを求めていて，エラーが発生しているときにはその深さもプロンプトの一部にしています．エラーが発生したときのプロンプトの形式やREPLの動作については 
-「<a class="noline" href="next.html">REPLによるプログラムの実行</a>」
+「<a class="noline" href="repl.html">REPLによるプログラムの実行</a>」
 を参照して下さい．
 </ul>
 </section>

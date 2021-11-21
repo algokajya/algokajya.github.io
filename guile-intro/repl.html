@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <title>AlgoKajya Guile入門／REPLによるプログラムの実行</title>
+   <link rel="stylesheet" type="text/css" href="gi.css">
+   <!---%%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+   <style type="text/css">
+      .date0:before{ content: "2020.11.21"; }
+   </style>
+</head>
+<body>
+
+
+<!---%%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<div id="header">
+<a class="noline" href="setup.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="next.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!---%%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<div id="title">
+<div class="titlename">
+Guile入門／REPLによるプログラムの実行
+</div>
+<div class="date"><span class="date0"></span></div>
+</div>
+
+
+<div id="abstract">
+<ul>
+<li>
+REPLを使って式やプログラムを実行する方法を解説します．
+<li>
+目次
+<ul>
+<li><a class="noline" href="#direct-exec">直接入力によって実行する</a>
+   <ul>
+   <li><a class="noline" href="#expression">式を実行する</a>
+   <li><a class="noline" href="#value-history">Value history</a>
+   </ul>
+<li><a class="noline" href="#load">プログラムファイルをロードして実行する</a>
+   <ul>
+   <li><a class="noline" href="#load-sample">サンプルプログラム</a>
+   <li><a class="noline" href="#load-exec">プログラムの実行</a>
+   <li><a class="noline" href="#reload">プログラムを変更・修正して再ロードする</a>
+   <li><a class="noline" href="#cache-bytecode">キャッシュディレクトリとバイトコード</a>
+   </ul>
+<li><a class="noline" href="#procedure">自前の手続きを実行する</a>
+   <ul>
+   <li><a class="noline" href="#proc-sample">サンプルプログラム</a>
+   <li><a class="noline" href="#proc-exec">手続きの実行</a>
+   </ul>
+<li><a class="noline" href="#error">エラーが発生したとき</a>
+   <ul>
+   <li><a class="noline" href="#error-debug-mode">エラーとデバッグモード</a>
+   <li><a class="noline" href="#error-nest">デバッグモードの深さ</a>
+   <li><a class="noline" href="#error-cancel">デバッグモードの解消</a>
+   </ul>
+<li><a class="noline" href="#bound">セッションが終わるまで，その束縛，生きてます</a>
+<li><a class="noline" href="#revise">変更履歴</a>
+</ul>
+<li>
+参考資料
+<ul>
+<li>
+<a class="noline" href="https://www.gnu.org/software/guile/manual/">
+GNU Guile Reference Manual（最新版）
+</a>
+<li> 
+<a class="noline" href="https://github.com/algokajya/Scheme-Guile/blob/Scheme/guile-manual-3.0.5.pdf">
+GNU Guile Reference Manual（Edition 3.0.5, revision 1）
+</a>
+</ul>
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="direct-exec">
+<h3>直接入力によって実行する</h3>
+<p></p>
+<span class="hdln" id="expression">式を実行する</span>
+<ul>
+<li> 
+REPLの中で式を直接入力して実行できます．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+   ...... 起動メッセージ ......
+guile&gt; <mycmd>(+ 10 20)</mycmd> &crarr;
+$1 = 30
+guile&gt; <mycmd>(* 10 20)</mycmd> &crarr;
+$2 = 200
+guile&gt; <mycmd>(+ 10 20) (* 10 20)</mycmd> &crarr;
+$3 = 30
+$4 = 200
+guile&gt; <mycmd>(display "Guile Scheme!!!") (newline)</mycmd> &crarr;
+Guile Scheme!!!
+guile&gt; 
+</pre>
+1番目と2番目の式は10+20と10*20を計算しています．3番目は２つの式を一緒に計算しています．この例が示すように，複数の式を一緒に指定して実行することができます．4番目は"Guile Scheme!!!"という文字列を表示（display）して改行（newline）しています．
+</ul>
+
+<p></p>
+<span class="hdln" id="value-history">Value history</span>
+<ul>
+<li>
+上の実行例に出てくる <em>$1</em>,<em>$2</em>,<em>$3</em>,... は，計算結果に付けた一時的な変数名です．同じセッションの中でこの変数名を使って計算結果を利用できます．例えば，次の式は$1=30と$2=200の和を求めています．
+<pre class="shell">
+guile&gt; <mycmd>(+ $1 $2)</mycmd> &crarr; 
+$5 = 230
+guile&gt; 
+</pre>
+これらの一時変数を<em>value history</em>と呼びます．
+</ul>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="load">
+<h3>プログラムファイルをロードして実行する</h3>
+<p></p>
+<span class="hdln" id="load-sample">サンプルプログラム</span>
+<ul>
+<li>
+複数の式からなるプログラムを実行するときには，プログラムファイルを作成して，そのファイルをロードして実行します．以下では，次のようなプログラムを適当なエディタを使って作成して，hello.scm というファイルに保存したとします．
+<pre class="list">
+;; hello.scm
+(display "*** Hello, world! ***")
+(newline)
+</pre>
+このプログラムは "*** Hello, world! ***" という文字列を表示（display）して改行（newline）します．
+<li>
+Guileは <em>.scm</em> をソースファイルの標準の拡張子にしています．さらに，Emacsを使っているのならば，Emacsも拡張子が.scmのファイルをSchemeのソースファイルと判定して，キーワードハイライトや適切なインデントを行ってくれます．
+</ul>
+
+<p></p>
+<span class="hdln" id="load-exec">プログラムの実行</span>
+<ul>
+<li>
+プログラムファイルを実行するためには，まず，プログラムファイルを保存したディレクトリ上でGuileのREPLを起動します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+   ...... 起動メッセージ ......
+guile&gt;
+</pre>
+次に，<em>load</em>手続きを使ってプログラムファイルをロードします．load手続きの一般な形式は
+<div style="padding-left:10%">
+   <mycmd>(load "ファイル名")</mycmd>
+</div>
+です．
+<pre class="shell">
+guile&gt; <mycmd>(load "hello.scm")</mycmd> &crarr; 
+;;;                  ............
+;;;       ...... コンパイルに関するメッセージ ......
+;;;                  ............
+*** Hello, world! ***
+guile&gt; 
+</pre>
+load手続きを実行すると，プログラムファイルがコンパイルされて，そのメッセージが色々と表示されます．そのあとにプログラムの実行結果が表示されます．２つ目のプロンプトの直前にある「***Hello, world!  ***」 という表示が実行結果です．コンパイルメッセージが混みいっていて実行結果が分かりづらいのですが，慣れるしかありません．
+
+<li>
+load手続きに指定するファイル名は，ターミナル上で指定するのと同様に，相対パスや絶対パスで指定します．相対パスの起点はカレントディレクトリ（REPLを実行したディレクトリ）です．例えば，カレントディレクトリが /home/user/tmp だった場合，サンプルプログラムのファイル（hello.scm）を次のように指定できます．
+<pre class="shell">
+guile&gt; <mycmd>(load "./hello.scm")</mycmd> &crarr;
+*** Hello, world! ***
+guile&gt; <mycmd>(load "../tmp/hello.scm")</mycmd> &crarr;
+*** Hello, world! ***
+guile&gt; <mycmd>(load "/home/user/tmp/hello.scm")</mycmd> &crarr;
+*** Hello, world! ***
+guile&gt; 
+</pre>
+
+<li>
+（注意）ホームディレクトリを表すティルダ ~ は使えません（ティルダの機能がPOSIXでは定義されていないため）．ティルダを使ってファイル名を指定するとエラーが発生します．
+<pre class="shell">
+guile&gt; <mycmd>(load "~/tmp/hello.scm")</mycmd> &crarr;
+;;; Stat of /home/user/tmp/~/tmp/hello.scm failed:
+;;; In procedure stat: そのようなファイルやディレクトリはありません: "/home/user/tmp/~/tmp/hello.scm"
+            ............
+</pre>
+</ul>
+
+<p></p>
+<span class="hdln" id="reload">プログラムを変更・修正して再ロードする</span>
+<ul>
+<li>
+プログラムを変更したり修正したときにはload手続きを使って再びロードします．例えばhello.scmを次のように変更してみます．
+<pre class="list">
+;; hello.scm
+(display "*** Hello, world! ***")
+(newline)
+(display "*** Hello, Guile! ***")
+(newline)
+</pre>
+これを再びロードすると，改めてコンパイルされて実行されます．
+<pre class="shell">
+guile&gt; <mycmd>(load "hello.scm")</mycmd> &crarr;
+       ...... コンパイルに関するメッセージ ......
+*** Hello, world! ***
+*** Hello, Guile! ***
+guile&gt;
+</pre>
+REPLを使ってデバッグしながらプログラムを作成するときには，修正と再ロードを繰り返します．
+</ul>
+
+<p></p>
+<span class="hdln" id="cache-bytecode">キャッシュディレクトリとバイトコード</span>
+<ul>
+<li>
+Guileは，ホームディレクトリ上に<em>キャッシュディレクトリ</em>（<em>~/.cache/guile</em>）を作っていて，そこにコンパイル後の<em>バイトコード</em>を保存しています．ちなみに，コンパイル時のメッセージの中にバイトコードのファイル名が絶対パスで表示されます．
+<li>
+バイトコードが古くならない限り（つまり，ソースコードを変更しない限り），再コンパイルは行わずにキャッシュしたバイトコードが実行されます．そのため，コンパイル済みのプログラムを再ロードしてみるとコンパイルメッセージは表示されません．例えば，相対パスや絶対パスを指定した上の実行例では，初めてロードしたときにコンパイル済みなので，再コンパイルは行われずコンパイルメッセージは表示されません．
+</ul>
+</section>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="procedure">
+<h3>自前の手続きを実行する</h3>
+<p></p>
+<span class="hdln" id="proc-sample">サンプルプログラム</span>
+<ul>
+<li>
+自前の手続きの定義を含む次のようなプログラムを作成して，message.scmというファイルに保存したとします．
+<pre class="list">
+;; message.scm
+(define (hello-message mes)
+  (display (string-append "*** Hello, " mes "!!! ***"))
+  (newline))
+</pre>
+これはhello-messageという名前の手続きを定義しています．この手続きは，1つの文字列（mes）を引数として受け取って，その文字列の前後に"*** Hello, "と"!!!  ***"という文字列を連結（string-append）して，連結後の文字列を表示（display）して改行（newline）します．
+</ul>
+
+<p></p>
+<span class="hdln" id="proc-exec">手続きの実行</span>
+<ul>
+<li>
+message.scmをロードしてみます．
+<pre class="shell">
+guile&gt; <mycmd>(load "message.scm")</mycmd> &crarr;
+       ...... コンパイルに関するメッセージ ......
+guile&gt; 
+</pre>
+今度はコンパイルメッセージだけが表示されて，実行結果らしきものは何も表示されません．define形式をロードすると，現在のセッションにその定義が取り込まれるだけで計算は行われません．自前の手続きを実行するためには，適当な実引数を指定して手続きを呼び出す必要があります．
+<pre class="shell">
+guile&gt; <mycmd>(hello-message "Scheme")</mycmd> &crarr;
+*** Hello, Scheme!!! ***
+guile&gt; <mycmd>(hello-message "Guile")</mycmd> &crarr;
+*** Hello, Guile!!! ***
+guile&gt; 
+</pre>
+</ul>
+</section>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="error">
+<h3>エラーが発生したとき</h3>
+<p></p>
+<span class="hdln" id="error-debug-mode">エラーとデバッグモード</span>
+<ul>
+<li>
+エラーが発生したとき，REPLはそれまでのセッションをいったん凍結して，エラーの状態を保持した新たなセッションを開始します．REPLを再帰的に実行してデバッグモードを開始するとも言えます．試しに，hello.scmを次のように変更します．2番目のdisplayをわざと<myred>dipslay</myred>にしています．
+<pre class="list">
+;; hello.scm
+(display "*** Hello, world! ***")
+(newline)
+(<myred>dipslay</myred> "*** Hello, Guile! ***")
+(newline)
+</pre>
+このhello.scmをロードしてみます．
+<pre class="shell">
+guile&gt; <mycmd>(load "hello.scm")</mycmd> &crarr;
+;;;                  ............
+;;;       ...... コンパイルに関するメッセージ ......
+;;;                  ............
+*** Hello, world! ***
+<myred>ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+Unbound variable: dipslay</myred>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]> 
+</pre>
+1行目と2行目には誤りはないので"*** Hello, world!  ***"は表示されます．そのあとのところでエラーが発生しています．<myred>赤字</myred>がエラーメッセージです．「<myred>dipslay</myred>は未束縛（変数の値が未定義）だ」と怒っています．
+</ul>
+
+<p></p>
+<span class="hdln" id="error-nest">デバッグモードの深さ</span>
+<ul>
+<li>
+エラーが発生したあとのプロンプトに'[1]'といった数字が付いています．これはREPLがそれまでのセッションをいったん凍結して再帰的に新たなセッション（デバッグモード）を開始していることを示しています．数字は再帰の深さ（デバッグモードの深さ）を示しています．例えば，上の状態でさらにエラーが発生すると，この数字が‘[2]’になります．試しに，誤りを含んだhello.scmをもう一度ロードしてみて下さい．数字が増えるはずです．
+</ul>
+
+<p></p>
+<span class="hdln" id="error-cancel">デバッグモードの解消</span>
+<ul>
+<li>
+デバッグモードのセッションはREPLを再帰的に実行しているだけなので，(quit)やCtrl-Dによって元々の（あるいは一つ前の）セッションに戻ることができます．デバッグモードだからと言って何も恐れることはありません．それに，デバッグモードを放置していると，どんどん再帰していきます．エラーの原因が判明したり，プログラムを再実行するときには，デバッグモードを解消したほうがよいでしょう．
+</ul>
+</section>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="bound">
+<h3>セッションが終わるまで，その束縛，生きてます</h3>
+<ul>
+<li>
+一度ロードして確立した束縛は，セッションが終わるまで有効です．
+<li>
+REPLのload手続きを使ってプログラムの動作を確認するとき，上の点に注意が必要です．注意すべき点を説明するために，次の２つのプログラム（sample-1.scmとsample-2.scm）を考えましょう．
+<pre class="list">
+;; sample-1.scm
+(define x 10)
+(define y 20)
+(display "x+y=") (display (+ x y)) (newline)
+</pre>
+<pre class="list">
+;; sample-2.scm
+(define y 99)
+(display "x+y=") (display (+ x y)) (newline)
+</pre>
+sample-2.scmは，<myred>xの定義をわざと外しています</myred>．xの値は未定義ですから，当然，(+ x y)を計算するところでエラーが発生するはずです．
+<li>
+これら２つのプログラムを同じセッションの中で実行してみます．まずsample-1.scmをロードし，続けてsample-2.scmをロードします．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr; 
+GNU Guile 3.0.5
+   ...... 起動メッセージ ......
+guile&gt; <mycmd>(load "sample-1.scm")</mycmd> &crarr;
+      ...... コンパイルに関するメッセージ ......
+x+y=30
+guile&gt; <mycmd>(load "sample-2.scm")</mycmd> &crarr;
+      ...... コンパイルに関するメッセージ ......
+x+y=109
+guile&gt; 
+</pre>
+両方とも問題なく実行できています．sample-2.scmが実行できたのは，sample-1.scmをロードしたときにxの値が定義され，それを利用したからです．ちなみに，<em>,binding</em>というコマンドを使うと，その時点の変数束縛の一覧が表示されます．
+<pre class="shell">
+guile&gt; <mycmd>,binding</mycmd> &crarr;
+y                       #&lt;variable 7f0f706b3cb0 value: 99&gt;
+x                       #&lt;variable 7f0f706b3ce0 value: 10&gt;
+guile&gt; 
+</pre>
+これを見ると，xが10に束縛され，yが99に束縛されていることが分かります．
+<li>
+REPLの１つのセッションの中で色々なプログラムをロードしたとき，あるプログラムがうまく動いたからといって，そのプログラムが単独で正しく動作するとは限りません．確実に確認したいときにはREPLを起動し直してプログラムを実行すべきでしょう．例えば，REPLを再起動してsample-2.scmをロードしてみるとエラーがきちんと発生します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+   ...... 起動メッセージ ......
+guile&gt; <mycmd>(load "sample-2.scm")</mycmd> &crarr;
+x+y=<myred>ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+Unbound variable: x</myred>
+   ...............
+guile [1]> 
+</pre>
+上の赤字がエラーメッセージです．このエラーメッセージは，xが未束縛（値が未定義）であることを示しています．エラーメッセージが少しヘンですが，(display "x+y=") までは問題なく実行できて，そのあとの加算が実行できずにエラーメッセージを表示しているためです．
+<li>
+（参考）プログラムを再ロードしたり，複数のプログラムをロードしたときに，ある変数の定義（束縛）が重複した場合，最後に確立された束縛が有効です．上の例で言えば，sample-1.scmをロードしたときに変数yはいったん20に束縛されますが，sample-2.scmをロードすると変数yは99に束縛され直されます．,bindingコマンドは各時点での最新の束縛を表示します．
+</ul>
+
+
+<!--- %%% 準備中 %%%%%%%%%%%%%% --->
+<!--- %%% 準備中 %%%%%%%%%%%%%% --->
+<!--- %%% 準備中 %%%%%%%%%%%%%% --->
+<!--- %%% 準備中 %%%%%%%%%%%%%% --->
+<!--- %%% 準備中 %%%%%%%%%%%%%% --->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+変更履歴
+<ul>
+<li> <span class="date0"></span>：初出
+</ul>
+</section>
+
+
+</div> <!-- END of main division -->
+</body>
+</html>
+
