@@ -110,17 +110,26 @@ h3 {
 
 ul {
     margin-left: -5px;
-    margin-top: 0px; 
+    margin-top: 5px; 
     margin-bottom: 0px; 
 }
 
 ul li {
-    padding-bottom: 3px;
+    padding-bottom: 5px;
+}
+
+ul.menu {
+    margin-left: -5px;
+    margin-top: 0px; 
+}
+
+ul li.menu {
+    padding-bottom: 0px;
 }
 
 ol {
     margin-left: -5px; 
-    margin-top: 0px; 
+    margin-top: 5px; 
     margin-bottom: 0px; 
 }
 
@@ -204,3 +213,9 @@ mykw {
     color: darkviolet; 
 }
 myred { color: red; }
+
+mysyn {
+    font-style: italic;
+}
+mysyn:before { content: "<"; }
+mysyn:after { content: ">"; }

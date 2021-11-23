@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <title>AlgoKajya Guile入門／guileコマンドによるプログラムの実行</title>
+   <link rel="stylesheet" type="text/css" href="gi.css">
+   <!---%%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+   <style type="text/css">
+      .date0:before{ content: "2020.11.23"; }
+   </style>
+</head>
+<body>
+
+
+<!---%%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<div id="header">
+<a class="noline" href="repl.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="next.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!---%%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<div id="title">
+<div class="titlename">
+Guile入門／guileコマンドによるプログラムの実行
+</div>
+<div class="date"><span class="date0"></span></div>
+</div>
+
+
+<div id="abstract">
+<ul>
+<li>
+guileコマンドを使ってプログラムファイルを実行する方法を解説します．ここで説明する内容はスクリプトを作るときにも必要になります．
+<li>
+目次
+<ul class="menu">
+<li>
+<a class="noline" href="#s-switch">-sスイッチを使って実行する</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#s-style">コマンドの形式と動作</a>
+   <li class="menu"><a class="noline" href="#s-arguments">コマンドライン引数</a>
+   </ul>
+<li class="menu"><a class="noline" href="#e-switch">-eスイッチを使ってエントリーポイントを指定する</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#e-style">コマンドの形式と動作</a>
+   <li class="menu"><a class="noline" href="#e-parameters">エントリーポイントは仮引数が必須です</a>
+   <li class="menu"><a class="noline" href="#e-action">エントリーポイントを指定したときのプログラムの動作</a>
+   </ul>
+<li class="menu"><a class="noline" href="#revise">変更履歴</a>
+</ul>
+<li>
+参考資料
+<ul class="menu">
+<li class="menu">
+<a class="noline" href="https://www.gnu.org/software/guile/manual/">
+GNU Guile Reference Manual（最新版）
+</a>
+<li class="menu"> 
+<a class="noline" href="https://github.com/algokajya/Scheme-Guile/blob/Scheme/guile-manual-3.0.5.pdf">
+GNU Guile Reference Manual（Edition 3.0.5, revision 1）
+</a>
+</ul>
+</ul>
+</div>
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="s-switch">
+<h3>-sスイッチを使って実行する</h3>
+<p></p>
+<span class="hdln" id="s-style">コマンドの形式と動作</span>
+<ul>
+<li> 
+guileコマンドの<em>-s</em>スイッチを利用することによって，REPLに入ることなくプログラムが実行できます．コマンドの実行形式は次の通りです．
+<pre class="shell">
+$ <mycmd>guile -s <mysyn>file</mysyn></mycmd> &crarr;  
+</pre>
+ここで，<mycmd><mysyn>file</mysyn></mycmd>はプログラムファイルを表しています．このコマンドを実行すると，<mycmd><mysyn>file</mysyn></mycmd>内のプログラムがコンパイルされて実行されます．
+<li>
+具体例として，以下のプログラムを greetings.scm というファイルに保存したとします．
+<pre class="list">
+;; greetings.scm
+(display "Hello, Scheme!!!\n")
+(display "Hello, Guile!!!\n")
+</pre>
+このプログラムを実行してみます．
+<pre class="shell">
+$ <mycmd>guile -s greetings.scm</mycmd> &crarr; 
+      ...... コンパイルメッセージ ......
+Hello, Scheme!!!
+Hello, Guile!!!
+</pre>
+<li>
+（参考）REPLによって実行したときと同様に，コンパイル後のバイトコードがキャッシュディレクトリに保存されます．そのバイトコードが古くならない限り（つまり，ソースコードが変更されない限り），再コンパイルは行われずにバイトコードが実行されます．
+<pre class="shell">
+$ <mycmd>guile -s greetings.scm</mycmd> &crarr; 
+Hello, Scheme!!!
+Hello, Guile!!!
+</pre>
+<li>
+（参考）プログラムファイル名がハイフン（-）で始まるのでない限り，
+'-s'を省略できます．
+<pre class="shell">
+$ <mycmd>guile greetings.scm</mycmd> &crarr; 
+Hello, Scheme!!!
+Hello, Guile!!!
+</pre>
+
+</ul>
+
+
+<p></p>
+<span class="hdln" id="s-arguments">コマンドライン引数</span>
+<ul>
+<li>
+上で示したコマンド形式にコマンドライン引数を指定することもできます．
+<pre class="shell">
+$ <mycmd>guile -s <mysyn>file</mysyn> <mysyn>arg</mysyn> ... <mycmd> &crarr;
+</pre>
+ここで，<mysyn>arg</mysyn>はプログラムへの入力データとして利用される任意の記号列を表します．記号列は幾つでも指定できて，各記号列は空白によって区切ります．これを実行すると，<mysyn>file</mysyn>内のプログラムを実行する前に，
+<div style="padding-left:10%">
+   <em>'("<mysyn>file</mysyn>" "<mysyn>arg</mysyn>" ... )</em>
+</div>
+といった文字列からなるリストが構成され，<mysyn>file</mysyn>内のプログラムへ入力データとして渡されます．このリストは<em>command-list</em>手続きを使って取得できます．
+<li>
+（注意）プログラムに渡されるコマンドライン引数のリストの先頭は，プログラムのファイル名です．2番目以降の要素が実際の入力データになります．
+<li>
+具体例として，以下のプログラムをarglist.scmというファイルに保存したとします．
+<pre class="list">
+;; arglist.scm
+(write (command-line))
+(newline)
+</pre>
+このプログラムは，コマンドライン引数から構成された
+<div style="padding-left:10%">
+   <em>'("arglist.scm" "AAA" "BBB" "CCC")</em>
+</div>
+というリストをcommand-line手続きを使って取得して，そのリストを表示（write）して改行（newline）します．
+<pre class="shell">
+$ <mycmd>guile -s arglist.scm AAA BBB CCC</mycmd> &crarr; 
+      ...... コンパイルメッセージ ......
+("arglist.scm" "AAA" "BBB" "CCC")
+</pre>
+<li>
+簡単な具体例をもう一つ示しましょう．以下のプログラムを改めてgreetings.scmに保存したとします．
+<pre class="list">
+;; greetings.scm
+(define name (cadr (command-line)))
+(display (string-append "*** Hello," name "!!! ***"))
+(newline)
+</pre>
+このプログラムは，まず，コマンドライン引数として与えられたリストから名前（以下の実行例では"Alice"）を取り出して，その名前を変数nameに束縛します．次に，その文字列の前後に "*** Hello," と "!!! ***" といった文字列を連結（string-append）して，連結後の文字列を表示（display）して改行（newline）します．
+<pre class="shell">
+$ <mycmd>guile -s greetings.scm Alice</mycmd> &crarr; 
+      ...... コンパイルメッセージ ......
+*** Hello,Alice!!! ***
+</pre>
+
+</ul>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="e-switch">
+<h3>-eスイッチを使ってエントリーポイントを指定する</h3>
+<p></p>
+<span class="hdln" id="e-style">コマンドの形式と動作</span>
+<ul>
+<li>
+-sスイッチと一緒に<em>-e</em>スイッチを利用することによって，プログラム内のエントリーポイント（実行を開始する手続き）を指定することができます．コマンドの形式は次の通りです．
+<pre class="shell">
+$ <mycmd>guile -e <mysyn>proc</mysyn> -s <mysyn>file</mysyn></mycmd> &crarr;
+      または
+$ <mycmd>guile -e <mysyn>proc</mysyn> -s <mysyn>file</mysyn> <mysyn>arg</mysyn> ... </mycmd> &crarr;
+</pre>
+ここで，<mysyn>proc</mysyn>はプログラム内の手続き名を表します．2番目の形式は，コマンドライン引数（<mysyn>arg</mysyn> ...）を指定する場合を示しています．
+<li>
+上記のコマンドを実行したとき，Guileはプログラムを次のように処理します．
+   <ol>
+   <li> まず，プログラムをコンパイルします（REPLのときと同様に，バイトコードが最新のときには再コンパイルはしません）．
+   <li> 次に，1番目のコマンドを実行したとき（つまり，コマンドライン引数を指定しなかったとき），
+<div style="padding-left:10%">
+   <em>'("<mysyn>file</mysyn>")</em>
+</div>
+といったリストを構成し，2番目のコマンドを実行したとき（つまり，コマンドライン引数を指定したとき）には，
+<div style="padding-left:10%">
+   <em>'("<mysyn>file</mysyn>" "<mysyn>arg</mysyn>" ... )</em>
+</div>
+といったリストを構成します．
+   <li> 次に，プログラム内のすべての定義と式を先頭から順に評価します．
+   <li> そのあとで，上で構成したリストに対して<mysyn>proc</mysyn>を適用します（
+つまり，上記のリストを実引数として<mysyn>proc</mysyn>を実行します）．
+   </ol>
+<li>
+具体例として，次のプログラムをgreetings.scmに保存したとします．
+<pre class="list">
+;; greetings.scm
+(define (hello-scheme args)
+  (display "*** Hello, Scheme!!! ***") (newline))
+
+(define (hello-guile args)
+  (display "*** Hello, Guile!!! ***") (newline))
+</pre>
+それぞれの手続きをエントリーポイントとして実行してみます．
+<pre class="shell">
+$ <mycmd>guile -e hello-scheme -s greetings.scm</mycmd> &crarr; 
+      ...... コンパイルメッセージ ......
+*** Hello, Scheme!!! ***
+$ <mycmd>guile -e hello-guile -s greetings.scm</mycmd> &crarr; 
+*** Hello, Guile!!! ***
+</pre>
+1番目のコマンドはhello-scheme手続きを実行し，2番目はhello-guile手続きを実行しています．なお，1番目のときにコンパイルが済んでいるので，2番目のときにはコンパイルされません．
+<li>
+コマンドライン引数を利用する具体例として，次のプログラムを改めてgreetings.scmに保存したとします．
+<pre class="list">
+;; greetings.scm
+(define (hello-everybody args)
+  (write args) (newline)
+  (for-each hello-somebody (cdr args)))
+
+(define (hello-somebody arg)
+  (display (string-append "*** Hello," arg "!!! ***"))
+  (newline))
+</pre>
+hello-everybody手続きをエントリーポイントとしてプログラムを実行してみます．
+<pre class="shell">
+$ <mycmd>guile -e hello-everybody -s greetings.scm Alice Bob Carol</mycmd> &crarr;
+      ...... コンパイルメッセージ ......
+("greetings.scm" "Alice" "Bob" "Carol")
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+</pre>
+hello-everybodyは，ファイル名を含めたコマンドライン引数からなるリスト
+<div style="padding-left:10%">
+   <em>'("greetings.scm" "Alice" "Bob" "Carol")</em>
+</div>
+を実引数として受け取って，そのリストを表示（write）して改行（newline）したあと，先頭要素（ファイル名）を除く残りの各文字列（"Alice"，"Bob"，"Carol"）に対してhello-somebodyを適用しています．hello-somebodyは，引数として受け取った文字列の前後に"*** Hello,"と"!!! ***"を連結（string-append）して，連結後の文字列を表示（display）して改行（newline）しています．
+<li>
+（参考）エントリーポイントの<mysyn>proc</mysyn>へ実引数として渡されたリストは，プログラム全体への入力データとして渡されてもいるため，<em>command-line</em>手続きを使って取得することもできます．つまり，エントリーポイントを指定したとき，コマンドライン引数は2つの方法で取得できることになります．例えば，次のプログラムをarglist.scmに保存したとします．
+<pre class="list">
+;; arglist.scm
+(define (get-arguments args)
+  (display "arg:") (write args) (newline)
+  (display "cmd:") (write (command-line)) (newline))
+</pre>
+get-arguments手続きをエントリーポイントとしてプログラムを実行してみます．
+<pre class="shell">
+$ <mycmd>guile -e get-arguments -s arglist.scm AAA BBB CCC</mycmd> &crarr;
+      ...... コンパイルメッセージ ......
+arg:("arglist.scm" "AAA" "BBB" "CCC")
+cmd:("arglist.scm" "AAA" "BBB" "CCC")
+</pre>
+get-arguments手続きは，コマンドライン引数からなるリスト
+<div style="padding-left:10%">
+   <em>'("greetings.scm" "AAA" "BBB" "CCC")</em>
+</div>
+を実引数（args）として受け取って，そのリストを表示して改行しています．さらに，その同じリストをcommand-line手続きによって取得して表示して改行しています．
+</ul>
+
+<p></p>
+<span class="hdln" id="e-parameters">エントリーポイントは仮引数が必須です</span>
+<ul>
+<li>
+コマンドライン引数（<mysyn>arg</mysyn> ...）を何も指定しないときでも
+<div style="padding-left:10%">
+   <em>'("<mysyn>file</mysyn>")</em>
+</div>
+といったリスト（ファイル名だけからなるリスト）がエントリーポイントの手続きに実引数として渡されます．従って，<myred>エントリーポイントの手続きは必ず仮引数を用意しなければなりません</myred>．そうしないとエラーが発生します．
+<li>
+具体例として，次のプログラムをnoparam.scmに保存したとします．
+<pre class="list">
+;; noparam.scm
+(define (hello-scheme)
+  (display "*** Hello, Scheme!!! ***") (newline))
+</pre>
+hello-scheme手続きをエントリーポイントに指定してプログラムを実行してみます．
+<pre class="shell">
+$ guile -e hello-scheme -s noparam.scm 
+      ...... コンパイルメッセージ ......
+Backtrace:
+      ...... バックトレースに関するメッセージ ......
+
+<myred>/home/user/tmp/noparam.scm:2:0: In procedure hello-scheme:
+Wrong number of arguments to #&lt;procedure hello-scheme ()&gt;</myred>
+</pre>
+赤字がエラーメッセージで，「引数の個数が間違えている」と怒っています．
+つまり，hello-schemeにはファイル名だけからなるリストを実引数として渡さなければならなかったのですが，それが出来なかったのでエラーが発生したのです．
+</ul>
+
+
+<p></p>
+<span class="hdln" id="e-action">エントリーポイントを指定したときのプログラムの動作</span>
+<ul>
+<li>
+エントリーポイントを指定したときのプログラムの動作を，用心のため，再確認しておきましょう．前に述べたように，エントリーポイントを指定して
+<div style="padding-left:10%">
+$ <mycmd>guile -e <mysyn>proc</mysyn> -s <mysyn>file</mysyn></mycmd> &crarr;<br>
+   <span style="padding-left:10%">または</span><br>
+$ <mycmd>guile -e <mysyn>proc</mysyn> -s <mysyn>file</mysyn> <mysyn>arg</mysyn> ... </mycmd> &crarr;
+</div>
+というコマンドを実行たとき，Guileはプログラムを次のように処理します．
+   <ol>
+   <li> まず，プログラムをコンパイルします（REPLのときと同様に，バイトコードが最新のときには再コンパイルはしません）．
+   <li> 次に，1番目のコマンドを実行したとき（つまり，コマンドライン引数を指定しなかったとき），
+<div style="padding-left:10%">
+   <em>'("<mysyn>file</mysyn>")</em>
+</div>
+といったリストを構成し，2番目のコマンドを実行したとき（つまり，コマンドライン引数を指定したとき）には，
+<div style="padding-left:10%">
+   <em>'("<mysyn>file</mysyn>" "<mysyn>arg</mysyn>" ... )</em>
+</div>
+といったリストを構成します．
+   <li> 次に，プログラム内のすべての定義と式を先頭から順に評価します．
+   <li> そのあとで，上で構成したリストに対して<mysyn>proc</mysyn>を適用します（
+つまり，上記のリストを実引数として<mysyn>proc</mysyn>を実行します）．
+   </ol>
+<li>
+注意すべき要点は，
+   <ul>
+   <li>
+   <em>プログラム内のすべての定義と式が評価されたあとに<mysyn>proc</mysyn>が最後に実行される</em>
+   </ul>
+という点です．以下では，この点を具体例を通して確認します．
+<li>
+簡単な具体例として，次のプログラムをmain手続きをエントリーポイントとして実行してみます．ファイル名はentry-point.scmとします．
+<pre class="list">
+;; entry-point.scm
+(define (main args)
+  (display x) (newline))
+(define x "I am X!!!")
+</pre>
+main手続きから実行が開始されると素朴に考えたとき，mainの本体を実行した時点で変数xは未束縛なのでエラーが出るように思います．でも，その考えは間違いです．これは問題なく動きます．なぜならxの定義が評価されたあとにmain手続きが実行されるからです．
+<pre class="shell">
+$ <mycmd>guile -e main -s entry-point.scm</mycmd> &crarr;
+      ...... コンパイルメッセージ ......
+I am X!!!
+</pre>
+
+<li>
+さらに，上のプログラムを次のように変更して実行してみると，定義や式の評価を先頭から順に行ったあとにエントリーポイントが実行されることがよく分かります．
+<pre class="list">
+;; entry-point.scm
+(define (main args)
+  (display x) (newline))
+(define x "I am X!!!")
+(display "*** THE LAST LINE OF THIS PROGRAM ***") (newline)
+</pre>
+以下の実行結果は，上記の最終行にあるdisplay手続きとnewline手続きを実行したあとにエントリーポイントのmain手続きが呼び出されていることを示しています．
+<pre class="shell">
+$ <mycmd>guile -e main -s entry-point.scm</mycmd> &crarr; 
+      ...... コンパイルメッセージ ......
+*** THE LAST LINE OF THIS PROGRAM ***
+I am X!!!
+</pre>
+
+<li>
+（参考）エントリーポイント（<mysyn>proc</mysyn>）を指定して実行することは，<mysyn>proc</mysyn>の呼び出しを最後に明記して，エントリーポイントを指定せずに実行することと同じです．例えば，上で示したプログラムは，次のように変更（mainの呼び出しを追加）してエントリーポイントを指定せずに実行することと同じです．
+<pre class="list">
+;; entry-point.scm
+(define (main args)
+  (display x) (newline))
+(define x "I am X!!!")
+(display "*** THE LAST LINE OF THIS PROGRAM ***") (newline)
+(main (command-line)) <span style="padding-left:10%"><myred>(注) mainの呼び出しを追加</myred></span>
+</pre>
+<pre class="shell">
+$ <mycmd>guile -s entry-point.scm<mycmd> &crarr; <span style="padding-left:10%"><myred>(注) エントリーポイントを指定しない</myred></span> 
+      ...... コンパイルメッセージ ......
+*** THE LAST LINE OF THIS PROGRAM ***
+I am X!!!
+</pre>
+
+
+
+
+<!---%%% 準備中 %%%%%%%%%%%%%--->
+<!---%%% 準備中 %%%%%%%%%%%%%--->
+<!---%%% 準備中 %%%%%%%%%%%%%--->
+
+
+</ul>
+
+</section>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+変更履歴
+<ul>
+<li> <span class="date0"></span>：初出
+</ul>
+</section>
+
+
+</div> <!-- END of main division -->
+</body>
+</html>
+
