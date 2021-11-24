@@ -4,15 +4,15 @@
    <meta charset="UTF-8">
    <title>AlgoKajya Guile入門／REPLによるプログラムの実行</title>
    <link rel="stylesheet" type="text/css" href="gi.css">
-   <!---%%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
-   <style type="text/css">
+   <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <style>
       .date0:before{ content: "2020.11.21"; }
    </style>
 </head>
 <body>
 
 
-<!---%%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="header">
 <a class="noline" href="setup.html">[Prev]</a>
 &ensp; 
@@ -24,7 +24,7 @@
 </div>
 
 
-<!---%%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="title">
 <div class="titlename">
 Guile入門／REPLによるプログラムの実行
@@ -88,24 +88,24 @@ GNU Guile Reference Manual（Edition 3.0.5, revision 1）
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="direct-exec">
-<h3>直接入力によって実行する</h3>
+<h3 class="section">直接入力によって実行する</h3>
 <p></p>
 <span class="hdln" id="expression">式を実行する</span>
 <ul>
 <li> 
 REPLの中で式を直接入力して実行できます．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
    ...... 起動メッセージ ......
-guile&gt; <mycmd>(+ 10 20)</mycmd> &crarr;
+guile&gt; <span class="mycmd">(+ 10 20)</span> &crarr;
 $1 = 30
-guile&gt; <mycmd>(* 10 20)</mycmd> &crarr;
+guile&gt; <span class="mycmd">(* 10 20)</span> &crarr;
 $2 = 200
-guile&gt; <mycmd>(+ 10 20) (* 10 20)</mycmd> &crarr;
+guile&gt; <span class="mycmd">(+ 10 20) (* 10 20)</span> &crarr;
 $3 = 30
 $4 = 200
-guile&gt; <mycmd>(display "Guile Scheme!!!") (newline)</mycmd> &crarr;
+guile&gt; <span class="mycmd">(display "Guile Scheme!!!") (newline)</span> &crarr;
 Guile Scheme!!!
 guile&gt; 
 </pre>
@@ -118,18 +118,19 @@ guile&gt;
 <li>
 上の実行例に出てくる <em>$1</em>,<em>$2</em>,<em>$3</em>,... は，計算結果に付けた一時的な変数名です．同じセッションの中でこの変数名を使って計算結果を利用できます．例えば，次の式は$1=30と$2=200の和を求めています．
 <pre class="shell">
-guile&gt; <mycmd>(+ $1 $2)</mycmd> &crarr; 
+guile&gt; <span class="mycmd">(+ $1 $2)</span> &crarr; 
 $5 = 230
 guile&gt; 
 </pre>
 これらの一時変数を<em>value history</em>と呼びます．
 </ul>
+</section>
 
 
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="load">
-<h3>プログラムファイルをロードして実行する</h3>
+<h3 class="section">プログラムファイルをロードして実行する</h3>
 <p></p>
 <span class="hdln" id="load-sample">サンプルプログラム</span>
 <ul>
@@ -151,18 +152,18 @@ Guileは <em>.scm</em> をソースファイルの標準の拡張子にしてい
 <li>
 プログラムファイルを実行するためには，まず，プログラムファイルを保存したディレクトリ上でGuileのREPLを起動します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
    ...... 起動メッセージ ......
 guile&gt;
 </pre>
 次に，<em>load</em>手続きを使ってプログラムファイルをロードします．load手続きの一般な形式は
 <div style="padding-left:10%">
-   <mycmd>(load "ファイル名")</mycmd>
+   <span class="mycmd">(load "ファイル名")</span>
 </div>
 です．
 <pre class="shell">
-guile&gt; <mycmd>(load "hello.scm")</mycmd> &crarr; 
+guile&gt; <span class="mycmd">(load "hello.scm")</span> &crarr; 
 ;;;                  ............
 ;;;       ...... コンパイルに関するメッセージ ......
 ;;;                  ............
@@ -174,11 +175,11 @@ load手続きを実行すると，プログラムファイルがコンパイル�
 <li>
 load手続きに指定するファイル名は，ターミナル上で指定するのと同様に，相対パスや絶対パスで指定します．相対パスの起点はカレントディレクトリ（REPLを実行したディレクトリ）です．例えば，カレントディレクトリが /home/user/tmp だった場合，サンプルプログラムのファイル（hello.scm）を次のように指定できます．
 <pre class="shell">
-guile&gt; <mycmd>(load "./hello.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "./hello.scm")</span> &crarr;
 *** Hello, world! ***
-guile&gt; <mycmd>(load "../tmp/hello.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "../tmp/hello.scm")</span> &crarr;
 *** Hello, world! ***
-guile&gt; <mycmd>(load "/home/user/tmp/hello.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "/home/user/tmp/hello.scm")</span> &crarr;
 *** Hello, world! ***
 guile&gt; 
 </pre>
@@ -186,7 +187,7 @@ guile&gt;
 <li>
 （注意）ホームディレクトリを表すティルダ ~ は使えません（ティルダの機能がPOSIXでは定義されていないため）．ティルダを使ってファイル名を指定するとエラーが発生します．
 <pre class="shell">
-guile&gt; <mycmd>(load "~/tmp/hello.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "~/tmp/hello.scm")</span> &crarr;
 ;;; Stat of /home/user/tmp/~/tmp/hello.scm failed:
 ;;; In procedure stat: そのようなファイルやディレクトリはありません: "/home/user/tmp/~/tmp/hello.scm"
             ............
@@ -207,7 +208,7 @@ guile&gt; <mycmd>(load "~/tmp/hello.scm")</mycmd> &crarr;
 </pre>
 これを再びロードすると，改めてコンパイルされて実行されます．
 <pre class="shell">
-guile&gt; <mycmd>(load "hello.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "hello.scm")</span> &crarr;
        ...... コンパイルに関するメッセージ ......
 *** Hello, world! ***
 *** Hello, Guile! ***
@@ -230,7 +231,7 @@ Guileは，ホームディレクトリ上に<em>キャッシュディレクト�
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="procedure">
-<h3>自前の手続きを実行する</h3>
+<h3 class="section">自前の手続きを実行する</h3>
 <p></p>
 <span class="hdln" id="proc-sample">サンプルプログラム</span>
 <ul>
@@ -251,15 +252,15 @@ Guileは，ホームディレクトリ上に<em>キャッシュディレクト�
 <li>
 message.scmをロードしてみます．
 <pre class="shell">
-guile&gt; <mycmd>(load "message.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "message.scm")</span> &crarr;
        ...... コンパイルに関するメッセージ ......
 guile&gt; 
 </pre>
 今度はコンパイルメッセージだけが表示されて，実行結果らしきものは何も表示されません．define形式をロードすると，現在のセッションにその定義が取り込まれるだけで計算は行われません．自前の手続きを実行するためには，適当な実引数を指定して手続きを呼び出す必要があります．
 <pre class="shell">
-guile&gt; <mycmd>(hello-message "Scheme")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(hello-message "Scheme")</span> &crarr;
 *** Hello, Scheme!!! ***
-guile&gt; <mycmd>(hello-message "Guile")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(hello-message "Guile")</span> &crarr;
 *** Hello, Guile!!! ***
 guile&gt; 
 </pre>
@@ -269,33 +270,33 @@ guile&gt;
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="error">
-<h3>エラーが発生したとき</h3>
+<h3 class="section">エラーが発生したとき</h3>
 <p></p>
 <span class="hdln" id="error-debug-mode">エラーとデバッグモード</span>
 <ul>
 <li>
-エラーが発生したとき，REPLはそれまでのセッションをいったん凍結して，エラーの状態を保持した新たなセッションを開始します．REPLを再帰的に実行してデバッグモードを開始するとも言えます．試しに，hello.scmを次のように変更します．2番目のdisplayをわざと<myred>dipslay</myred>にしています．
+エラーが発生したとき，REPLはそれまでのセッションをいったん凍結して，エラーの状態を保持した新たなセッションを開始します．REPLを再帰的に実行してデバッグモードを開始するとも言えます．試しに，hello.scmを次のように変更します．2番目のdisplayをわざと<span class="myred">dipslay</span>にしています．
 <pre class="list">
 ;; hello.scm
 (display "*** Hello, world! ***")
 (newline)
-(<myred>dipslay</myred> "*** Hello, Guile! ***")
+(<span class="myred">dipslay</span> "*** Hello, Guile! ***")
 (newline)
 </pre>
 このhello.scmをロードしてみます．
 <pre class="shell">
-guile&gt; <mycmd>(load "hello.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "hello.scm")</span> &crarr;
 ;;;                  ............
 ;;;       ...... コンパイルに関するメッセージ ......
 ;;;                  ............
 *** Hello, world! ***
-<myred>ice-9/boot-9.scm:1669:16: In procedure raise-exception:
-Unbound variable: dipslay</myred>
+<span class="myred">ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+Unbound variable: dipslay</span>
 
 Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
 guile [1]> 
 </pre>
-1行目と2行目には誤りはないので"*** Hello, world!  ***"は表示されます．そのあとのところでエラーが発生しています．<myred>赤字</myred>がエラーメッセージです．「<myred>dipslay</myred>は未束縛（変数の値が未定義）だ」と怒っています．
+1行目と2行目には誤りはないので"*** Hello, world!  ***"は表示されます．そのあとのところでエラーが発生しています．<span class="myred">赤字</span>がエラーメッセージです．「<span class="myred">dipslay</span>は未束縛（変数の値が未定義）だ」と怒っています．
 </ul>
 
 <p></p>
@@ -316,7 +317,7 @@ guile [1]>
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="bound">
-<h3>セッションが終わるまで，その束縛，生きてます</h3>
+<h3 class="section">セッションが終わるまで，その束縛，生きてます</h3>
 <ul>
 <li>
 一度ロードして確立した束縛は，セッションが終わるまで有効です．
@@ -333,24 +334,24 @@ REPLのload手続きを使ってプログラムの動作を確認するとき，
 (define y 99)
 (display "x+y=") (display (+ x y)) (newline)
 </pre>
-sample-2.scmは，<myred>xの定義をわざと外しています</myred>．xの値は未定義ですから，当然，(+ x y)を計算するところでエラーが発生するはずです．
+sample-2.scmは，<span class="myred">xの定義をわざと外しています</span>．xの値は未定義ですから，当然，(+ x y)を計算するところでエラーが発生するはずです．
 <li>
 これら２つのプログラムを同じセッションの中で実行してみます．まずsample-1.scmをロードし，続けてsample-2.scmをロードします．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr; 
+$ <span class="mycmd">guile</span> &crarr; 
 GNU Guile 3.0.5
    ...... 起動メッセージ ......
-guile&gt; <mycmd>(load "sample-1.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "sample-1.scm")</span> &crarr;
       ...... コンパイルに関するメッセージ ......
 x+y=30
-guile&gt; <mycmd>(load "sample-2.scm")</mycmd> &crarr;
+guile&gt; <span class="mycmd">(load "sample-2.scm")</span> &crarr;
       ...... コンパイルに関するメッセージ ......
 x+y=109
 guile&gt; 
 </pre>
 両方とも問題なく実行できています．sample-2.scmが実行できたのは，sample-1.scmをロードしたときにxの値が定義され，それを利用したからです．ちなみに，<em>,binding</em>というコマンドを使うと，その時点の変数束縛の一覧が表示されます．
 <pre class="shell">
-guile&gt; <mycmd>,binding</mycmd> &crarr;
+guile&gt; <span class="mycmd">,binding</span> &crarr;
 y                       #&lt;variable 7f0f706b3cb0 value: 99&gt;
 x                       #&lt;variable 7f0f706b3ce0 value: 10&gt;
 guile&gt; 
@@ -359,12 +360,12 @@ guile&gt;
 <li>
 REPLの１つのセッションの中で色々なプログラムをロードしたとき，あるプログラムがうまく動いたからといって，そのプログラムが単独で正しく動作するとは限りません．確実に確認したいときにはREPLを起動し直してプログラムを実行すべきでしょう．例えば，REPLを再起動してsample-2.scmをロードしてみるとエラーがきちんと発生します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
    ...... 起動メッセージ ......
-guile&gt; <mycmd>(load "sample-2.scm")</mycmd> &crarr;
-x+y=<myred>ice-9/boot-9.scm:1669:16: In procedure raise-exception:
-Unbound variable: x</myred>
+guile&gt; <span class="mycmd">(load "sample-2.scm")</span> &crarr;
+x+y=<span class="myred">ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+Unbound variable: x</span>
    ...............
 guile [1]> 
 </pre>
@@ -372,19 +373,13 @@ guile [1]>
 <li>
 （参考）プログラムを再ロードしたり，複数のプログラムをロードしたときに，ある変数の定義（束縛）が重複した場合，最後に確立された束縛が有効です．上の例で言えば，sample-1.scmをロードしたときに変数yはいったん20に束縛されますが，sample-2.scmをロードすると変数yは99に束縛され直されます．,bindingコマンドは各時点での最新の束縛を表示します．
 </ul>
-
-
-<!--- %%% 準備中 %%%%%%%%%%%%%% --->
-<!--- %%% 準備中 %%%%%%%%%%%%%% --->
-<!--- %%% 準備中 %%%%%%%%%%%%%% --->
-<!--- %%% 準備中 %%%%%%%%%%%%%% --->
-<!--- %%% 準備中 %%%%%%%%%%%%%% --->
+</section>
 
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <p></p>
 <section id="revise">
-変更履歴
+<h4 class="revise">変更履歴</h4>
 <ul>
 <li> <span class="date0"></span>：初出
 </ul>

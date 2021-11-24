@@ -4,8 +4,8 @@
    <meta charset="UTF-8">
    <title>AlgoKajya Guile入門／Guileの準備</title>
    <link rel="stylesheet" type="text/css" href="gi.css">
-   <!---%%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
-   <style type="text/css">
+   <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <style>
       .date0:before{ content: "2020.11.19"; }
    </style>
 </head>
@@ -13,7 +13,7 @@
 
 <body>
 
-<!---%%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="header">
 <span class="nolink">[Prev]</span>
 &ensp; 
@@ -25,7 +25,7 @@
 </div>
 
 
-<!---%%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%--->
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="title">
 <div class="titlename">
 Guile入門／Guileの準備
@@ -53,7 +53,7 @@ REPLの履歴機能を設定したり，プロンプトを変更する方法を�
    <li class="menu"><a class="noline" href="#history">履歴機能の設定</a>
    <li class="menu"><a class="noline" href="#prompt">プロンプトの変更</a>
    </ul>
-<!--- <li><a class="noline" href="#references">参考資料</a> --->
+<!--  <li><a class="noline" href="#references">参考資料</a>  -->
 <li><a class="noline" href="#revise">変更履歴</a>
 </ul>
 <li>
@@ -73,17 +73,17 @@ GNU Guile Reference Manual（Edition 3.0.5, revision 1）
 
 
 
-<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="main">
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="install">
-<h3>Guileのインストール</h3>
+<h3 class="section">Guileのインストール</h3>
 <ul>
 <li> 
 Debian 11(bullseye)用のGuileの公式バッケージとして <em>guile-3.0</em> が配布されています．そこで，次のコマンドを実行してこのパッケージをインストールします．ドル記号はシェルのプロンプトを表しています．
 <pre class="shell">
-$ <mycmd>sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</mycmd> &crarr; 
+$ <span class="mycmd">sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</span> &crarr; 
 </pre>
 <span class="date0"></span>時点のGuileの最新版は Guile 3.0.7 ですが，上記の公式パッケージは Guile 3.0.5 です．
 
@@ -92,17 +92,18 @@ $ <mycmd>sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</mycmd> &crarr;
 <li>
 <em>guile-3.0-dev</em>はGuileを利用しているソフトウェアをコンパイルするときなどに必要になります．おそらく，C言語と連携するときにも必要になるだろうと思います．
 </ul>
+</section>
 
 
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="check">
-<h3>動作確認：REPLを動かしてみる</h3>
+<h3 class="section">動作確認：REPLを動かしてみる</h3>
 <span class="hdln" id="startup">REPLの起動</span>
 <ul class="man">
 <li> GuileのREPLを起動するにはターミナル上で次のコマンドを実行します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr; 
+$ <span class="mycmd">guile</span> &crarr; 
 </pre>
 これを実行すると，次のようなメッセージのあとにプロンプトが表示されて，プログラムが入力できるようになります．以下の <em>scheme@(guile-user)&gt;</em> がプロンプトです．
 <pre class="shell">
@@ -118,9 +119,9 @@ scheme@(guile-user)>
 </pre>
 試しに簡単な式を入力して実行してみます．
 <pre class="shell">
-scheme@(guile-user)&gt; (+ 10 20) &crarr;
+scheme@(guile-user)&gt; <span class="mycmd">(+ 10 20)</span> &crarr;
 $1 = 30
-scheme@(guile-user)&gt; (* 10 20) &crarr;
+scheme@(guile-user)&gt; <span class="mycmd">(* 10 20)</span> &crarr;
 $2 = 200
 </pre>
 </ul>
@@ -131,11 +132,11 @@ $2 = 200
 <li>
 REPLは次のいずれかによって終了できます．
 <pre class="shell">
-scheme@(guile-user)&gt; (quit) &crarr;
-scheme@(guile-user)&gt; (exit) &crarr;
-scheme@(guile-user)&gt; Ctrl-Dを押す
-scheme@(guile-user)&gt; ,quit &crarr;
-scheme@(guile-user)&gt; ,q &crarr;
+scheme@(guile-user)&gt; <span class="mycmd">(quit)</span> &crarr;
+scheme@(guile-user)&gt; <span class="mycmd">(exit)</span> &crarr;
+scheme@(guile-user)&gt; <span class="mycmd">Ctrl-D</span>を押す
+scheme@(guile-user)&gt; <span class="mycmd">,quit</span> &crarr;
+scheme@(guile-user)&gt; <span class="mycmd">,q</span> &crarr;
 </pre>
 <em>exit</em>は<em>quit</em>の別名です．<em>,quit</em>はREPL固有のコマンドです．<em>,q</em>は,quitの省略形です．GuileのREPL固有のコマンドは，Schemeの変数名や構文キーワードなどと確実に区別するため，カンマで始めることになっています．
 </ul>
@@ -145,7 +146,7 @@ scheme@(guile-user)&gt; ,q &crarr;
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="setup">
-<h3>REPLの設定変更</h3>
+<h3 class="section">REPLの設定変更</h3>
 <span class="hdln" id="history">履歴機能の設定</span>
 <ul>
 <li>
@@ -179,7 +180,7 @@ scheme@(guile-user)&gt; ,q &crarr;
 </pre>
 これを設定すると，以下のように，REPLのプロンプトが <em>guile&gt;</em> に変わります．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
 Copyright (C) 1995-2021 Free Software Foundation, Inc.
 
@@ -214,7 +215,7 @@ guile&gt;
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <p></p>
 <section id="revise">
-変更履歴
+<h4 class="revise">変更履歴</h4>
 <ul>
 <li> <span class="date0"></span>：初出
 </ul>

@@ -57,7 +57,6 @@ body {
     /* float: left;  */
     width: 100%; 
     margin-top: 10px;
-    border-right: 5% solid #000000;
 }
 
 #revise {
@@ -92,7 +91,7 @@ h2 {
     color: #000080;
 }
 
-h3 {
+h3.section {
     padding: 0.4em 0.5em;   /*文字の上下 左右の余白*/
     color: #494949;         /*文字色*/
     background: #ededfa;    /*背景色*/
@@ -100,6 +99,12 @@ h3 {
     border-bottom: solid 1px #000080; 
     margin-top: 25px;
     box-shadow: 3px 3px 5px #aaaaaa; /* 5px 5px #cccccc outset;  */
+}
+
+h4.revise {
+    font-weight: normal;
+    margin-top: 0px; 
+    margin-bottom: 0px; 
 }
 
 .hdln {
@@ -121,6 +126,7 @@ ul li {
 ul.menu {
     margin-left: -5px;
     margin-top: 0px; 
+    margin-bottom: 0px; 
 }
 
 ul li.menu {
@@ -207,15 +213,24 @@ hr {
 }
 
 mycmd { color: blue; }
+span.mycmd { color: blue; }
+
 mytt { font-family: monospace; }
 mykw { 
     font-weight: bold;
     color: darkviolet; 
 }
+
 myred { color: red; }
+span.myred { color: red; }
 
 mysyn {
     font-style: italic;
 }
 mysyn:before { content: "<"; }
 mysyn:after { content: ">"; }
+span.mysyn {
+    font-style: italic;
+}
+span.mysyn:before { content: "<"; }
+span.mysyn:after { content: ">"; }
