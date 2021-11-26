@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <title>AlgoKajya Guile入門／スクリプトによるプログラムの実行</title>
+   <link rel="stylesheet" type="text/css" href="gi.css">
+   <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <style>
+      .date0:before{ content: "2020.11.26"; }
+   </style>
+</head>
+<body>
+
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="header">
+<a class="noline" href="cmd.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+<div class="titlename">
+Guile入門／スクリプトによるプログラムの実行
+</div>
+<div class="date"><span class="date0"></span></div>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<ul>
+<li>
+プログラムファイルをスクリプト（単独のプログラム）として実行する方法を解説します．
+<li>
+「<a class="noline" href="cmd.html">guileコマンドによるプログラムの実行</a>」で説明した内容（guileコマンドの利用法）を前提します．
+<li>
+目次
+<ul class="menu">
+<li class="menu"><a class="noline" href="#basics">スクリプトの作成と実行（基本）</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#basics-sample">サンプルプログラム</a>
+   <li class="menu"><a class="noline" href="#basics-shebang">シェバン行の追加</a>
+   <li class="menu"><a class="noline" href="#basics-exec">スクリプトの実行</a>
+   <li class="menu"><a class="noline" href="#basics-block-comment">ブロックコメント</a>
+   <li class="menu"><a class="noline" href="#basics-portable">ポータブルな形式</a>
+   </ul>
+<li class="menu"><a class="noline" href="#entry-point">エントリーポイントを指定する</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#ep-sample">スクリプトの作成と実行</a>
+   <li class="menu"><a class="noline" href="#ep-meta-switch">メタスイッチ</a>
+   <li class="menu"><a class="noline" href="#ep-rules">2行目の掟</a>
+   <li class="menu"><a class="noline" href="#ep-portable">ポータブルな形式</a>
+   </ul>
+<li><a class="noline" href="#revise">変更履歴</a>
+</ul>
+<li>
+参考資料
+<ul class="menu">
+<li class="menu">
+<a class="noline" href="https://www.gnu.org/software/guile/manual/">
+GNU Guile Reference Manual（最新版）
+</a>
+<li class="menu"> 
+<a class="noline" href="https://github.com/algokajya/Scheme-Guile/blob/Scheme/guile-manual-3.0.5.pdf">
+GNU Guile Reference Manual（Edition 3.0.5, revision 1）
+</a>
+</ul>
+</ul>
+</div>
+
+
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="basics">
+<h3 class="section">スクリプトの作成と実行（基本）</h3>
+<span class="hdln" id="basics-sample">サンプルプログラム</span>
+<ul>
+<li> 
+次のプログラムを題材に具体的な方法を説明します．以下，ファイル名をhello.scmとします．
+<pre class="list">
+;; hello.scm
+(define (hello-everybody args)
+  (for-each hello-somebody args))
+
+(define (hello-somebody name)
+  (display (string-append "*** Hello," name "!!! ***"))
+  (newline))
+
+(hello-everybody '("Bob" "Carol" "Dana"))
+</pre>
+hello-everybody手続きは，文字列からなるリスト（args）を受け取って，そのリストの各文字列に対してhello-somebody手続きを適用します．hello-somebody手続きは，文字列（name）を受け取って，その文字列の前後に"*** Hello,"と"!!! ***"を連結（string-append）して表示（display）して改行（newline）します．
+</ul>
+
+<p></p>
+<span class="hdln" id="basics-shebang">シェバン行の追加</span>
+<ul>
+<li> 
+プログラムファイルをスクリプト（単独で動作するプログラム）にするには，プログラムファイルの先頭に次の2行を追加します．
+<pre class="list">
+<em>#!/usr/bin/guile -s
+!#</em>
+;; hello.scm
+(define (hello-everybody args)
+  (for-each hello-somebody args))
+
+(define (hello-somebody arg)
+  (display (string-append "*** Hello," arg "!!! ***"))
+  (newline))
+
+(hello-everybody '("Bob" "Carol" "Dana"))
+</pre>
+<li>
+上記の <em>/usr/bin/guile</em> はDebian 11(bullseye)におけるguileコマンドの絶対パスを示しています．<em>-s</em>はguileコマンドの-sスイッチです．
+<li>
+（注意）実行環境（OSやGuileシステム）が異なるとき，guileコマンドの絶対パスも異なるかも知れません．
+</ul>
+
+<p></p>
+<span class="hdln" id="basics-exec">スクリプトの実行</span>
+<ul>
+<li>
+スクリプトを実行するためには，プログラムファイルに実行属性を付ける必要があります．
+<pre class="shell">
+$ <span class="mycmd">chmod 755 hello.scm</span> &crarr; 
+      または
+$ <span class="mycmd">chmod +x hello.scm</span> &crarr; 
+</pre>
+これでプログラムファイルをスクリプトとして実行できます．
+<pre class="shell">
+$ <span class="mycmd">./hello.scm</span> &crarr;
+      ..... コンパイルメッセージ ......
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,Dana!!! ***
+</pre>
+<li>
+（参考）スクリプトファイルを上のように実行したとしても，guileコマンドによってファイル内のプログラムが処理されます（下記参照）．そのため，REPLのload手続きやguileコマンドによって実行したときと同様に，コンパイル後のバイトコードがキャッシュディレクトリに保存され，スクリプトファイルの中身が変更されない限り，再コンパイルはされずに既存のバイトコードが実行されます．
+</ul>
+
+
+<p></p>
+<span class="hdln" id="basics-block-comment">ブロックコメント</span>
+<ul>
+<li>
+上で追加した1行目（<em>シェバン行</em>）はLinuxによって処理され，次のようなコマンドに変換されて実行されます（なお，シェバン行はLinuxに関する一般的な事項なので特段の説明はしません）．
+<pre class="shell">
+$ <span class="mycmd">/use/bin/guile -s <span class="mysyn">file</span></span> &crarr; 
+</pre>
+ここで，<span class="mysyn">file</span>はスクリプトのファイル名を示しています．例えば，上記のhello.scmのシェバン行は次のようなコマンドに変換されて実行されます．
+<pre class="shell">
+$ <span class="mycmd">/use/bin/guile -s hello.scm</span> &crarr; 
+</pre>
+<li>
+変換後のguileコマンドはスクリプトファイル内のプログラムを先頭から処理していきます．その際，guileコマンドは<em>#!</em>から<em>!#</em>までの部分を<em>ブロックコメント</em>として処理します．つまり，これらによって囲まれた部分を読み飛ばします．追加した2行目に<em>!#</em>があるのは，guileコマンドにとってのブロックコメントを閉じるためです．これを忘れると次のようなエラーが発生します．
+<pre class="shell">
+$ <span class="mycmd">./hello.scm</span> &crarr;
+      ...... コンパイルメッセージ ......
+<span class="myred">ERROR: In procedure primitive-load:
+In procedure skip_block_comment: /home/user/tmp/./hello.scm:12:1: unterminated `#! ... !#' comment</span>
+</pre>
+
+<li>
+（注意）ブロックコメントに関して，リファレンスマニュアルの4.3.1節に次のような説明文があります．
+   <ul>
+   <li>
+   The second line of the script should contain only the characters '!#' ...
+   </ul>
+2行目は<em>!#</em>以外を記述しないほうがよいでしょう．
+<li>
+（参考）#!と!#で囲まれた部分はguileコマンドにとってコメントにすぎないので，スクリプトファイルをguileコマンドを使って普通に実行できます．例えば：
+<pre class="shell">
+$ <span class="mycmd">guile -s hello.scm</span> &crarr; 
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,Dana!!! ***
+</pre>
+さらに，REPLの中でload手続きを使って実行することもできます．例えば：
+<pre class="shell">
+$ <span class="mycmd">guile</span> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <span class="mycmd">(load "hello.scm")</span> &crarr;
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,Dana!!! ***
+</pre>
+これは，プログラム内の手続きを個別にテストするときなどに役立つだろうと思います．例えば：
+<pre class="shell">
+guile> (hello-somebody "Alonzo")
+*** Hello,Alonzo!!! ***
+guile> (hello-everybody '("John" "Gerald" "Guy"))
+*** Hello,John!!! ***
+*** Hello,Gerald!!! ***
+*** Hello,Guy!!! ***
+guile> 
+</pre>
+</ul>
+
+<p></p>
+<span class="hdln" id="basics-portable">ポータブルな形式</span>
+<ul>
+<li>
+冒頭で示した2行の代わりに，次の3行（シェルを経由する方法）を使うこともできます．こちらのほうがより多くの実行環境で利用可能だと思います．
+<pre class="list">
+<em>#!/usr/bin/env sh
+exec guile -s "$0" "$@"
+!#</em>
+;; hello.scm
+(define (hello-everybody args)
+  (for-each hello-somebody args))
+
+(define (hello-somebody name)
+  (display (string-append "*** Hello," name "!!! ***"))
+  (newline))
+
+(hello-everybody '("Bob" "Carol" "Dana"))
+</pre>
+<pre class="shell">
+$ <span class="mycmd">./hello.scm</span> &crarr; 
+      ..... コンパイルメッセージ ......
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,Dana!!! ***
+</pre>
+<li>
+（注意）<em>!#</em>はguileコマンドにとってのブロックコメントを閉じるために必須です．忘れないで下さい．
+</ul>
+</section>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="entry-point">
+<h3 class="section">エントリーポイントを指定する</h3>
+<ul>
+<li> 
+エントリーポイントを指定したスクリプトの作成方法を説明します．
+<li>
+筆者の理解不足による技術的な問題がないのであれば，最後に示すポータブルな形式をおすすめします．
+<li>
+ポータブルな形式を利用するのであれば，以下のメタスイッチを利用する方法に関する説明は読み飛ばしてもかまいません．ただし，リファレンスマニュアル（4.3節）はメタスイッチ推しです．つまり，メタスイッチに関する説明を詳しく行っているものの，ポータブルな形式についてはほとんど何も説明していません．
+</ul>
+
+<p></p>
+<span class="hdln" id="ep-sample">スクリプトの作成と実行</span>
+<ul>
+<li>
+次のプログラム（entry-point.scm）を題材に具体的な方法を説明します．以下では，main手続きをエントリーポイントとするスクリプト（単独で動作するプログラム）を作ります．
+<pre class="list">
+;; entry-point.scm
+(define (main args)
+  (for-each hello-somebody (cdr args)))
+
+(define (hello-somebody name)
+  (display (string-append "*** Hello," name "!!! ***"))
+  (newline))
+</pre>
+main手続きは，文字列からなるリスト（args）を受け取って，そのリストの各文字列に対してhello-somebody手続きを適用します．hello-somebody手続きは，文字列（name）を受け取って，その文字列の前後に"*** Hello,"と"!!! ***"を連結（string-append）して表示（display）して改行（newline）します．
+<li>
+main手続きをエントリーポイントを指定するためには，この資料の冒頭で示した2行の代わりに，次の3行を追加します．
+<pre class="list">
+<em>#!/usr/bin/guile \
+-e main -s
+!#</em>
+;; entry-point.scm
+(define (main args)
+  (for-each hello-somebody (cdr args)))
+
+(define (hello-somebody name)
+  (display (string-append "*** Hello," name "!!! ***"))
+  (newline))
+</pre>
+これでスクリプトは完成です．このあとはファイルに実行属性を与えて実行します．
+<pre class="shell">
+$ <span class="mycmd">chmod +x entry-point.scm</span> &crarr;
+$ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr; 
+      ...... コンパイルメッセージ ......
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+</pre>
+この実行例が示しているように，コマンドライン引数はスクリプトファイル名のうしろに指定します．
+</ul>
+
+<p></p>
+<span class="hdln" id="ep-meta-switch">メタスイッチ</span>
+<ul>
+<li>
+上で追加したシェバン行の最後にある<em>バックスラッシュ</em>（\）を<em>メタスイッチ</em>と呼びます．一般的に，スクリプト内でguileコマンドに2つ以上のスイッチを指定するときにはメタスイッチを使った次の形式を使用します．
+<pre class="list">
+<em>#!/usr/bin/guile \
+   ... スイッチ ...
+!#</em>
+      ...... プログラム ......
+</pre>
+例えば，エントリーポイント（<span class="mysyn">proc</span>）を指定するときには次の形式を使用します．
+<pre class="list">
+<em>#!/usr/bin/guile \
+-e <span class="mysyn">proc</span> -s
+!#</em>
+      ...... プログラム ......
+</pre>
+
+</ul>
+
+<p></p>
+<span class="hdln" id="ep-rules">2行目の掟</span>
+<ul>
+<li>
+メタスイッチを使ったときの2行目（ ... スイッチ ... ）は次の掟（条件）を守らなければなりません．
+   <ul>
+   <li>
+   行の先頭に空白やタブ文字を入れてはいけません．
+   <li>
+   スイッチの各要素（上の例では，-eやmainや-sのこと）は空白1文字（きっかり1文字）で区切らなければなりません，
+   <li>
+   最後の構成要素（上の例では-sのこと）の直後で改行しなければなりません（参考：空白1文字を入れて改行してもギリギリ大丈夫ですが，空白を2文字以上入れてはいけません）．
+   </ul>
+<li>
+この掟を守らなかったときにはエラーが発生します．
+<pre class="list">
+<em>#!/usr/bin/guile \
+-e main   -s
+!#</em>
+;; secondline.scm
+(define (main args)
+  (write args) (newline))
+</pre>
+例えば，上のスクリプト（secondline.scm）は2行目のmainのあとに2文字以上の空白を入れているのですが，これを実行すると次のようなエラーが発生します．
+<pre class="shell">
+$ <span class="mycmd">./secondline.scm</span> &crarr; 
+      ...... コンパイルメッセージ ......
+Backtrace:
+           0 <span class="myred">(primitive-load "/home/user/tmp/")</span>
+
+<span class="myred">ERROR: In procedure primitive-load:
+In procedure fport_read: ディレクトリです</span>
+</pre>
+とても分かりにくいエラーなので注意が必要です．
+<li>
+リファレンスマニュアルの4.3.2節によると，2行目に指定したスイッチや引数の区切りは空白1文字（きっかり1文字）にしているのだそうです．そのため，先頭に空白があったり2文字以上の連続した空白があったりすると，空の文字列""が引数として指定されたと判断し，実行時のコマンドライン引数に加えるそうです．先頭に空白があるときには，その空白の直前に空文字列が指定されていると判断し，空白2文字があるときには，それらの空白の間に空文字列が指定されていると判断するようです．guileコマンドは，この空文字列をプログラムファイルの名前として処理します．でも，そんなファイルは有り得ないのでエラーが発生するのです．
+<li>
+例えば，上の具体例は次のように処理されます．まず，Linuxによってシェバン行が処理され，次のguileコマンドに変換されて実行されます．ここで，""という空の文字列がコマンドライン引数に加えられていることに注意して下さい．
+<pre class="shell">
+$ <span class="mycmd">/usr/bin/guile -e main "" -s scondline.scm</span> &crarr;
+</pre>
+次に，guileコマンドは，空の文字列（""）をプログラムファイルの名前として処理しようとします（注：-sスイッチが省略されたものと見なして，空文字列をプログラムファイル名として処理します）．上の例では/home/user/tmpというディレクトリの上で作業しているので，"/home/user/tmp/"（注：最後のスラッシュのあとに空文字列が付加されていることに注意）というファイルを処理しようとします．でも，それはディレクトリであってプログラムファイルではありません．そのため，上で示しているようなエラーが発生します．
+
+<li>
+以上の処理は（Linuxではなく）guileコマンドが行っています．なんでそんなことになっているのか理由は不明です．空白を読み飛ばせばいいだけじゃないか，手抜きじゃないかと疑いたくなりますが，何か大人の事情があるのでしょう（その事情は筆者には分かりません）．
+</ul>
+
+<p></p>
+<span class="hdln" id="ep-portable">ポータブルで安全な形式</span>
+<ul>
+<li>
+メタスイッチを使う代わりに，次の形式（シェルを経由する方法）を使うこともできます．
+<pre class="list">
+<em>#!/usr/bin/env sh
+exec guile -e <span class="mysyn">proc</span> -s "$0" "$@"
+!#</em>
+      ...... プログラム ......
+</pre>
+例えば，上で示した具体例は次のようにすることもできます．
+<pre class="list">
+<em>#!/usr/bin/env sh
+exec guile -e main -s "$0" "$@"
+!#</em>
+;; entry-point.scm
+(define (main args)
+  (for-each hello-somebody (cdr args)))
+
+(define (hello-somebody name)
+  (display (string-append "*** Hello," name "!!! ***"))
+  (newline))
+</pre>
+<pre class="shell">
+$ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr; 
+      ...... コンパイルメッセージ ......
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+</pre>
+<li>
+この形式では，2行目はguileコマンドではなくシェル（sh）によって処理されるので，2行目の掟を気にする必要はありません．この点で安全な方法だと思います．さらに，これはより多くの実行環境で利用可能な形式だと思います．でも，リファレンスマニュアルは全力をあげてメタスイッチを説明していて，上記の形式は一つの具体例を示すことだけに留めています（しかもちょっと分かりにくい）．上記の形式はLinuxの一般的な事項に属することなので，みんな分かってるだろうということなのかも知れません．
+</ul>
+</section>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul>
+<li> <span class="date0"></span>：初出
+</ul>
+</section>
+
+
+</div> <!-- END of main division -->
+</body>
+</html>
+
+
