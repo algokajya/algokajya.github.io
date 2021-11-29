@@ -145,7 +145,8 @@ ol li {
 
 pre.list { 
     line-height: 130%;
-    background-color: #f8f8e0; /* #f0f0f0; */ /* #f0fff0; */
+/*    background-color: #f8f8e0; */
+    background-color: #f2efe4;
     font-family: monospace;
     padding-top: 5px; 
     padding-bottom: 5px; 
