@@ -6,6 +6,7 @@
    <link rel="stylesheet" type="text/css" href="gi.css">
    <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
    <style>
+      .date1:before{ content: "2020.12.4"; }
       .date0:before{ content: "2020.11.26"; }
    </style>
 </head>
@@ -29,7 +30,7 @@
 <div class="titlename">
 Guile入門／スクリプトによるプログラムの実行
 </div>
-<div class="date"><span class="date0"></span></div>
+<div class="date"><span class="date1"></span></div>
 </div>
 
 
@@ -169,11 +170,10 @@ In procedure skip_block_comment: /home/user/tmp/./hello.scm:12:1: unterminated `
 </pre>
 
 <li>
-（注意）ブロックコメントに関して，リファレンスマニュアルの4.3.1節に次のような説明文があります．
-   <ul>
-   <li>
+（注意）ブロックコメントに関して，リファレンスマニュアル（4.3.1節）に次のような説明文があります．
+   <blockquote>
    The second line of the script should contain only the characters '!#' ...
-   </ul>
+   </blockquote>
 2行目は<em>!#</em>以外を記述しないほうがよいでしょう．
 <li>
 （参考）#!と!#で囲まれた部分はguileコマンドにとってコメントにすぎないので，スクリプトファイルをguileコマンドを使って普通に実行できます．例えば：
@@ -265,7 +265,7 @@ $ <span class="mycmd">./hello.scm</span> &crarr;
 </pre>
 main手続きは，文字列からなるリスト（args）を受け取って，そのリストの各文字列に対してhello-somebody手続きを適用します．hello-somebody手続きは，文字列（name）を受け取って，その文字列の前後に"*** Hello,"と"!!! ***"を連結（string-append）して表示（display）して改行（newline）します．
 <li>
-main手続きをエントリーポイントを指定するためには，この資料の冒頭で示した2行の代わりに，次の3行を追加します．
+main手続きをエントリーポイントとして指定するためには，この資料の冒頭で示した2行の代わりに，次の3行を追加します．
 <pre class="list">
 <em>#!/usr/bin/guile \
 -e main -s
@@ -294,14 +294,14 @@ $ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr;
 <span class="hdln" id="ep-meta-switch">メタスイッチ</span>
 <ul>
 <li>
-上で追加したシェバン行の最後にある<em>バックスラッシュ</em>（\）を<em>メタスイッチ</em>と呼びます．一般的に，スクリプト内でguileコマンドに複数の要素（スイッチやエントリーポイントなど）からなるコマンドライン引数を指定するときにはメタスイッチを使った次の形式を使用します．
+上で追加したシェバン行の最後にある<em>バックスラッシュ</em>（\）を<em>メタスイッチ</em>と呼びます．一般的に，スクリプト内でguileコマンドに複数の構成要素（スイッチやエントリーポイントなど）からなるコマンドライン引数を指定するときにはメタスイッチを使った次の形式を使用します．
 <pre class="list">
 <em>#!/usr/bin/guile \
-   ... コマンドライン引数 ...
+<span class="mysyn">arg</span> ...
 !#</em>
       ...... プログラム ......
 </pre>
-例えば，エントリーポイント（<span class="mysyn">proc</span>）を指定するときには次の形式を使用します．
+ここで，<span class="mysyn">arg</span>はコマンドライン引数の構成要素を表しています．例えば，エントリーポイント（<span class="mysyn">proc</span>）を指定するときには次の形式を使用します．
 <pre class="list">
 <em>#!/usr/bin/guile \
 -e <span class="mysyn">proc</span> -s
@@ -315,7 +315,7 @@ $ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr;
 <span class="hdln" id="ep-rules">2行目の掟</span>
 <ul>
 <li>
-メタスイッチを使ったときの2行目（ ... コマンドライン引数 ... ）は次の掟（条件）を守らなければなりません．
+メタスイッチを使ったときの2行目（<span class="mysyn">arg</span> ...）は次の掟（条件）を守らなければなりません．
    <ul>
    <li>
    行の先頭に空白やタブ文字を入れてはいけません．
@@ -334,7 +334,7 @@ $ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr;
 (define (main args)
   (write args) (newline))
 </pre>
-例えば，上のスクリプト（secondline.scm）は2行目のmainのあとに2文字以上の空白を入れているのですが，これを実行すると次のようなエラーが発生します．
+例えば，上のスクリプト（secondline.scm）は2行目のmainのあとに2文字以上の空白を入れているのですが，これを実行すると以下のようなエラーが発生します．
 <pre class="shell">
 $ <span class="mycmd">./secondline.scm</span> &crarr; 
       ...... コンパイルメッセージ ......
@@ -346,13 +346,17 @@ In procedure fport_read: ディレクトリです</span>
 </pre>
 とても分かりにくいエラーなので注意が必要です．
 <li>
-リファレンスマニュアルの4.3.2節によると，2行目に指定したスイッチや引数の区切りは空白1文字（きっかり1文字）にしているのだそうです．そのため，先頭に空白があったり2文字以上の連続した空白があったりすると，空の文字列""が引数として指定されたと判断し，実行時のコマンドライン引数に加えるそうです．先頭に空白があるときには，その空白の直前に空文字列が指定されていると判断し，空白2文字があるときには，それらの空白の間に空文字列が指定されていると判断するようです．guileコマンドは，この空文字列をプログラムファイルの名前として処理します．でも，そんなファイルは有り得ないのでエラーが発生するのです．
+リファレンスマニュアル（4.3.2節）によると，2行目に指定したスイッチや引数の区切りは空白1文字（きっかり1文字）にしているのだそうです．そのため，先頭に空白があったり2文字以上の連続した空白があったりすると，空の文字列""が引数として指定されたと判断し，実行時のコマンドライン引数に加えるそうです．先頭に空白があるときには，その空白の直前に空文字列が指定されていると判断し，空白2文字があるときには，それらの空白の間に空文字列が指定されていると判断するようです．guileコマンドは，この空文字列をプログラムファイルの名前として処理します．でも，そんなファイルは有り得ないのでエラーが発生するのです．
 <li>
-例えば，上の具体例は次のように処理されます．まず，Linuxによってシェバン行が処理され，次のguileコマンドに変換されて実行されます．ここで，""という空の文字列がコマンドライン引数に加えられていることに注意して下さい．
+例えば，上の具体例は次のように処理されます．まず，Linuxによってシェバン行が処理され，次のguileコマンドに変換されて実行されます．ただし，以下の'\'は，ターミナル（シェル）において，バックスラッシュを通常文字として処理するためのものです．
+<pre class="shell">
+$ <span class="mycmd">/usr/bin/guile '\' /home/user/secondline.scm</span> &crarr;
+</pre>
+次に，guileコマンドは，第1引数としてメタスイッチが指定されたとき，その直後に指定されているファイル内の2行目を解析して，guileコマンド自身を以下のようなコマンドに変更します．ここで，""という空の文字列がコマンドライン引数に加えられていることに注意して下さい．
 <pre class="shell">
 $ <span class="mycmd">/usr/bin/guile -e main "" -s scondline.scm</span> &crarr;
 </pre>
-次に，guileコマンドは，空の文字列（""）をプログラムファイルの名前として処理しようとします（注：-sスイッチが省略されたものと見なして，空文字列をプログラムファイル名として処理します）．上の例では/home/user/tmpというディレクトリの上で作業しているので，"/home/user/tmp/"（注：最後のスラッシュのあとに空文字列が付加されていることに注意）というファイルを処理しようとします．でも，それはディレクトリであってプログラムファイルではありません．そのため，上で示しているようなエラーが発生します．
+変更後のguileコマンドは，空の文字列（""）をプログラムファイルの名前として処理しようとします（注：-sスイッチが省略されたものと見なして，空文字列をプログラムファイル名として処理します）．上の例では/home/user/tmpというディレクトリの上で作業しているので，"/home/user/tmp/"（注：最後のスラッシュのあとに空文字列が付加されていることに注意）というファイルを処理しようとします．でも，それはディレクトリであってプログラムファイルではありません．そのため，上で示しているようなエラーが発生します．
 
 <li>
 以上の処理は（Linuxではなく）guileコマンドが行っています．なんでそんなことになっているのか理由は不明です．空白を読み飛ばせばいいだけじゃないか，手抜きじゃないかと疑いたくなりますが，何か大人の事情があるのでしょう（その事情は筆者には分かりません）．
@@ -400,6 +404,7 @@ $ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr;
 <section id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul>
+<li> <span class="date1"></span>：「2行目の掟」の説明に誤りがあったので訂正．
 <li> <span class="date0"></span>：初出
 </ul>
 </section>
@@ -408,5 +413,3 @@ $ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr;
 </div> <!-- END of main division -->
 </body>
 </html>
-
-

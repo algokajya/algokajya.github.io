@@ -190,7 +190,8 @@ blockquote {
     padding: 0.4em 0.5em;   /*文字の上下 左右の余白*/
     /* color: #494949;  */        /*文字色*/
     /* background: #ededfa; */    /*背景色*/
-    border-left: solid 10px #f0d0d0;
+    /* border-left: solid 10px #f0d0d0; */
+    border-left: solid 5px #d0d0d0;
     margin-left:3%;
     margin-right:3%;
     width: 90%; 
@@ -216,12 +217,6 @@ hr {
 mycmd { color: blue; }
 span.mycmd { color: blue; }
 
-mytt { font-family: monospace; }
-mykw { 
-    font-weight: bold;
-    color: darkviolet; 
-}
-
 myred { color: red; }
 span.myred { color: red; }
 
@@ -235,3 +230,16 @@ span.mysyn {
 }
 span.mysyn:before { content: "<"; }
 span.mysyn:after { content: ">"; }
+
+mytt { font-family: monospace; }
+span.mytt { font-family: monospace; }
+
+mykw { 
+    font-weight: bold;
+    color: darkviolet; 
+}
+span.mykw { 
+    font-weight: bold;
+    color: darkviolet; 
+}
+
