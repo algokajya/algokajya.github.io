@@ -308,9 +308,6 @@ hr {
 mycmd { color: blue; }
 span.mycmd { color: blue; }
 
-myred { color: red; }
-span.myred { color: red; }
-
 mysyn {
     font-style: italic;
 }
@@ -321,6 +318,18 @@ span.mysyn {
 }
 span.mysyn:before { content: "<"; }
 span.mysyn:after { content: ">"; }
+
+
+myrx {
+    /* font-weight: bold;  */
+    /* color: #00a00a; */
+    /* color: #0a8aed;*/
+    color: #00a00a; 
+}
+span.myrx { color: #00a00a; }
+
+myred { color: red; }
+span.myred { color: red; }
 
 mytt { font-family: monospace; }
 span.mytt { font-family: monospace; }
@@ -340,11 +349,4 @@ mybksl {
 mybksl:before { content: "\\"; }
 span.mybksl {
     font-family: monospace;
-}
-
-myrx {
-    /* font-weight: bold;  */
-    /* color: #00a00a; */
-    /* color: #0a8aed;*/
-    color: #00a00a; 
 }

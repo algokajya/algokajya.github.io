@@ -313,7 +313,7 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
 <li>
 正規表現の中で使用する文字（例えば，英字のaなど）は，単なる文字を表しているのではなく，その文字からなる集合（例えば，$\{$a$\}$など）を表しています．プログラミングに比喩して言うと，正規表現の中で使用する文字と文字列データの中で使用する文字はデータ型が異なるのです．そのため，オートマトン理論や形式言語理論の教科書では，データ型の違いを明記するために，正規表現の中の文字を太字で示したりしています．
 <li>
-このノートでは，<strong>正規表現を色を変えて示します</strong>．例えば，abcという文字列を正規表現として使うときには <myrx>abc</myrx> といったように色を変えます．
+このノートでは，<strong>正規表現を色を変えて示します</strong>．例えば，abcという文字列を正規表現として使うときには <span class="myrx">abc</span> といったように色を変えます．
 </ul>
 
 <p></p>
@@ -359,20 +359,20 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
 <li>
 参考のために，簡単な実行例を示します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "^" "#word#")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "^" "#word#")</span> &crarr;
 $1 = #("#word#" (0 . 0))
-guile> <mycmd>(string-match "$" "#word#")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "$" "#word#")</span> &crarr;
 $2 = #("#word#" (6 . 6))
-guile> <mycmd>(string-match "\\b" "#word#")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "\\b" "#word#")</span> &crarr;
 $3 = #("#word#" (1 . 1))
 guile> 
 </pre>
-1番目の実行例は，「文字列の先頭にマッチする」ことを意味する正規表現 <myrx>^</myrx> を文字列 "#word#" にマッチ（string-match）させています．その結果として0番目の空文字列（$\varepsilon_{(0)}$）がマッチしたことを示す (0 . 0) が返ってきています．2番目の実行例は「文字列の末尾にマッチする」ことを意味する正規表現 <myrx>$</myrx> を同じ文字列にマッチ（string-match）させていて，その結果として6番目の空文字列（$\varepsilon_{(6)}$）がマッチしたことを示す (6 . 6) が返ってきています．3番目の実行例は「単語の境界にマッチする」ことを意味する正規表現 <myrx>\b</myrx> を同じ文字列にマッチ（string-match）させています（注：バックスラッシュが2重になっているのは，Guileのreaderにバックスラッシュをエスケープさせるためです）．この場合，"word"が単語として認識されていて，その直前にある空文字列（$\varepsilon_{(1)}$）がマッチしたことを示す (1 . 1) が返ってきています．
+1番目の実行例は，「文字列の先頭にマッチする」ことを意味する正規表現 <span class="myrx">^</span> を文字列 "#word#" にマッチ（string-match）させています．その結果として0番目の空文字列（$\varepsilon_{(0)}$）がマッチしたことを示す (0 . 0) が返ってきています．2番目の実行例は「文字列の末尾にマッチする」ことを意味する正規表現 <span class="myrx">$</span> を同じ文字列にマッチ（string-match）させていて，その結果として6番目の空文字列（$\varepsilon_{(6)}$）がマッチしたことを示す (6 . 6) が返ってきています．3番目の実行例は「単語の境界にマッチする」ことを意味する正規表現 <span class="myrx">\b</span> を同じ文字列にマッチ（string-match）させています（注：バックスラッシュが2重になっているのは，Guileのreaderにバックスラッシュをエスケープさせるためです）．この場合，"word"が単語として認識されていて，その直前にある空文字列（$\varepsilon_{(1)}$）がマッチしたことを示す (1 . 1) が返ってきています．
 </ul>
-
+</section>
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section id="POSIX.ERE">
@@ -388,69 +388,69 @@ POSIX.EREは，文字を通常文字（ordinary character）と特殊文字（sp
 </tr>
 <tr>
    <td>ハット記号</td>
-   <td><myrx>^</myrx></td>
+   <td><span class="myrx">^</span></td>
    <td>文字列の先頭にマッチする．</td>
 </tr>
 <tr>
    <td>ピリオド</td>
-   <td><myrx>.</myrx></td>
+   <td><span class="myrx">.</span></td>
    <td>任意の1文字にマッチする．</td>
 </tr>
 <tr>
    <td>左角括弧</td>
-   <td><myrx>[</myrx></td>
+   <td><span class="myrx">[</span></td>
    <td>ブラケット表現を開始する．</td>
 </tr>
 <tr>
    <td>ドル記号</td>
-   <td><myrx>$</myrx></td>
+   <td><span class="myrx">$</span></td>
    <td>文字列の末尾にマッチする．</td>
 </tr>
 <tr>
    <td>左丸括弧</td>
-   <td><myrx>(</myrx></td>
+   <td><span class="myrx">(</span></td>
    <td>グループ化（演算の結合順序を指定）を開始する．</td>
 </tr>
 <tr>
    <td>右丸括弧</td>
-   <td><myrx>)</myrx></td>
+   <td><span class="myrx">)</span></td>
    <td>グループ化（演算の結合順序を指定）を終了する．</td>
 </tr>
 <tr>
    <td>縦棒</td>
-   <td><myrx>|</myrx></td>
+   <td><span class="myrx">|</span></td>
    <td>選択する（和集合を作る）．</td>
 </tr>
 <tr>
    <td>星印</td>
-   <td><myrx>*</myrx></td>
+   <td><span class="myrx">*</span></td>
    <td>0回以上の繰り返しを指定する．</td>
 </tr>
 <tr>
    <td>プラス記号</td>
-   <td><myrx>+</myrx></td>
+   <td><span class="myrx">+</span></td>
    <td>1回以上の繰り返しを指定する．</td>
 </tr>
 <tr>
    <td>疑問符</td>
-   <td><myrx>?</myrx></td>
+   <td><span class="myrx">?</span></td>
    <td>0回または1回を指定する．</td>
 </tr>
 <tr>
    <td>左中括弧</td>
-   <td><myrx>{</myrx></td>
+   <td><span class="myrx">{</span></td>
    <td>有限回の繰り返しを指定する．</td>
 </tr>
 <tr>
    <td>バックスラッシュ</td>
-   <td><myrx>\</myrx></td>
+   <td><span class="myrx">\</span></td>
    <td>クォート（エスケープ）する．</td>
 </tr>
 </table>
 <li>
 <em>クォート</em>（または，<em>エスケープ</em>）するとは，特殊文字を通常文字に変えることを言います．特殊文字以外の通常文字をクォートしたときの意味については <a class="noline" href="#on-quoted-characters">クォート（エスケープ）について</a> を参照して下さい．
 <li>
-<em>右角括弧</em>（<myrx>]</myrx>）や<em>右中括弧</em>（<myrx>}</myrx>）は特殊文字ではないことに注意して下さい．<a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>も
+<em>右角括弧</em>（<span class="myrx">]</span>）や<em>右中括弧</em>（<span class="myrx">}</span>）は特殊文字ではないことに注意して下さい．<a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>も
 <a class="noline" href="
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a>も，これらを通常文字として分類しています．
@@ -463,7 +463,7 @@ https://manpages.debian.org/testing/manpages/regex.7.en.html
 <li>
 POSIX.EREは，一般に
 <div class="dstyle">
-   $E_{11}E_{12}~\ldots~E_{1m_1}$<myrx>|</myrx>$E_{21}E_{22}~\ldots~E_{2m_2}$<myrx>|</myrx> $\ldots\ldots$ <myrx>|</myrx>$E_{n1}E_{n2}~\ldots~E_{nm_n}$ &nbsp;&nbsp; （$n \geq 1$，$m_i \geq 1$）
+   $E_{11}E_{12}~\ldots~E_{1m_1}$<span class="myrx">|</span>$E_{21}E_{22}~\ldots~E_{2m_2}$<span class="myrx">|</span> $\ldots\ldots$ <span class="myrx">|</span>$E_{n1}E_{n2}~\ldots~E_{nm_n}$ &nbsp;&nbsp; （$n \geq 1$，$m_i \geq 1$）
 </div>
 という形式をしていて，これは
 <div class="ddstyle">
@@ -495,67 +495,67 @@ POSIX.EREは，一般に
 </tr>
 <tr>
    <td>クォートされた特殊文字</td>
-   <td><myrx>\</myrx>$c$</td>
+   <td><span class="myrx">\</span>$c$</td>
    <td>$\{c\}$</td>
    <td>$c \in \Sigma_{s}$</td>
 </tr>
 <tr>
    <td>ピリオド</td>
-   <td><myrx>.</myrx></td>
+   <td><span class="myrx">.</span></td>
    <td>$\Sigma$</td>
    <td></td>
 </tr>
 <tr>
    <td>ハット記号</td>
-   <td><myrx>^</myrx></td>
+   <td><span class="myrx">^</span></td>
    <td>文字列の先頭にある空文字列の集合 $\{\varepsilon\}$</td>
    <td></td>
 </tr>
 <tr>
    <td>ドル記号</td>
-   <td><myrx>$</myrx></td>
+   <td><span class="myrx">$</span></td>
    <td>文字列の末尾にある空文字列の集合 $\{\varepsilon\}$</td>
    <td></td>
 </tr>
 <tr>
    <td>グループ化</td>
-   <td><myrx>(</myrx>$\alpha$<myrx>)</myrx></td>
+   <td><span class="myrx">(</span>$\alpha$<span class="myrx">)</span></td>
    <td>$L(\alpha)$</td>
    <td></td>
 </tr>
 <tr>
    <td>0回以上の繰り返し</td>
-   <td>$E$<myrx>*</myrx></td>
+   <td>$E$<span class="myrx">*</span></td>
    <td>$L(E)^*$</td>
    <td></td>
 </tr>
 <tr>
    <td>1回以上の繰り返し</td>
-   <td>$E$<myrx>+</myrx></td>
+   <td>$E$<span class="myrx">+</span></td>
    <td>$L(E)^+$</td>
    <td></td>
 </tr>
 <tr>
    <td>0回または1回</td>
-   <td>$E$<myrx>?</myrx></td>
+   <td>$E$<span class="myrx">?</span></td>
    <td>$\{\varepsilon\} \cup L(E)$</td>
    <td></td>
 </tr>
 <tr>
    <td>ちょうど$m$回の繰り返し</td>
-   <td>$E$<myrx>{</myrx>$m$<myrx>}</myrx></td>
+   <td>$E$<span class="myrx">{</span>$m$<span class="myrx">}</span></td>
    <td>$L(E)^m$</td>
    <td>$m \geq 0$</td>
 </tr>
 <tr>
    <td>$m$回以上の繰り返し</td>
-   <td>$E$<myrx>{</myrx>$m$<myrx>,}</myrx></td>
+   <td>$E$<span class="myrx">{</span>$m$<span class="myrx">,}</span></td>
    <td>$L(E)^m \cup L(E)^{m+1} \cup L(E)^{m+2} \ldots$</td>
    <td>$m \geq 0$</td>
 </tr>
 <tr>
    <td>$m$回以上$n$回以下の繰り返し</td>
-   <td>$E$<myrx>{</myrx>$m$<myrx>,</myrx>$n$<myrx>}</myrx></td>
+   <td>$E$<span class="myrx">{</span>$m$<span class="myrx">,</span>$n$<span class="myrx">}</span></td>
    <td>$L(E)^m \cup L(E)^{m+1} \cup \ldots \cup L(E)^n$</td>
    <td>$m \leq n$</td>
 </tr>
@@ -572,7 +572,7 @@ POSIX.EREは，一般に
 https://manpages.debian.org/unstable/manpages/int16_t.3.en.html
 ">int16_t</a>の最大値）に設定されています．
 <li>
-繰り返し表現の適用対象が任意のPOSIX.ERE（$\alpha$）ではなく上記の表に示した表現（$E$）に制限されているのは，繰り返し演算が選択演算（<myrx>|</myrx>）や連結演算（$\cdot$）よりも優先順位が高いためです．<strong>選択演算や連結演算を含む正規表現を繰り返したいときには丸括弧で囲んでグループ化しなければなりません</strong>．
+繰り返し表現の適用対象が任意のPOSIX.ERE（$\alpha$）ではなく上記の表に示した表現（$E$）に制限されているのは，繰り返し演算が選択演算（<span class="myrx">|</span>）や連結演算（$\cdot$）よりも優先順位が高いためです．<strong>選択演算や連結演算を含む正規表現を繰り返したいときには丸括弧で囲んでグループ化しなければなりません</strong>．
 <li> 
 <em>各種演算の優先順位</em>は以下のように定義されています．上のほうが順位が高く，下のほうが低くなります．
 
@@ -583,32 +583,32 @@ https://manpages.debian.org/unstable/manpages/int16_t.3.en.html
 <tr>
    <td>照合記号など</td>
    <td>
-   <myrx>[.</myrx> ... <myrx>.]</myrx>，
-   <myrx>[=</myrx> ... <myrx>=]</myrx>，
-   <myrx>[:</myrx> ... <myrx>:]</myrx>
+   <span class="myrx">[.</span> ... <span class="myrx">.]</span>，
+   <span class="myrx">[=</span> ... <span class="myrx">=]</span>，
+   <span class="myrx">[:</span> ... <span class="myrx">:]</span>
    </td>
 </tr>
 <tr>
    <td>クォート（エスケープ）</td>
-   <td><myrx>\</myrx>$c$</td>
+   <td><span class="myrx">\</span>$c$</td>
 </tr>
 <tr>
    <td>ブラケット表現</td>
-   <td> <myrx>[</myrx> ... <myrx>]</myrx></td>
+   <td> <span class="myrx">[</span> ... <span class="myrx">]</span></td>
 </tr>
 <tr>
    <td>グループ化</td>
-   <td><myrx>(</myrx> ... <myrx>)</myrx></td>
+   <td><span class="myrx">(</span> ... <span class="myrx">)</span></td>
 </tr>
 <tr>
    <td>繰り返し指定</td>
    <td>
-   <myrx>*</myrx>，
-   <myrx>+</myrx>，
-   <myrx>?</myrx>，
-   <myrx>{</myrx>$m$<myrx>}</myrx>
-   <myrx>{</myrx>$m$,<myrx>}</myrx>
-   <myrx>{</myrx>$m$,$n$<myrx>}</myrx>
+   <span class="myrx">*</span>，
+   <span class="myrx">+</span>，
+   <span class="myrx">?</span>，
+   <span class="myrx">{</span>$m$<span class="myrx">}</span>
+   <span class="myrx">{</span>$m$,<span class="myrx">}</span>
+   <span class="myrx">{</span>$m$,$n$<span class="myrx">}</span>
    </td>
 </tr>
 <tr>
@@ -618,13 +618,13 @@ https://manpages.debian.org/unstable/manpages/int16_t.3.en.html
 <tr>
    <td>先頭と末尾</td>
    <td>
-   <myrx>^</myrx>，
-   <myrx>$</myrx>
+   <span class="myrx">^</span>，
+   <span class="myrx">$</span>
    </td>
 </tr>
 <tr>
    <td>選択（和集合）</td>
-   <td><myrx>|</myrx></td>
+   <td><span class="myrx">|</span></td>
 </tr>
 </table>
 <li>
@@ -632,20 +632,20 @@ https://manpages.debian.org/unstable/manpages/int16_t.3.en.html
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a>は何も述べていません．Guileでは問題なく使えるようです．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "(ab){3}{1,2}" "abab")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "abab")</span> &crarr;
 $1 = #f
-guile> <mycmd>(string-match "(ab){3}{1,2}" "ababab")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "ababab")</span> &crarr;
 $2 = #("ababab" (0 . 6) (4 . 6))
-guile> <mycmd>(string-match "(ab){3}{1,2}" "ababababab")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "ababababab")</span> &crarr;
 $3 = #("ababababab" (0 . 6) (4 . 6))
-guile> <mycmd>(string-match "(ab){3}{1,2}" "abababababab")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "abababababab")</span> &crarr;
 $4 = #("abababababab" (0 . 12) (10 . 12))
 guile> 
 </pre>
-この実行例では，正規表現 <myrx>(ab){3}{1,2}</myrx> を4つの文字列にマッチ（string-match）させています．この正規表現は，数学的には
+この実行例では，正規表現 <span class="myrx">(ab){3}{1,2}</span> を4つの文字列にマッチ（string-match）させています．この正規表現は，数学的には
    <div class="ddstyle">
       $\{$ ((ab)$^3$)$^1$ $,$ ((ab)$^3$)$^2$ $\}$ 
    $=$ $\{$ (ab)$^3$ $,$ (ab)$^6$ $\}$ 
@@ -655,7 +655,7 @@ guile>
 "(ab)$^3$"$=$"ababab"や
 "(ab)$^6$"$=$"abababababab"といった部分列がマッチするはずです．上の実行結果を見るとその通りになっています．1番目の文字列は"(ab)$^2$"なのでマッチする部分列がありません．2番目の文字列は"(ab)$^3$"なので文字列全体がマッチしています．3番目の文字列は"(ab)$^5$"なので，（最左最長原則に則って）0文字目〜5文字目までの部分列"(ab)$^3$"がマッチしています．4番目の文字列は"(ab)$^6$"なので，（最左最長原則に則って）文字列全体がマッチしています．
 <li>
-POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット記号（^）を途中に指定するような表現も構文的に許しています．しかし，文字列の途中に先頭があるといった文字列はあり得ないので，そのような正規表現はどんな文字列ともマッチすることはありません．ドル記号（<span>$</span>）についても同様です．
+POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字としてのハット記号（^）を途中に指定するような表現も構文的に許しています．しかし，文字列の途中に先頭があるといった文字列はあり得ないので，そのような正規表現はどんな文字列ともマッチすることはありません．ドル記号（<span>$</span>）についても同様です．
 </ul>
 
 <p></p>
@@ -668,42 +668,42 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
 ;; --------------------------------------------------------------------------
 ;; 拡張正規表現（POSIX extended regular expression）：文字列の集合を表現する．
 ;; --------------------------------------------------------------------------
-<mysyn>extended_reg_exp</mysyn>   ::= <mysyn>ERE_branch</mysyn>  
-                      |  <mysyn>extended_reg_exp</mysyn> '|' <mysyn>ERE_branch</mysyn>
+<span class="mysyn">extended_reg_exp</span>   ::= <span class="mysyn">ERE_branch</span>  
+                      |  <span class="mysyn">extended_reg_exp</span> '|' <span class="mysyn">ERE_branch</span>
 
-<mysyn>ERE_branch</mysyn>         ::= <mysyn>ERE_expression</mysyn>  
-                      |  <mysyn>ERE_branch</mysyn> <mysyn>ERE_expression</mysyn>
+<span class="mysyn">ERE_branch</span>         ::= <span class="mysyn">ERE_expression</span>  
+                      |  <span class="mysyn">ERE_branch</span> <span class="mysyn">ERE_expression</span>
 
-<mysyn>ERE_expression</mysyn>     ::= <mysyn>one_char_or_coll_elem_ERE</mysyn>
+<span class="mysyn">ERE_expression</span>     ::= <span class="mysyn">one_char_or_coll_elem_ERE</span>
                       |  '^'
                       |  '<span class="mybksl">$</span>'
-                      |  '(' <mysyn>extended_reg_exp</mysyn> ')'
-                      |  <mysyn>ERE_expression</mysyn> <mysyn>ERE_dupl_symbol</mysyn>
+                      |  '(' <span class="mysyn">extended_reg_exp</span> ')'
+                      |  <span class="mysyn">ERE_expression</span> <span class="mysyn">ERE_dupl_symbol</span>
 
-<mysyn>one_char_or_coll_elem_ERE</mysyn> 
-                     ::= <mysyn>ORD_CHAR</mysyn>
-                      |  <mysyn>QUOTED_CHAR</mysyn>
+<span class="mysyn">one_char_or_coll_elem_ERE</span> 
+                     ::= <span class="mysyn">ORD_CHAR</span>
+                      |  <span class="mysyn">QUOTED_CHAR</span>
                       |  '.' 
-                      |  <mysyn>bracket_expression</mysyn>
+                      |  <span class="mysyn">bracket_expression</span>
 
-<mysyn>ERE_dupl_symbol</mysyn>    ::= '*'
+<span class="mysyn">ERE_dupl_symbol</span>    ::= '*'
                       |  '+'
                       |  '?'
-                      |  '{' <mysyn>DUP_COUNT</mysyn> '}'
-                      |  '{' <mysyn>DUP_COUNT</mysyn> ',' '}'
-                      |  '{' <mysyn>DUP_COUNT</mysyn> ',' <mysyn>DUP_COUNT</mysyn> '}'
+                      |  '{' <span class="mysyn">DUP_COUNT</span> '}'
+                      |  '{' <span class="mysyn">DUP_COUNT</span> ',' '}'
+                      |  '{' <span class="mysyn">DUP_COUNT</span> ',' <span class="mysyn">DUP_COUNT</span> '}'
 </pre>
 <pre class="grammar">
 ;; --------------------------------------------------------------
 ;; 通常文字（特殊文字以外の文字）
 ;; --------------------------------------------------------------
-<mysyn>ORD_CHAR</mysyn>   ::= 下記の特殊文字以外の文字
+<span class="mysyn">ORD_CHAR</span>   ::= 下記の特殊文字以外の文字
 </pre>
 <pre class="grammar">
 ;; --------------------------------------------------------------
 ;; 特殊文字
 ;; --------------------------------------------------------------
-<mysyn>SPEC_CHAR</mysyn>  ::= '^'         ;; 文字列の先頭
+<span class="mysyn">SPEC_CHAR</span>  ::= '^'         ;; 文字列の先頭
               |  '.'         ;; 任意の文字
               |  '['         ;; ブラケット表現の開始
               |  '$'         ;; 文字列の末尾
@@ -720,7 +720,7 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
 ;; --------------------------------------------------------------
 ;; クォート（エスケープ）された文字（特殊文字を通常文字にする）
 ;; --------------------------------------------------------------
-<mysyn>QUOTED_CHAR</mysyn>  ::= '\^'  |  '\.'  |  '\['  |  '\$'  |  '\('  |  '\)'
+<span class="mysyn">QUOTED_CHAR</span>  ::= '\^'  |  '\.'  |  '\['  |  '\$'  |  '\('  |  '\)'
                 |  '\|'  |  '\*'  |  '\+'  |  '\?'  |  '\{'  |  '\\'
 </pre>
 <ul>
@@ -731,7 +731,7 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
 ;; --------------------------------------------------------------
 ;; 繰り返し指定の整数
 ;; --------------------------------------------------------------
-<mysyn>DUP_COUNT</mysyn>   ::= 0以上RE_DUP_MAX以下の整数
+<span class="mysyn">DUP_COUNT</span>   ::= 0以上RE_DUP_MAX以下の整数
 </pre>
 <ul>
 <li>
@@ -755,12 +755,12 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
    <th>備考（条件）</th>
 </tr>
 <tr>
-   <td> <myrx>[</myrx>$C_0C_1 \cdots C_n$<myrx>]</myrx></td>
+   <td> <span class="myrx">[</span>$C_0C_1 \cdots C_n$<span class="myrx">]</span></td>
    <td>$L(C_0) \cup L(C_1) \cup \cdots \cup L(C_n)$</td>
-   <td>$C_0\not=$<myrx>^</myrx></td>
+   <td>$C_0\not=$<span class="myrx">^</span></td>
 </tr>
 <tr>
-   <td> <myrx>[^</myrx>$C_1 \cdots C_n$<myrx>]</myrx></td>
+   <td> <span class="myrx">[^</span>$C_1 \cdots C_n$<span class="myrx">]</span></td>
    <td>$\Sigma - (L(C_1) \cup \cdots \cup L(C_n))$</td>
    <td></td>
 </tr>
@@ -768,17 +768,17 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
 ここで：
    <ul>
    <li>
-<strong>左角括弧</strong>（<myrx>[</myrx>）と<strong>右角括弧</strong>（<myrx>]</myrx>）は，それぞれ，<strong>ブラケット表現の開始と終了</strong>を表します．
+<strong>左角括弧</strong>（<span class="myrx">[</span>）と<strong>右角括弧</strong>（<span class="myrx">]</span>）は，それぞれ，<strong>ブラケット表現の開始と終了</strong>を表します．
    <li>
-   <strong>ハット</strong>（<myrx>^</myrx>）は，$\Sigma$を全体集合としたときの<strong>補集合演算</strong>を表します．
-   <li> ブラケット表現の先頭（1番目の形式の$C_0$，または，2番目の形式の$C_1$）以外の$C_i$は右角括弧（<myrx>]</myrx>）ではないとします．
-右角括弧（<myrx>]</myrx>）はブラケット表現の終了を示すためのものなので，ブラケット表現の途中で指定できないのは明らかでしょう．ただし，ブラケット表現の先頭には右角括弧を指定できます（下記の<a class="noline" href="#right-bracket">右角括弧</a>を参照）．
+   <strong>ハット</strong>（<span class="myrx">^</span>）は，$\Sigma$を全体集合としたときの<strong>補集合演算</strong>を表します．
+   <li> ブラケット表現の先頭（1番目の形式の$C_0$，または，2番目の形式の$C_1$）以外の$C_i$は右角括弧（<span class="myrx">]</span>）ではないとします．
+右角括弧（<span class="myrx">]</span>）はブラケット表現の終了を示すためのものなので，ブラケット表現の途中で指定できないのは明らかでしょう．ただし，ブラケット表現の先頭には右角括弧を指定できます（下記の<a class="noline" href="#right-bracket">右角括弧</a>を参照）．
    </ul>
 一番目の形式を<em>matching list expression</em>と呼び，2番目の形式を<em>non-matching list expression</em>と呼びます．
 <li>
 各<em>$C_i$</em>は以下のいずれかを指定します．以下では，<em>$\Sigma_1$</em>$=\Sigma-\{$^$,$-$,$]$\}$とします．ここで，ハット（^），ハイフン（-），右角括弧（]）はブラケット表現における<a class="noline" href="#meta-characters">メタ文字（後述）</a>です．さらに，
 <div class="ddstyle">
-   $\Gamma = \{$<myrx>[.</myrx>$c$<myrx>.]</myrx> $\mid$ $c \in \Sigma \}$
+   $\Gamma = \{$<span class="myrx">[.</span>$c$<span class="myrx">.]</span> $\mid$ $c \in \Sigma \}$
    &nbsp;&nbsp;&nbsp;
    (注：以下に示す<strong>照合記号表現の全体</strong>）
 </div> 
@@ -798,43 +798,43 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
 </tr>
 <tr>
    <td>ハット記号</td>
-   <td><myrx>^</myrx></td>
+   <td><span class="myrx">^</span></td>
    <td>$\{$^$\}$</td>
    <td>下記参照</td>
 </tr>
 <tr>
    <td>ハイフン</td>
-   <td><myrx>-</myrx></td>
+   <td><span class="myrx">-</span></td>
    <td>$\{$-$\}$</td>
    <td>下記参照</td>
 </tr>
 <tr>
    <td>右角括弧</td>
-   <td><myrx>]</myrx></td>
+   <td><span class="myrx">]</span></td>
    <td>$\{$]$\}$</td>
    <td>下記参照</td>
 </tr>
 <tr>
    <td>照合記号表現</td>
-   <td><myrx>[.</myrx>$c$<myrx>.]</myrx></td>
+   <td><span class="myrx">[.</span>$c$<span class="myrx">.]</span></td>
    <td>$\{c\}$</td>
    <td>$c \in \Sigma$</td>
 </tr>
 <tr>
    <td>等価クラス表現</td>
-   <td><myrx>[=</myrx>$c$<myrx>=]</myrx></td>
+   <td><span class="myrx">[=</span>$c$<span class="myrx">=]</span></td>
    <td>$c$と等価な文字の全体</td>
    <td>$c \in \Sigma$</td>
 </tr>
 <tr>
    <td>文字クラス表現</td>
-   <td><myrx>[:alnum:]</myrx> など</td>
+   <td><span class="myrx">[:alnum:]</span> など</td>
    <td>詳細は後述．</td>
    <td></td>
 </tr>
 <tr>
    <td>範囲表現</td>
-   <td>$d$<myrx>-</myrx>$e$</td>
+   <td>$d$<span class="myrx">-</span>$e$</td>
    <td>$d$以上$e$以下の文字の全体</td>
    <td>$d\in \Sigma_1 \cup \{$^$\} \cup \Gamma$<br>
        $e \in \Sigma_1 \cup \{$^$,$-$\} \cup \Gamma$</td>
@@ -846,7 +846,7 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
 <li>
 範囲表現の始点（$d$）に関する条件は，もっとも一般的な場合の条件を示しています．文脈によっては，始点（$d$）にハイフンや右角括弧を指定できます．なお，終点（$e$）に関する条件は文脈に依存して変化することはありません．
 <li>
-ブラケット表現の中で一つの文字を複数回指定してもエラーにはなりません．何回指定しても1回指定したものとして処理されます．例えば，ブラケット表現の<myrx>[aaa]</myrx>は，文字aを3回指定していますが，$\{$a$\}$という文字集合を表します．
+ブラケット表現の中で一つの文字を複数回指定してもエラーにはなりません．何回指定しても1回指定したものとして処理されます．例えば，ブラケット表現の<span class="myrx">[aaa]</span>は，文字aを3回指定していますが，$\{$a$\}$という文字集合を表します．
 </ul>
 
 <p></p>
@@ -864,13 +864,13 @@ POSIX.EREは，<myrx>a^b</myrx> のような，特殊文字としてのハット
       <th>名称</th> <th>文字</th> <th>機能</th>
    </tr>
    <tr>
-      <td>ハット</td>   <td><myrx>^</myrx></td> <td>$\Sigma$を全体集合とした補集合を取る</td>
+      <td>ハット</td>   <td><span class="myrx">^</span></td> <td>$\Sigma$を全体集合とした補集合を取る</td>
    </tr>
    <tr>
-      <td>ハイフン</td> <td><myrx>-</myrx></td> <td>文字の範囲を指定する</td>
+      <td>ハイフン</td> <td><span class="myrx">-</span></td> <td>文字の範囲を指定する</td>
    </tr>
    <tr>
-      <td>右角括弧</td> <td><myrx>]</myrx></td> <td>ブラケット表現を終了する</td>
+      <td>右角括弧</td> <td><span class="myrx">]</span></td> <td>ブラケット表現を終了する</td>
    </tr>
 </table>
 $C_i$がメタ文字のときには，文脈に応じて解釈が変わります．普通の文字として扱われたり，メタ文字の機能を発揮したりします．さらに，以下で説明するように，メタ文字ごとに解釈の仕方が異なります．
@@ -887,19 +887,19 @@ $C_i$がメタ文字のときには，文脈に応じて解釈が変わります
 <li>
 POSIX.EREの<em>照合記号表現</em>は，<strong>ブラケット表現の中で単一の照合要素からなる集合を指定する</strong>ためのものです．次の形式によって表現します．
 <div class="ddstyle">
-   <myrx>[.</myrx>$\,c\,$<myrx>.]</myrx>
+   <span class="myrx">[.</span>$\,c\,$<span class="myrx">.]</span>
 </div>
 ここで：
    <ul>
-   <li> <myrx>[.</myrx>は左角括弧とピリオドの組み合わせです．
-   <li> <myrx>.]</myrx>はピリオドと右角括弧の組み合わせです．
+   <li> <span class="myrx">[.</span>は左角括弧とピリオドの組み合わせです．
+   <li> <span class="myrx">.]</span>はピリオドと右角括弧の組み合わせです．
    <li> $c$は任意の照合要素です（注：すべての文字を指定できます）．
    </ul>
 この表現は照合要素$c$だけからなる集合 $\{c\}$ を定義しています．
 <li>
 <em>照合要素</em>は，文字かまたは文字として機能する文字列のことです（詳細は省略します）．文字以外の照合要素（2文字以上で構成される照合要素）は実行環境が採用している<strong>ロケール（の定義ファイル）において定義されていなければなりません</strong>．ロケールにおいて定義されていないものは使用できません．残念ながら，筆者の環境（Debian 11）のロケール（ja_JP）は，文字以外の照合要素を定義していないため，文字以外の照合要素は使用できません．
 <li>
-一方，照合要素にはメタ文字も含まれるので，<strong>ブラケット表現の中でメタ文字を普通の文字として指定するために利用できます</strong>．つまり，照合記号表現の中ではメタ文字も普通の文字として処理されます．例えば，ブラケット表現 <myrx>[[.^.][.-.][.].]]</myrx> は，メタ文字からなる集合$\{$^$,$-$,$]$\}$を表します．
+一方，照合要素にはメタ文字も含まれるので，<strong>ブラケット表現の中でメタ文字を普通の文字として指定するために利用できます</strong>．つまり，照合記号表現の中ではメタ文字も普通の文字として処理されます．例えば，ブラケット表現 <span class="myrx">[[.^.][.-.][.].]]</span> は，メタ文字からなる集合$\{$^$,$-$,$]$\}$を表します．
 </ul>
 
 <p></p>
@@ -908,12 +908,12 @@ POSIX.EREの<em>照合記号表現</em>は，<strong>ブラケット表現の中
 <li> 
 POSIX.EREの<em>等価クラス表現</em>は，<strong>ブラケット表現の中で等価な照合要素からなる集合を指定する</strong>ためのものです．次の形式によって表現します．
 <div class="ddstyle">
-   <myrx>[=</myrx>$c$<myrx>=]</myrx>
+   <span class="myrx">[=</span>$c$<span class="myrx">=]</span>
 </div>
 ここで：
    <ul>
-   <li> <myrx>[=</myrx>は左角括弧と等号の組み合わせです．
-   <li> <myrx>=]</myrx>は等号と右角括弧の組み合わせです．
+   <li> <span class="myrx">[=</span>は左角括弧と等号の組み合わせです．
+   <li> <span class="myrx">=]</span>は等号と右角括弧の組み合わせです．
    <li> $c$は任意の照合要素です．
    </ul>
 この表現は照合要素$c$と等価な照合要素からなる集合を表しています．
@@ -934,51 +934,51 @@ POSIX.EREは以下に示すような文字集合を用意しています．こ�
    <th>意味</th>
 </tr>
 <tr>
-   <td><myrx>[:alnum:]</myrx></td>
-   <td>$L($<myrx>[:alpha:]</myrx>$) \cup L($<myrx>[:digit:]</myrx>$)$</td>
+   <td><span class="myrx">[:alnum:]</span></td>
+   <td>$L($<span class="myrx">[:alpha:]</span>$) \cup L($<span class="myrx">[:digit:]</span>$)$</td>
 </tr>
 <tr>
-   <td><myrx>[:alpha:]</myrx></td>
+   <td><span class="myrx">[:alpha:]</span></td>
    <td>アルファベットに相当する文字の集合</td>
 </tr>
 <tr>
-   <td><myrx>[:blank:]</myrx></td>
+   <td><span class="myrx">[:blank:]</span></td>
    <td>空白とタブの集合</td>
 </tr>
 <tr>
-   <td><myrx>[:cntrl:]</myrx></td>
+   <td><span class="myrx">[:cntrl:]</span></td>
    <td>制御文字の集合</td>
 </tr>
 <tr>
-   <td><myrx>[:digit:]</myrx></td>
+   <td><span class="myrx">[:digit:]</span></td>
    <td>数字の集合</td>
 </tr>
 <tr>
-   <td><myrx>[:graph:]</myrx></td>
+   <td><span class="myrx">[:graph:]</span></td>
    <td>印字可能な文字の集合（注：空白を除く）</td>
 </tr>
 <tr>
-   <td><myrx>[:lower:]</myrx></td>
+   <td><span class="myrx">[:lower:]</span></td>
    <td>小文字に相当する文字の集合</td>
 </tr>
 <tr>
-   <td><myrx>[:print:]</myrx></td>
+   <td><span class="myrx">[:print:]</span></td>
    <td>印字可能な文字の集合（注：空白を含む）</td>
 </tr>
 <tr>
-   <td><myrx>[:punct:]</myrx></td>
-   <td>$L($<myrx>[:graph:]</myrx>$)-L($<myrx>[:alnum:]</myrx>$)$</td>
+   <td><span class="myrx">[:punct:]</span></td>
+   <td>$L($<span class="myrx">[:graph:]</span>$)-L($<span class="myrx">[:alnum:]</span>$)$</td>
 </tr>
 <tr>
-   <td><myrx>[:space:]</myrx></td>
+   <td><span class="myrx">[:space:]</span></td>
    <td>スペースに相当する文字の集合</td>
 </tr>
 <tr>
-   <td><myrx>[:upper:]</myrx></td>
+   <td><span class="myrx">[:upper:]</span></td>
    <td>大文字に相当する文字の集合</td>
 </tr>
 <tr>
-   <td><myrx>[:xdigit:]</myrx></td>
+   <td><span class="myrx">[:xdigit:]</span></td>
    <td>16進数で使用する文字の集合</td>
 </tr>
 </table>
@@ -988,26 +988,26 @@ POSIX.EREは以下に示すような文字集合を用意しています．こ�
    <li> /usr/share/i18n/locales/i18n_ctype
    <li> /usr/share/i18n/locales/ja_JP
    </ul>
-例えば，文字クラス <myrx>[[:alpha:]]</myrx> は，英字だけでなく，半角のカタカナや全角のひらがな・カタカナ・漢字をすべて含んでいるようです．以下に簡単な実行例を示します．
+例えば，文字クラス <span class="myrx">[[:alpha:]]</span> は，英字だけでなく，半角のカタカナや全角のひらがな・カタカナ・漢字をすべて含んでいるようです．以下に簡単な実行例を示します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "[[:alpha:]]" " ｱ ")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " ｱ ")</span> &crarr;
 $1 = #(" ｱ " (1 . 2))
-guile> <mycmd>(string-match "[[:alpha:]]" " あ ")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " あ ")</span> &crarr;
 $2 = #(" あ " (1 . 2))
-guile> <mycmd>(string-match "[[:alpha:]]" " ア ")</mycmd>
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " ア ")</span>
 $3 = #(" ア " (1 . 2))
-guile> <mycmd>(string-match "[[:alpha:]]" " 亜 ")</mycmd>
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " 亜 ")</span>
 $4 = #(" 亜 " (1 . 2))
-guile> <mycmd>(string-match "[[:alpha:]]" " @ ")</mycmd>
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " @ ")</span>
 $5 = #f
-guile> <mycmd>(string-match "[[:alpha:]]" " ＠ ")</mycmd>
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " ＠ ")</span>
 $6 = #f
 guile> 
 </pre>
-この実行例では，カタカナなどの前後に空白を入れた文字列を文字クラス <myrx>[[:alpha:]]</myrx> にマッチ（string-match）させています．半角のカタカナや全角のひらがな・カタカナ・漢字はマッチしていますが，半角や全角の特殊記号はマッチしていません．
+この実行例では，カタカナなどの前後に空白を入れた文字列を文字クラス <span class="myrx">[[:alpha:]]</span> にマッチ（string-match）させています．半角のカタカナや全角のひらがな・カタカナ・漢字はマッチしていますが，半角や全角の特殊記号はマッチしていません．
 
 <!-- i18_ctype
 [:space:]
@@ -1026,7 +1026,7 @@ guile>
 <span class="hdln" id="range-expression">範囲表現</span>
 <ul>
 <li> 
-<em>範囲表現</em> $d$<myrx>-</myrx>$e$ は$d$以上$e$以下の文字からなる集合を表しています．$d$を範囲表現の<em>始点</em>（starting point）と呼び，$e$を<em>終点</em>（ending point）と呼びます．始点と終点の間はハイフン（マイナス記号）です．
+<em>範囲表現</em> $d$<span class="myrx">-</span>$e$ は$d$以上$e$以下の文字からなる集合を表しています．$d$を範囲表現の<em>始点</em>（starting point）と呼び，$e$を<em>終点</em>（ending point）と呼びます．始点と終点の間はハイフン（マイナス記号）です．
 <li>
 始点（$d$）と終点（$e$）には，メタ文字を除いて，あらゆる文字が指定できます．文脈によってメタ文字も指定できるのですが，その規則については<a class="noline" href="#meta-characters">メタ文字</a>（各メタ文字の解釈）を参照して下さい．
 <li>
@@ -1047,15 +1047,15 @@ guile>
 メタ文字の<a class="noline" href="#hyphen-symbol">ハイフンの解釈</a>のところで述べた規則に則って，そのハイフンが普通の文字として処理されるのかメタ文字として処理されるのかを判断します．そのハイフンがメタ文字として処理されるときに改めて範囲表現として認識するようにします．例えば：
    <ul>
    <li>
-   ブラケット表現<myrx>[--@]</myrx>において，1番目のハイフンは（ブラケット表現の先頭なので）普通の文字として処理され，2番目のハイフンはメタ文字として処理されます．従って，このブラケット表現は'-'以上'@'以下の文字からなる集合を表します．
+   ブラケット表現<span class="myrx">[--@]</span>において，1番目のハイフンは（ブラケット表現の先頭なので）普通の文字として処理され，2番目のハイフンはメタ文字として処理されます．従って，このブラケット表現は'-'以上'@'以下の文字からなる集合を表します．
    <li>
-   ブラケット表現<myrx>[+--@]</myrx>において，1番目のハイフンはメタ文字として処理され，2番目のハイフンは（範囲表現の終点なので）普通の文字として処理されます．従って，このブラケット表現は'+'以上'-'以下の文字と'@'からなる集合を表します．
+   ブラケット表現<span class="myrx">[+--@]</span>において，1番目のハイフンはメタ文字として処理され，2番目のハイフンは（範囲表現の終点なので）普通の文字として処理されます．従って，このブラケット表現は'+'以上'-'以下の文字と'@'からなる集合を表します．
    <li>
-   ブラケット表現<myrx>[+---]</myrx>において，1番目のハイフンはメタ文字として処理され，2番目のハイフンは（範囲表現の終点なので）普通の文字として処理され，3番目のハイフンは（ブラケット表現の末尾なので）普通の文字として処理されます．従って，このブラケット表現は'+'以上'-'以下の文字と'-'からなる集合を表します（注：末尾の'-'は誤りではありませんがムダです）．
+   ブラケット表現<span class="myrx">[+---]</span>において，1番目のハイフンはメタ文字として処理され，2番目のハイフンは（範囲表現の終点なので）普通の文字として処理され，3番目のハイフンは（ブラケット表現の末尾なので）普通の文字として処理されます．従って，このブラケット表現は'+'以上'-'以下の文字と'-'からなる集合を表します（注：末尾の'-'は誤りではありませんがムダです）．
    <li>
-   ブラケット表現<myrx>[a-h-z]</myrx>において，両方のハイフンはメタ文字として処理されます．従って，これらのハイフンは範囲表現 <myrx>a-h</myrx> と <myrx>h-z</myrx> の一部になっています．しかし，これら2つの範囲表現は終点と始点が重なっていて（それぞれが単独の$C_i$として成立していないので）文法的に正しくありません．
+   ブラケット表現<span class="myrx">[a-h-z]</span>において，両方のハイフンはメタ文字として処理されます．従って，これらのハイフンは範囲表現 <span class="myrx">a-h</span> と <span class="myrx">h-z</span> の一部になっています．しかし，これら2つの範囲表現は終点と始点が重なっていて（それぞれが単独の$C_i$として成立していないので）文法的に正しくありません．
    <li>
-   ブラケット表現<myrx>[^-a-h-]</myrx>において，1番目のハイフンは（ブラケット表現の先頭なので）普通の文字として処理され，2番目のハイフンはメタ文字として処理され，3番目のハイフンは（ブラケット表現の末尾なので）普通の文字として処理されます．従って，このブラケット表現は'-'と'a'以上'h'以下の文字と'-'からなる集合の補集合（ただし，全体集合は文字集合$\Sigma$）を表します（注：ハイフンを2度指定することは誤りではありませんがムダです）．
+   ブラケット表現<span class="myrx">[^-a-h-]</span>において，1番目のハイフンは（ブラケット表現の先頭なので）普通の文字として処理され，2番目のハイフンはメタ文字として処理され，3番目のハイフンは（ブラケット表現の末尾なので）普通の文字として処理されます．従って，このブラケット表現は'-'と'a'以上'h'以下の文字と'-'からなる集合の補集合（ただし，全体集合は文字集合$\Sigma$）を表します（注：ハイフンを2度指定することは誤りではありませんがムダです）．
    </ul>
 </ul>
 
@@ -1071,55 +1071,55 @@ guile>
 ;; --------------------------------------------------------------
 ;; ブラケット表現（bracket expression）：文字集合を表現する． 
 ;; --------------------------------------------------------------
-<mysyn>bracket_expression</mysyn> ::= '[' <mysyn>matching_list</mysyn> ']'
-                      |  '[' <mysyn>non-matching_list</mysyn> ']'
+<span class="mysyn">bracket_expression</span> ::= '[' <span class="mysyn">matching_list</span> ']'
+                      |  '[' <span class="mysyn">non-matching_list</span> ']'
 
-<mysyn>matching_list</mysyn>      ::= <mysyn>bracket_list</mysyn>
+<span class="mysyn">matching_list</span>      ::= <span class="mysyn">bracket_list</span>
 
-<mysyn>non-matching_list</mysyn>   ::= '^' <mysyn>bracket_list</mysyn>
+<span class="mysyn">non-matching_list</span>   ::= '^' <span class="mysyn">bracket_list</span>
 
-<mysyn>bracket_list</mysyn>       ::= <mysyn>follow_list</mysyn>
-                      |  <mysyn>follow_list</mysyn> '-'
+<span class="mysyn">bracket_list</span>       ::= <span class="mysyn">follow_list</span>
+                      |  <span class="mysyn">follow_list</span> '-'
 
-<mysyn>follow_list</mysyn>        ::= <mysyn>expression_term</mysyn>
-                      |  <mysyn>follow_list</mysyn> <mysyn>expression_term</mysyn>
+<span class="mysyn">follow_list</span>        ::= <span class="mysyn">expression_term</span>
+                      |  <span class="mysyn">follow_list</span> <span class="mysyn">expression_term</span>
 
-<mysyn>expression_term</mysyn>    ::= <mysyn>single_expression</mysyn>
-                      |  <mysyn>range_expression</mysyn>
+<span class="mysyn">expression_term</span>    ::= <span class="mysyn">single_expression</span>
+                      |  <span class="mysyn">range_expression</span>
 
-<mysyn>single_expression</mysyn>  ::= <mysyn>end_range</mysyn>
-                      |  <mysyn>character_class</mysyn>
-                      |  <mysyn>equivalence_class</mysyn>
+<span class="mysyn">single_expression</span>  ::= <span class="mysyn">end_range</span>
+                      |  <span class="mysyn">character_class</span>
+                      |  <span class="mysyn">equivalence_class</span>
 
-<mysyn>range_expression</mysyn>   ::= <mysyn>start_range</mysyn> <mysyn>end_range</mysyn>
-                      |  <mysyn>start_range</mysyn> '-'
+<span class="mysyn">range_expression</span>   ::= <span class="mysyn">start_range</span> <span class="mysyn">end_range</span>
+                      |  <span class="mysyn">start_range</span> '-'
 
-<mysyn>start_range</mysyn>        ::= <mysyn>end_range</mysyn> '-'
+<span class="mysyn">start_range</span>        ::= <span class="mysyn">end_range</span> '-'
 
-<mysyn>end_range</mysyn>          ::= <mysyn>COLL_ELEM_SINGLE</mysyn>
-                      |  <mysyn>collating_symbol</mysyn>
+<span class="mysyn">end_range</span>          ::= <span class="mysyn">COLL_ELEM_SINGLE</span>
+                      |  <span class="mysyn">collating_symbol</span>
 
-<mysyn>collating_symbol</mysyn>   ::= <mysyn>Open_dot COLL_ELEM_SINGLE</mysyn> <mysyn>Dot_close</mysyn>
-                      |  <mysyn>Open_dot</mysyn> <mysyn>COLL_ELEM_MULTI</mysyn> <mysyn>Dot_close</mysyn>
-                      |  <mysyn>Open_dot</mysyn> <mysyn>META_CHAR</mysyn> <mysyn>Dot_close</mysyn>
+<span class="mysyn">collating_symbol</span>   ::= <span class="mysyn">Open_dot COLL_ELEM_SINGLE</span> <span class="mysyn">Dot_close</span>
+                      |  <span class="mysyn">Open_dot</span> <span class="mysyn">COLL_ELEM_MULTI</span> <span class="mysyn">Dot_close</span>
+                      |  <span class="mysyn">Open_dot</span> <span class="mysyn">META_CHAR</span> <span class="mysyn">Dot_close</span>
 
-<mysyn>equivalence_class</mysyn>  ::= <mysyn>Open_equal</mysyn> <mysyn>COLL_ELEM_SINGLE</mysyn> <mysyn>Equal_close</mysyn>
-                      | <mysyn>Open_equal</mysyn> <mysyn>COLL_ELEM_MULTI</mysyn> <mysyn>Equal_close</mysyn>
+<span class="mysyn">equivalence_class</span>  ::= <span class="mysyn">Open_equal</span> <span class="mysyn">COLL_ELEM_SINGLE</span> <span class="mysyn">Equal_close</span>
+                      | <span class="mysyn">Open_equal</span> <span class="mysyn">COLL_ELEM_MULTI</span> <span class="mysyn">Equal_close</span>
 
-<mysyn>character_class</mysyn>    ::= <mysyn>Open_colon</mysyn> <mysyn>class_name</mysyn> <mysyn>Colon_close</mysyn>
+<span class="mysyn">character_class</span>    ::= <span class="mysyn">Open_colon</span> <span class="mysyn">class_name</span> <span class="mysyn">Colon_close</span>
 </pre>
 <pre class="grammar">
 ;; --------------------------------------------------------------
 ;; 照合要素（collating element）：
 ;; --------------------------------------------------------------
-<mysyn>COLL_ELEM_SINGLE</mysyn>  ::= メタ文字以外の文字（照合要素）
-<mysyn>COLL_ELEM_MULTI</mysyn>   ::= 2文字以上からなる照合要素
+<span class="mysyn">COLL_ELEM_SINGLE</span>  ::= メタ文字以外の文字（照合要素）
+<span class="mysyn">COLL_ELEM_MULTI</span>   ::= 2文字以上からなる照合要素
 </pre>
 <pre class="grammar">
 ;; --------------------------------------------------------------
 ;; メタ文字（meta characters）：
 ;; --------------------------------------------------------------
-<mysyn>META_CHAR</mysyn>   ::= '^'      ;; 文字集合の補集合演算を表す
+<span class="mysyn">META_CHAR</span>   ::= '^'      ;; 文字集合の補集合演算を表す
                |  '-'      ;; 範囲指定
                |  ']'      ;; ブラケット表現の終了
 </pre>
@@ -1185,10 +1185,10 @@ Debian 11の場合，ロケール定義ファイルは次の通りです．
 <li>
 jspaceなどの文字クラスが定義されているのですが，残念ながら，これらは利用できないようです．以下に実行例を示します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "[[:jspace:]]" "　　")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "[[:jspace:]]" "　　")</span> &crarr;
 ice-9/boot-9.scm:1669:16: In procedure raise-exception:
 In procedure make-regexp: 無効な文字クラス名です
 
@@ -1203,12 +1203,12 @@ guile [1]>
 <span class="hdln" id="on-quoted-characters">クォート（エスケープ）について</span>
 <ul>
 <li>
-1〜9の数字をクォートした場合（<myrx>\1</myrx>，<myrx>\2</myrx>，...， <myrx>\9</myrx>），
+1〜9の数字をクォートした場合（<span class="myrx">\1</span>，<span class="myrx">\2</span>，...， <span class="myrx">\9</span>），
 <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>も<a class="noline" href="
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a>もともに，それを前方参照（back-reference）として処理すると定めています．ただし，これは基本正規表現に関する機能として述べられていて，拡張正規表現のところでは何も述べていません．そのため，厳密に仕様に従うのであれば，拡張正規表現において前方参照（back-reference）は使えないことになります．ただ，Guileで試してみると使えます（<a class="noline" href="#on-back-reference">前方参照（back-reference）について</a>を参照して下さい）．
 <li>
-その他の通常文字をクォートした場合（例えば，<myrx>\a</myrx>，<myrx>\b</myrx>，<myrx>\c</myrx>，... など），
+その他の通常文字をクォートした場合（例えば，<span class="myrx">\a</span>，<span class="myrx">\b</span>，<span class="myrx">\c</span>，... など），
 <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>は「その解釈は未定義である」としていて，<a class="noline" href="
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a>は「通常文字として処理される（ただし，実装依存）」としています．一方，Guile 3.0.7のソースコード（regcomp.c内のpeek_token関数）を見ると，下記のクォートされた文字は特別な機能を発揮します．
@@ -1217,57 +1217,57 @@ https://manpages.debian.org/testing/manpages/regex.7.en.html
    <th>クォート文字</th> <th>意味（機能）</th> <th>備考</th>
 </tr>
 <tr>
-   <td><myrx>\b</myrx></td>
+   <td><span class="myrx">\b</span></td>
    <td>単語の境界にマッチする</td>
    <td></td>
 </tr>
 <tr>
-   <td><myrx>\B</myrx></td>
+   <td><span class="myrx">\B</span></td>
    <td>単語の境界以外（の文字境界）にマッチする</td>
    <td></td>
 </tr>
 <tr>
-   <td><myrx>\w</myrx></td>
-   <td><myrx>[_[:alnum:]]</myrx>と等価</td>
-   <td><myrx>_</myrx> はアンダースコア</td>
+   <td><span class="myrx">\w</span></td>
+   <td><span class="myrx">[_[:alnum:]]</span>と等価</td>
+   <td><span class="myrx">_</span> はアンダースコア</td>
 </tr>
 <tr>
-   <td><myrx>\W</myrx></td>
-   <td><myrx>[^_[:alnum:]]</myrx>と等価</td>
+   <td><span class="myrx">\W</span></td>
+   <td><span class="myrx">[^_[:alnum:]]</span>と等価</td>
    <td>同上</td>
 </tr>
 <tr>
-   <td><myrx>\&lt;</myrx></td>
+   <td><span class="myrx">\&lt;</span></td>
    <td>単語の先頭にマッチする</td>
    <td></td>
 </tr>
 <tr>
-   <td><myrx>\&gt;</myrx></td>
+   <td><span class="myrx">\&gt;</span></td>
    <td>単語の末尾にマッチする</td>
    <td></td>
 </tr>
 <tr>
-   <td><myrx>\s</myrx></td>
-   <td><myrx>[[:space:]]</myrx>と等価</td>
+   <td><span class="myrx">\s</span></td>
+   <td><span class="myrx">[[:space:]]</span>と等価</td>
    <td></td>
 </tr>
 <tr>
-   <td><myrx>\S</myrx></td>
-   <td><myrx>[^[:space:]]</myrx>と等価</td>
+   <td><span class="myrx">\S</span></td>
+   <td><span class="myrx">[^[:space:]]</span>と等価</td>
    <td></td>
 </tr>
 <tr>
-   <td><myrx>\`</myrx></td>
+   <td><span class="myrx">\`</span></td>
    <td>文字列の先頭にマッチする</td>
-   <td><myrx>^</myrx>と等価</td>
+   <td><span class="myrx">^</span>と等価</td>
 </tr>
 <tr>
-   <td><myrx>\'</myrx></td>
+   <td><span class="myrx">\'</span></td>
    <td>文字列の末尾にマッチする</td>
-   <td><myrx>$</myrx>と等価</td>
+   <td><span class="myrx">$</span>と等価</td>
 </tr>
 <tr>
-   <td><myrx>\</myrx>$k$</td>
+   <td><span class="myrx">\</span>$k$</td>
    <td>前方参照（back-reference）</td>
    <td>$k=$1$,$2$, \ldots ,$9</td>
 </tr>
@@ -1279,12 +1279,12 @@ https://manpages.debian.org/testing/manpages/regex.7.en.html
 https://manpages.debian.org/unstable/grep/grep.1.en.html
 ">grepのオンラインマニュアル</a>を参照しています．そのgrepのオンラインマニュアルによれば，<em>単語</em>（word）とは，数字，英字，アンダースコアーによって構成される文字列のことを言います．ただ，どのように構成すべきかについは何も述べていません．Guileで試してみると，数字から始まっていても，あるいは，数字列（数字だけの文字列）だったとしても単語として認識するようです．以下は簡単な実行例です．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "\\b" "#123#")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "\\b" "#123#")</span> &crarr;
 $1 = #("#123#" (1 . 1))
-guile> <mycmd>(string-match "\\>" "#123#")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "\\>" "#123#")</span> &crarr;
 $2 = #("#123#" (4 . 4))
 guile> 
 </pre>
@@ -1292,10 +1292,10 @@ guile>
 <li>
 <em>back-reference</em>を「後方参照」と訳すのが一般的なようです．しかし，以下に示すようにGuileのエラーメッセージは「前方参照」と表示します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "\\1" "a")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "\\1" "a")</span> &crarr;
 ice-9/boot-9.scm:1669:16: In procedure raise-exception:
 In procedure make-regexp: 無効な前方参照です
 
@@ -1306,16 +1306,16 @@ guile [1]>
 <li>
 （参考）以下のプログラムは，ASCIIコード表の印字可能な文字を対象に，上記の一覧に示した文字だけが特殊な機能を果たすことを確認するためのものです．下記のtest-quote手続きは，文字コードchcodeを受け取って，そのコードの文字$c$（下記プログラム内のch）に対して以下のような処理を行います．
    <ol>
-   <li> 正規表現 <myrx>\</myrx>$c$（下記プログラム内のregex）を作ります．
+   <li> 正規表現 <span class="myrx">\</span>$c$（下記プログラム内のregex）を作ります．
    <li> 文字コードがchcode$-1$の文字 $c'$，文字$c$，文字コードがchcode$+1$の文字 $c''$の3つの文字からなる文字列 $c'cc''$（下記プログラム内のstr）を作ります．なお，$c'$と$c''$は単に$c$と異なる文字を適当に用意しているだけで，それ以外の意図はありません．
    <li> 上記の文字列（str）を正規表現（regex）にマッチ（string-match）させ，その結果を適当な形式（format）にまとめて返します．
    </ol>
 各文字に対する結果は以下のいずれかの形式でまとめられます．
    <ol type="a">
-   <li> <span style="color:blue">regex:<myrx>\</myrx>$c$&nbsp;&nbsp;str:$c'cc''$&nbsp;&nbspresult:#f </span><br>
-この形式は文字列$c'cc''$が正規表現<myrx>\</myrx>$c$にマッチしなかったことを表します．従って，この場合には，正規表現 <myrx>\</myrx>$c$ が普通の文字として処理されなかったこと（何らかの特別な機能を発揮したこと）を示します．
-   <li> <span style="color:blue">regex:<myrx>\</myrx>$c$&nbsp;&nbsp;str:$c'cc''$&nbsp;&nbsp;result:($s$ . $t$)&nbsp;"$d$"</span><br>
-この形式は文字列$c'cc''$が正規表現 <myrx>\</myrx>$c$ にマッチしたことを示しています．$s$と$t$は，それぞれ，文字列$c'cc''$内のマッチした開始位置と終了位置を表します．さらに，"$d$"はマッチした部分列を表しています（ただし，これは参考情報にすぎません）．従って，正規表現 <myrx>\</myrx>$c$ が普通の文字として処理されるときには，文字列$c'cc''$の文字$c$（先頭から見て1文字目の文字）にマッチするので，その場合には$s=1$かつ$t=2$（かつ$d=c$）となります．逆に言えば，$s\not=1$または$t\not=2$のとき，正規表現 <myrx>\</myrx>$c$ が普通の文字として処理されなかったこと（何らかの特別な機能を発揮したこと）を示します．
+   <li> <span style="color:blue">regex:<span class="myrx">\</span>$c$&nbsp;&nbsp;str:$c'cc''$&nbsp;&nbsp;result:#f </span><br>
+この形式は文字列$c'cc''$が正規表現<span class="myrx">\</span>$c$にマッチしなかったことを表します．従って，この場合には，正規表現 <span class="myrx">\</span>$c$ が普通の文字として処理されなかったこと（何らかの特別な機能を発揮したこと）を示します．
+   <li> <span style="color:blue">regex:<span class="myrx">\</span>$c$&nbsp;&nbsp;str:$c'cc''$&nbsp;&nbsp;result:($s$ . $t$)&nbsp;"$d$"</span><br>
+この形式は文字列$c'cc''$が正規表現 <span class="myrx">\</span>$c$ にマッチしたことを示しています．$s$と$t$は，それぞれ，文字列$c'cc''$内のマッチした開始位置と終了位置を表します．さらに，"$d$"はマッチした部分列を表しています（ただし，これは参考情報にすぎません）．従って，正規表現 <span class="myrx">\</span>$c$ が普通の文字として処理されるときには，文字列$c'cc''$の文字$c$（先頭から見て1文字目の文字）にマッチするので，その場合には$s=1$かつ$t=2$（かつ$d=c$）となります．逆に言えば，$s\not=1$または$t\not=2$のとき，正規表現 <span class="myrx">\</span>$c$ が普通の文字として処理されなかったこと（何らかの特別な機能を発揮したこと）を示します．
    </ol>
 <pre class="list">
 #!/usr/bin/guile \
@@ -1331,8 +1331,8 @@ guile [1]>
 (define (main args)
   (let ((alllst '()) (anomalst '()))
     (let loop ((chcode #x20))
-      (when (and (< chcode #x7f))
-        (if (not (<= #x31 chcode #x39))
+      (when (and (&lt; chcode #x7f))
+        (if (not (&lt;= #x31 chcode #x39))
           (let-values (((form flag) (test-quote chcode)))
             (set! alllst (cons form alllst))
             (when flag (set! anomalst (cons form anomalst)))))
@@ -1363,12 +1363,12 @@ guile [1]>
                (= (match:start match) 1) 
                (= (match:end match) 2))))))
 </pre>
-main手続きは，ASCIIコード表の数字（1〜9）を除く印字可能な文字（ASCIIコードで #x20〜#x30 と #x3a〜#x7e）に関してtest-quote手続きを実行します．DISPLAY-ALLが#tのときには，これらのすべての文字に関する結果を表示します．DISPLAY-ALLが#fのときには，<myrx>\</myrx>$c$が普通の文字として処理されなかった文字$c$の結果だけを表示します．以下は上記のプログラムの実行結果です．
+main手続きは，ASCIIコード表の数字（1〜9）を除く印字可能な文字（ASCIIコードで #x20〜#x30 と #x3a〜#x7e）に関してtest-quote手続きを実行します．DISPLAY-ALLが#tのときには，これらのすべての文字に関する結果を表示します．DISPLAY-ALLが#fのときには，<span class="myrx">\</span>$c$が普通の文字として処理されなかった文字$c$の結果だけを表示します．以下は上記のプログラムの実行結果です．
 <pre class="shell">
-$ <mycmd>./test-quote.scm</mycmd> &crarr;  
+$ <span class="mycmd">./test-quote.scm</span> &crarr;  
 (regex:\'  str:"&'("  result:(3 . 3) ""
- regex:\<  str:";<="  result:#f
- regex:\>  str:"=>?"  result:#f
+ regex:\&lt;  str:";&lt;="  result:#f
+ regex:\&gt;  str:"=&gt;?"  result:#f
  regex:\B  str:"ABC"  result:(1 . 1) ""
  regex:\S  str:"RST"  result:(0 . 1) "R"
  regex:\W  str:"VWX"  result:#f
@@ -1380,10 +1380,10 @@ $ <mycmd>./test-quote.scm</mycmd> &crarr;
 </pre>
 上記の結果（文字の一覧）は先に示した一覧表と一致します．なお，1〜9の数字については「無効な前方参照」といったエラーが発生します．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "\\1" "abc")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "\\1" "abc")</span> &crarr;
 ice-9/boot-9.scm:1669:16: In procedure raise-exception:
 In procedure make-regexp: 無効な前方参照です
 
@@ -1407,7 +1407,7 @@ The back-reference expression '\n' shall match the same (possibly empty) string 
 <a class="noline" href="
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a><br>
-Finally, there is one new type of atom, a back reference: '\' followed by a nonzero decimal digit d matches the same sequence of characters matched by the dth parenthesized subexpression (numbering subexpressions by the positions of their opening parentheses, left to right), so that, for example, <span>"\([</span>bc</span>]\)\1"</span> matches "bb" or "cc" but not "bc".
+Finally, there is one new type of atom, a back reference: '\' followed by a nonzero decimal digit d matches the same sequence of characters matched by the dth parenthesized subexpression (numbering subexpressions by the positions of their opening parentheses, left to right), so that, for example, <span>"\([</span>bc<span>]\)\1"</span> matches "bb" or "cc" but not "bc".
 </blockquote>
 
 <li>
@@ -1416,23 +1416,23 @@ Finally, there is one new type of atom, a back reference: '\' followed by a nonz
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a>は次のようなことを述べています（注：正規表現の形式を拡張版に変更しています）．
 <blockquote>
-Back references are a dreadful botch, posing major problems for efficient implementations. They are also somewhat vaguely defined (does <myrx>a((b)*\2)*d</myrx> match "abbbd"?). Avoid using them.
+Back references are a dreadful botch, posing major problems for efficient implementations. They are also somewhat vaguely defined (does <span class="myrx">a((b)*\2)*d</span> match "abbbd"?). Avoid using them.
 </blockquote>
 「dreadful botch」のニュアンス（ひどさの度合い）は分かりませんが，「Avoid using them」はかなり強い提言だと思います．前方参照（back-reference）は使わないほうがよいようです．
 <li>
-数学的な観点から言うと，前方参照（back-reference）は（数学的な意味の）正規表現の能力を超えています．例えば，正規表現 <myrx>(.*)\1</myrx> は $\{ ww \mid w \in \Sigma^* \}$ という文字列の集合を定義していて，この集合は文脈自由ですらありません（これについては形式言語理論の教科書を参照して下さい）．このようなことから，前方参照（back-reference）は正規表現の元来の意図を超えていると言えます．
+数学的な観点から言うと，前方参照（back-reference）は（数学的な意味の）正規表現の能力を超えています．例えば，正規表現 <span class="myrx">(.*)\1</span> は $\{ ww \mid w \in \Sigma^* \}$ という文字列の集合を定義していて，この集合は文脈自由ですらありません（これについては形式言語理論の教科書を参照して下さい）．このようなことから，前方参照（back-reference）は正規表現の元来の意図を超えていると言えます．
 <li>
-ちなみに，前方参照（back-reference）の定義より，正規表現 <myrx>a((b)*\2)*d</myrx> は <myrx>a((b)*b)*d</myrx> （注：<myrx>\2</myrx>を<myrx>b</myrx>に置き換えたもの）と等価です．さらに，正規表現 <myrx>((b)*b)*</myrx> は <myrx>b*</myrx> と数学的に等価です．従って，数学的な解釈では，正規表現 <myrx>a((b)*\2)*d</myrx> は <myrx>ab*d</myrx> と等価なので，
+ちなみに，前方参照（back-reference）の定義より，正規表現 <span class="myrx">a((b)*\2)*d</span> は <span class="myrx">a((b)*b)*d</span> （注：<span class="myrx">\2</span>を<span class="myrx">b</span>に置き換えたもの）と等価です．さらに，正規表現 <span class="myrx">((b)*b)*</span> は <span class="myrx">b*</span> と数学的に等価です．従って，数学的な解釈では，正規表現 <span class="myrx">a((b)*\2)*d</span> は <span class="myrx">ab*d</span> と等価なので，
    <div class="dstyle">
        $\{$ ab$^k$d $\mid$ $k \geq 0$ $\}$
    $=$ $\{$ ad$,$ abd$,$ abbd$,$ abbbd$,$ $\ldots$ $\}$    
    </div>
-といった集合を定義しています．従って，文字列"abbbd"は正規表現 <myrx>a((b)*\2)*d</myrx> に（数学的には）明らかにマッチします．実際に試してみると次のようになります．
+といった集合を定義しています．従って，文字列"abbbd"は正規表現 <span class="myrx">a((b)*\2)*d</span> に（数学的には）明らかにマッチします．実際に試してみると次のようになります．
 <pre class="shell">
-$ <mycmd>guile</mycmd> &crarr;
+$ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <mycmd>(string-match "a((b)*\\2)*d" "abbbd")</mycmd> &crarr;
+guile> <span class="mycmd">(string-match "a((b)*\\2)*d" "abbbd")</span> &crarr;
 $1 = #("abbbd" (0 . 5) (1 . 4) (2 . 3))
 guile> 
 </pre>
@@ -1441,11 +1441,11 @@ guile>
 前方参照（back-reference）はプロでも間違い易いもののようです．<a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>の前方参照（bac-reference）の説明のところに次のような具体例があります
 （ただし，基本正規表現を拡張版に書き換えています）．
 <blockquote>
-   ..., the expression <myrx>(a(b)*)*\2</myrx> fails to match 'abab',...
+   ..., the expression <span class="myrx">(a(b)*)*\2</span> fails to match 'abab',...
 </blockquote>
-正規表現 <myrx>(a(b)*)*\2</myrx> は <myrx>(a(b)*)*b</myrx> と等価（なはず）なので，以下に示すように，文字列"abab"はこの正規表現にマッチします．
+正規表現 <span class="myrx">(a(b)*)*\2</span> は <span class="myrx">(a(b)*)*b</span> と等価（なはず）なので，以下に示すように，文字列"abab"はこの正規表現にマッチします．
 <pre class="shell">
-guile> <mycmd>(string-match "(a(b)*)*\\1" "abab")</mycmd> &crarr; 
+guile> <span class="mycmd">(string-match "(a(b)*)*\\1" "abab")</span> &crarr; 
 $4 = #("abab" (0 . 4) (0 . 2) (1 . 2))
 guile> 
 </pre>
