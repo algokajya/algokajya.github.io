@@ -326,7 +326,10 @@ myrx {
     /* color: #0a8aed;*/
     color: #00a00a; 
 }
-span.myrx { color: #00a00a; }
+span.myrx { 
+   /* color: #00a00a;  */
+    color: green;
+}
 
 myred { color: red; }
 span.myred { color: red; }
