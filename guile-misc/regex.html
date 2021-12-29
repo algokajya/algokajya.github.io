@@ -28,6 +28,7 @@
    </script>
    <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
    <style>
+      .date1:before{ content: "2021.12.29"; }
       .date0:before{ content: "2021.12.28"; }
    </style>
 </head>
@@ -47,15 +48,20 @@
 </div>
 
 
+
 <!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="title">
 <div class="titlename">
 Guile色々／POSIX拡張正規表現
 </div>
-<div class="date"><span class="date0"></span></div>
+<div class="date"><span class="date1"></span></div>
 </div>
 
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
+<p></p>
 <span class="hdln">概 要</span>
 <ul>
 <li>
@@ -72,10 +78,13 @@ POSIX.1とPOSIX.2とでは，微妙な違いがありますが，大きな違い
 正規表現の幾つかの機能はロケールに依存して変化します（<a class="noline" href="#on-locale">ロケールについて</a>を参照）．
 以下の説明は筆者の環境（Debian 11）のロケール（ja_JP.UTF-8）に基づいています．
 </ul>
+</div>
+
 
 <!-- %%%%%%%%%%%%%% -->
 <!-- %%% 目　次 %%% -->
 <!-- %%%%%%%%%%%%%% -->
+<div id="contents">
 <p></p>
 <span class="hdln">目 次</span>
 <ul class="menu">
@@ -133,10 +142,13 @@ POSIX.1とPOSIX.2とでは，微妙な違いがありますが，大きな違い
 <a class="noline" href="#revise">変更履歴</a>
 
 </ul>
+</div>
+
 
 <!-- %%%%%%%%%%%%%%%% -->
 <!-- %%% 参考資料 %%% -->
 <!-- %%%%%%%%%%%%%%%% -->
+<div id="references">
 <p></p>
 <span class="hdln">参考資料</span>
 <ul>
@@ -225,7 +237,10 @@ Unicode一覧表（ウィキペディア）
 
 
 
-<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="main">
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
@@ -776,7 +791,7 @@ POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字とし�
    </ul>
 一番目の形式を<em>matching list expression</em>と呼び，2番目の形式を<em>non-matching list expression</em>と呼びます．
 <li>
-各<em>$C_i$</em>は以下のいずれかを指定します．以下では，<em>$\Sigma_1$</em>$=\Sigma-\{$^$,$-$,$]$\}$とします．ここで，ハット（^），ハイフン（-），右角括弧（]）はブラケット表現における<a class="noline" href="#meta-characters">メタ文字（後述）</a>です．さらに，
+各<em>$C_i$</em>は以下のいずれかを指定します．以下では，<em>$\Sigma_1$</em>$=\Sigma-\{$'^'$,$'-'$,$']'$\}$とします．ここで，ハット（'^'），ハイフン（'-'），右角括弧（']'）はブラケット表現における<a class="noline" href="#meta-characters">メタ文字（後述）</a>です．さらに，
 <div class="ddstyle">
    $\Gamma = \{$<span class="myrx">[.</span>$c$<span class="myrx">.]</span> $\mid$ $c \in \Sigma \}$
    &nbsp;&nbsp;&nbsp;
@@ -799,19 +814,19 @@ POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字とし�
 <tr>
    <td>ハット記号</td>
    <td><span class="myrx">^</span></td>
-   <td>$\{$^$\}$</td>
+   <td>$\{$'^'$\}$</td>
    <td>下記参照</td>
 </tr>
 <tr>
    <td>ハイフン</td>
    <td><span class="myrx">-</span></td>
-   <td>$\{$-$\}$</td>
+   <td>$\{$'-'$\}$</td>
    <td>下記参照</td>
 </tr>
 <tr>
    <td>右角括弧</td>
    <td><span class="myrx">]</span></td>
-   <td>$\{$]$\}$</td>
+   <td>$\{$']'$\}$</td>
    <td>下記参照</td>
 </tr>
 <tr>
@@ -836,8 +851,8 @@ POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字とし�
    <td>範囲表現</td>
    <td>$d$<span class="myrx">-</span>$e$</td>
    <td>$d$以上$e$以下の文字の全体</td>
-   <td>$d\in \Sigma_1 \cup \{$^$\} \cup \Gamma$<br>
-       $e \in \Sigma_1 \cup \{$^$,$-$\} \cup \Gamma$</td>
+   <td>$d\in \Sigma_1 \cup \{$'^'$\} \cup \Gamma$<br>
+       $e \in \Sigma_1 \cup \{$'^'$,$'-'$\} \cup \Gamma$</td>
 </tr>
 </table>
 <li>
@@ -846,7 +861,7 @@ POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字とし�
 <li>
 範囲表現の始点（$d$）に関する条件は，もっとも一般的な場合の条件を示しています．文脈によっては，始点（$d$）にハイフンや右角括弧を指定できます．なお，終点（$e$）に関する条件は文脈に依存して変化することはありません．
 <li>
-ブラケット表現の中で一つの文字を複数回指定してもエラーにはなりません．何回指定しても1回指定したものとして処理されます．例えば，ブラケット表現の<span class="myrx">[aaa]</span>は，文字aを3回指定していますが，$\{$a$\}$という文字集合を表します．
+ブラケット表現の中で一つの文字を複数回指定してもエラーにはなりません．何回指定しても1回指定したものとして処理されます．例えば，ブラケット表現の<span class="myrx">[aaa]</span>は，文字'a'を3回指定していますが，$\{$'a'$\}$という文字集合を表します．
 </ul>
 
 <p></p>
@@ -899,7 +914,7 @@ POSIX.EREの<em>照合記号表現</em>は，<strong>ブラケット表現の中
 <li>
 <em>照合要素</em>は，文字かまたは文字として機能する文字列のことです（詳細は省略します）．文字以外の照合要素（2文字以上で構成される照合要素）は実行環境が採用している<strong>ロケール（の定義ファイル）において定義されていなければなりません</strong>．ロケールにおいて定義されていないものは使用できません．残念ながら，筆者の環境（Debian 11）のロケール（ja_JP）は，文字以外の照合要素を定義していないため，文字以外の照合要素は使用できません．
 <li>
-一方，照合要素にはメタ文字も含まれるので，<strong>ブラケット表現の中でメタ文字を普通の文字として指定するために利用できます</strong>．つまり，照合記号表現の中ではメタ文字も普通の文字として処理されます．例えば，ブラケット表現 <span class="myrx">[[.^.][.-.][.].]]</span> は，メタ文字からなる集合$\{$^$,$-$,$]$\}$を表します．
+一方，照合要素にはメタ文字も含まれるので，<strong>ブラケット表現の中でメタ文字を普通の文字として指定するために利用できます</strong>．つまり，照合記号表現の中ではメタ文字も普通の文字として処理されます．例えば，ブラケット表現 <span class="myrx">[[.^.][.-.][.].]]</span> は，メタ文字からなる集合$\{$'^'$,$'-'$,$']'$\}$を表します．
 </ul>
 
 <p></p>
@@ -1128,9 +1143,9 @@ guile>
 （参考）上記の文法は<a class="noline" href="https://pubs.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap09.html">POSIX.1（仕様書）</a>の本文の説明との間に以下のような齟齬があります．
    <ul>
    <li> 
-   上記の文法に従うと，ブラケット表現の先頭に右角括弧（]）やハイフン（-）を指定できません．
+   上記の文法に従うと，ブラケット表現の先頭に右角括弧（']'）やハイフン（'-'）を指定できません．
    <li>
-   上記の文法に従うと，$C_1$〜$C_n$のところにハット記号（^）を指定できません．
+   上記の文法に従うと，$C_1$〜$C_n$のところにハット記号（'^'）を指定できません．
    <li>
    上記の文法に従うと，等価クラスにメタ文字を指定できません．でも，仕様書の本文には，そういった禁止事項は述べられていません．
    </ul>
@@ -1445,8 +1460,8 @@ guile>
 </blockquote>
 正規表現 <span class="myrx">(a(b)*)*\2</span> は <span class="myrx">(a(b)*)*b</span> と等価（なはず）なので，以下に示すように，文字列"abab"はこの正規表現にマッチします．
 <pre class="shell">
-guile> <span class="mycmd">(string-match "(a(b)*)*\\1" "abab")</span> &crarr; 
-$4 = #("abab" (0 . 4) (0 . 2) (1 . 2))
+guile> <span class="mycmd">(string-match "(a(b)*)*\\2" "abab")</span> &crarr; 
+$4 = #("abab" (0 . 4) (2 . 3) (1 . 2))
 guile> 
 </pre>
 
@@ -1459,6 +1474,7 @@ guile>
 <section id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul>
+<li> <span class="date1"></span>：最後の実行例を訂正．
 <li> <span class="date0"></span>：初出
 </ul>
 </section>

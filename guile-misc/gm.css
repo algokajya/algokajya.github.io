@@ -53,6 +53,23 @@ body {
     font-size: 95%;
 }
 
+#contents {
+    width: 95%; 
+    /*padding-left: 2%; */
+    /* padding-right: 5%; */
+    padding-bottom: 10px;
+    font-size: 95%;
+}
+
+#references {
+    width: 95%; 
+    /*padding-left: 2%; */
+    /* padding-right: 5%; */
+    padding-bottom: 10px;
+    font-size: 95%;
+}
+
+
 #main {
     /* float: left;  */
     width: 100%; 
@@ -327,8 +344,8 @@ myrx {
     color: #00a00a; 
 }
 span.myrx { 
-   /* color: #00a00a;  */
-    color: green;
+    /* color: #00a00a; */
+    color:green;
 }
 
 myred { color: red; }
