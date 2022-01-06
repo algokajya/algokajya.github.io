@@ -45,6 +45,15 @@ body {
     font-size: 90%;
 }
 
+#revise {
+    font-size: 85%;
+    border-top: 1px solid #aaaaaa;  
+    border-bottom: 1px solid #aaaaaa;  
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-bottom: 10px; 
+ }
+
 #abstract {
     width: 95%; 
     /*padding-left: 2%; */
@@ -59,14 +68,25 @@ body {
     margin-top: 10px;
 }
 
-#revise {
-    font-size: 90%;
-    border-top: 1px solid #aaaaaa;  
-    border-bottom: 1px solid #aaaaaa;  
-    padding-top: 3px;
-    padding-bottom: 3px;
-    margin-bottom: 10px; 
- }
+#thatsall {
+    text-align: right;
+    /* font-weight: bold;  */
+    font-size: 85%;
+    color: #555555;
+    border-top: 3px solid #aaaaaa;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-top: 5px;
+}
+
+ul.revise {
+    margin-top: 0px; 
+}
+
+ul li.revise {
+    line-height: 110%;
+    padding: 0px;
+}
 
 .noline {
     text-decoration: none; 
@@ -239,6 +259,15 @@ mykw {
     color: darkviolet; 
 }
 span.mykw { 
+    font-weight: bold;
+    color: darkviolet; 
+}
+
+mydate { 
+    font-weight: bold;
+    color: darkviolet; 
+}
+span.mydate { 
     font-weight: bold;
     color: darkviolet; 
 }

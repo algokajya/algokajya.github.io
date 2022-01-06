@@ -5,9 +5,11 @@
    <title>AlgoKajya Guile入門／スクリプトによるプログラムの実行</title>
    <link rel="stylesheet" type="text/css" href="gi.css">
    <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <!--
    <style>
       .date1:before{ content: "2021.12.4"; }
       .date0:before{ content: "2021.11.26"; }
+   -->
    </style>
 </head>
 <body>
@@ -34,8 +36,25 @@ Guile入門／スクリプトによるプログラムの実行
 </div>
 
 
+<!-- %%% revise %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.6</span>：変更履歴の形式を変更
+<li class="revise">
+<span class="mydate">2021.12.4</span>：「2行目の掟」の説明に誤りがあったので訂正．
+<li class="revise">
+<span class="mydate">2021.11.26</span>：初出
+</ul>
+</section>
+
+
 <!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
+<p></p>
+<span class="hdln">概 要</span>
 <ul>
 <li>
 プログラムファイルをスクリプト（単独のプログラム）として実行する方法を解説します．
@@ -395,17 +414,6 @@ $ <span class="mycmd">./entry-point.scm Alice Bob Carol</span> &crarr;
 </pre>
 <li>
 この形式では，2行目はguileコマンドではなくシェル（sh）によって処理されるので，2行目の掟を気にする必要はありません．この点で安全な方法だと思います．さらに，これはより多くの実行環境で利用可能な形式だと思います．でも，リファレンスマニュアルは全力をあげてメタスイッチを説明していて，上記の形式は一つの具体例を示すことだけに留めています（しかもちょっと分かりにくい）．上記の形式はLinuxの一般的な事項に属することなので，みんな分かってるだろうということなのかも知れません．
-</ul>
-</section>
-
-
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<p></p>
-<section id="revise">
-<h4 class="revise">変更履歴</h4>
-<ul>
-<li> <span class="date1"></span>：「2行目の掟」の説明に誤りがあったので訂正．
-<li> <span class="date0"></span>：初出
 </ul>
 </section>
 
