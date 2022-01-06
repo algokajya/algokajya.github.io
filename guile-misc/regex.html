@@ -27,14 +27,16 @@
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
    </script>
    <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <!--
    <style>
       .date1:before{ content: "2021.12.29"; }
       .date0:before{ content: "2021.12.28"; }
    </style>
+   -->
 </head>
 
 
-<body>
+<body id="page-top">
 
 <!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="header">
@@ -42,7 +44,7 @@
 &ensp; 
 <a class="noline" href="index.html">[Up]</a>
 &ensp; 
-<a class="noline" href="next.html">[Next]</a>
+<a class="noline" href="regex-proc.html">[Next]</a>
 &ensp; 
 <a class="noline" href="../index.html">ホーム</a><br>
 </div>
@@ -54,12 +56,26 @@
 <div class="titlename">
 Guile色々／POSIX拡張正規表現
 </div>
-<div class="date"><span class="date1"></span></div>
+<!-- <div class="date"><span class="date1"></span></div> -->
 </div>
 
 
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.6</span>：マッチに関する用語を追加．
+<li class="revise">
+<span class="mydate">2021.12.29</span>：最後の実行例を訂正．
+<li class="revise">
+<span class="mydate">2021.12.28</span>：初出
+</ul>
+</section>
 
-<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
 <p></p>
 <span class="hdln">概 要</span>
@@ -93,11 +109,11 @@ POSIX.1とPOSIX.2とでは，微妙な違いがありますが，大きな違い
    <li class="menu">
    <a class="noline" href="#math-symbols">文字列に関する数学的な記法</a>
    <li class="menu">
-<a class="noline" href="#color-of-regular-expression">正規表現の色分けについて</a>
+   <a class="noline" href="#color-of-regular-expression">正規表現の色分けについて</a>
    <li class="menu">
    <a class="noline" href="#on-matches">マッチについて</a>
    <li class="menu">
-<a class="noline" href="#beginning-end-edge">先頭，末尾，境界</a>
+   <a class="noline" href="#beginning-end-edge">先頭，末尾，境界</a>
    </ul>
 <li class="menu">
 <a class="noline" href="#POSIX.ERE">POSIX拡張正規表現（POSIX.ERE）</a>
@@ -138,9 +154,10 @@ POSIX.1とPOSIX.2とでは，微妙な違いがありますが，大きな違い
    <li class="menu">
    <a class="noline" href="#on-back-reference">前方参照（back-reference）について</a>
    </ul>
+<!--
 <li class="menu">
 <a class="noline" href="#revise">変更履歴</a>
-
+-->
 </ul>
 </div>
 
@@ -335,9 +352,11 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
 <span class="hdln" id="on-matches">マッチについて</span>
 <ul>
 <li>
-文字列$z$が正規表現$\alpha$に<em>マッチする</em>とは，$z$が$L(\alpha)$に属すること（$z \in L(\alpha)$が成り立つこと）を言います．
+正規表現$\alpha$に文字列$z$が<em>マッチする</em>とは，$z$が$L(\alpha)$に属すること（$z \in L(\alpha)$が成り立つこと）を言います．
 <li>
-文字列$x$を正規表現$\alpha$に<em>マッチさせる</em>とは，$\alpha$にマッチする$x$の部分列$z$があるかどうかを探索することを言います．
+正規表現$\alpha$に文字列$x$を<em>マッチさせる</em>とは，$\alpha$にマッチする$x$の部分列$z$があるかどうかを探索することを言います．
+<li>
+正規表現に文字列をマッチさせたとき，<em>マッチが成功する</em>（<em>失敗する</em>）とは，正規表現にマッチする部分列が見つかる（見つからない）ことを言います．
 <li>
 文字列$x$を正規表現$\alpha$にマッチさせたとき，次のような規則に則って部分列の探索を行います．
    <ol>
@@ -367,7 +386,7 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
    <li>
    <em>文字列$x$の境界にマッチする</em>とは，どこかの文字の間にある空文字列（$\varepsilon_{(i)}$）にマッチすることを言います．
    <li>
-<em>単語の先頭や末尾にマッチする</em>とは，単語のとして認識される部分列の直前や直後にある空文字列にマッチすることを言います．
+<em>単語の先頭や末尾にマッチする</em>とは，単語として認識される部分列の直前や直後にある空文字列にマッチすることを言います．
    </ul>
 <li>
 ただし，境界にマッチするときの「どこか（空文字列の位置$i$）」は機能ごとに変化します．例えば．「単語の境界にマッチする」と言ったとき，単語（と認識される部分列）の直前にある空文字列か，単語の直後にある空文字列にマッチすることを言います．
@@ -1466,19 +1485,10 @@ guile>
 </pre>
 
 </ul>
-
 </section>
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<p></p>
-<section id="revise">
-<h4 class="revise">変更履歴</h4>
-<ul>
-<li> <span class="date1"></span>：最後の実行例を訂正．
-<li> <span class="date0"></span>：初出
-</ul>
-</section>
 
+<div id="thatsall">(おしまい)</div>
 
 </div> <!-- END of main division -->
 </body>

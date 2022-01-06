@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <title>AlgoKajya Guile色々／正規表現のための手続き</title>
+   <link rel="stylesheet" type="text/css" href="gm.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+   <!-- %%% date %%% -->
+   <!--
+   <style>
+      .date0:before{ content: "2021.mm.dd"; }
+   </style>
+   -->
+</head>
+
+
+<body>
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="header">
+<a class="noline" href="regex.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+<div class="titlename">
+Guile色々／正規表現のための手続き
+</div>
+<!-- <div class="date"><span class="date0"></span></div> -->
+</div>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<section id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<mydate>2021.1.6</mydate>：初出
+</ul>
+</section>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<span class="hdln">概 要</span>
+<ul>
+<li>
+このノートは，以下の2つの資料を参照しながら，Guileが用意している正規表現を処理するための手続きについて勉強したことを記録しています．
+   <ul>
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+      GNU Guile Reference Manual（最新版）</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Regular-Expressions.html#Regular-Expressions
+">The GNU C Library Reference Manual, for version 2.34：Regular Expression Matching</a>
+   </ul>
+なお，このノートの「正規表現」とは，<a class="noline" href="regex.html">POSIX拡張正規表現</a>のことを言います．
+<li>
+正規表現の幾つかの機能はロケールに依存して変化します（<a class="noline" href="regex.html">POSIX拡張正規表現</a>の<a class="noline" href="regex.html#on-locale">ロケールについて</a>を参照）．以下の説明は筆者の環境（Debian 11）のロケール（ja_JP.UTF-8）に基づいています．
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<p></p>
+<span class="hdln">目 次</span>
+<ul class="menu">
+<li class="menu">
+<a class="noline" href="#preliminaries">準備</a>
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="#ice-9-regex">モジュールのロード</a>
+   <li class="menu">
+   <a class="noline" href="#how-to-use">基本的な利用方法</a>
+   </ul>
+
+<li class="menu">
+<a class="noline" href="#compile-and-matching">コンパイルとマッチング</a>
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="#make-regexp">make-regexp（コンパイル）</a>
+   <li class="menu">
+   <a class="noline" href="#regexp-exec">regexp-exec（マッチング）</a>
+   <li class="menu">
+   <a class="noline" href="#compile-matching-example">実行例</a>
+   <li class="menu">
+   <a class="noline" href="#string-match">string-match（コンパイル＆マッチング）</a>
+   </ul>
+
+<li class="menu">
+<a class="noline" href="#match-structure">マッチ構造（match structure）</a>
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="#elements-of-match-structure">マッチ構造の成分</a>
+   <li class="menu">
+   <a class="noline" href="#subexpression-matching">部分式マッチング（subexpression matching）</a>
+  </ul>
+
+<li class="menu">
+<a class="noline" href="#procedures-for-matches">マッチ構造を利用するための手続き</a>
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="#match-proc-parameters">各手続きに共通の引数</a>
+   <li class="menu">
+<a class="noline" href="#match:substring">match:substring</a>
+   <li class="menu">
+<a class="noline" href="#match:start">match:start</a>
+   <li class="menu">
+<a class="noline" href="#match:end">match:end</a>
+   <li class="menu">
+<a class="noline" href="#match-others">match:count，match:string，match:prefix，match:suffix，regexp-match?</a>
+   </ul>
+
+<li class="menu">
+<a class="noline" href="#other-procedures">その他の手続き</a>
+   <ul class="menu">
+   <li class="menu">
+<a class="noline" href="#regexp?">regexp?</a>
+   <li class="menu">
+<a class="noline" href="#fold-matches">fold-matches</a>
+   <li class="menu">
+<a class="noline" href="#list-matches">list-matches</a>
+   <li class="menu">
+<a class="noline" href="#regexp-substitute">regexp-substitute</a>
+   <li class="menu">
+<a class="noline" href="#regexp-substitute/global">regexp-substitute/global</a>
+   </ul>
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<p></p>
+<span class="hdln">参考資料</span>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Regular-Expressions.html#Regular-Expressions
+">The GNU C Library Reference Manual, for version 2.34：Regular Expression Matching</a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+">
+GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li>
+Regular Expression 
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html
+">The GNU C Library Reference Manual, for version 2.34
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://manpages.debian.org/testing/manpages-dev/regex.3.en.html
+">POSIX regex functions（Linux Programmer&apos;s Manual: man -s3 regex &crarr;）
+   </a>
+   <li class="menu">
+   <a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html
+">
+POSIX.1正規表現（The Open Group Base Specifications Issue 7, 2018 edition IEEE Std 1003.1-2017: Regular Expression）
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://manpages.debian.org/testing/manpages/regex.7.en.html
+">POSIX.2正規表現（Linux Programmer&apos;s Manual: man -s7 regex &crarr; ）
+   </a>
+   </ul>
+<li class="menu"> 
+（注意）このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html">奥村晴彦先生のMathJaxのページ</a>（筆者はこの説明の通りに設定しています）
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="preliminaries">
+<h3 class="section">準備</h3>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="ice-9-regex">モジュールのロード</span>
+<ul>
+<li>
+Guileの正規表現ライブラリを使うときには，<em>(ice-9 regex)</em> モジュールをプログラムの冒頭などでロードする必要があります．このモジュールの中に正規表現用の手続きが定義されています．
+<pre class="list">
+(use-modules (ice-9 regex))
+</pre>
+<li>
+REPLは上記のモジュールを自動的にロードします．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>,import</mycmd> &crarr;
+(guile)
+(system base compile)
+(ice-9 readline)
+(system repl common)
+(ice-9 session)
+<em>(ice-9 regex)</em>
+(ice-9 threads)
+guile> 
+</pre>
+ちなみに，REPLの <mycmd>,import</mycmd> コマンドはロード済みのモジュールを表示します．
+<li>
+（参考）make-regexp手続き，regexp-exec手続き，regexp?手続き，および，それらの引数として指定できる各種フラグは，システム標準の手続きおよび大域変数として実装されています．従って，これらは上記のモジュールをロードしなくても利用できます．これら以外の手続きは上記のモジュールの中で定義されています．
+</ul>
+</section>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="how-to-use">基本的な利用方法</span>
+<ul>
+<li>
+正規表現を使ったマッチング処理はおおよそ次のような手順で行います．
+   <ol>
+   <li>
+   まず，<myvar>make-regexp</myvar>手続きと<myvar>regexp-exec</myvar>手続きを組み合わせて正規表現に文字列をマッチさせます．その結果，マッチした部分列があったときには，検索対象文字列やマッチした部分列の開始位置と終了位置のペアからなるベクタが得られます．逆に，マッチした部分列がなかったときには#fが返ってきます．Guileは，マッチしたときに得られるベクタのことを<em>マッチ構造</em>（match structure）と呼んでいます．
+   <li>
+   次に，マッチ構造に関する各種手続き（<myvar>match:substring</myvar>，<myvar>match:start</myvar>，<myvar>match:end</myvar>など）を使って，マッチした部分列を抽出するなどの処理を行います．
+   </ol>
+<li>
+make-regexp手続きとregexp-exec手続きの組み合わせの代わりに<myvar>string-match</myvar>手続きを使うこともできます．こちらのほうが簡便です．しかし，一つの正規表現に複数の文字列をマッチさせるときには非効率的です（その理由は後述します）．string-match手続きは，マッチング処理の結果を試験的に確認したい場合や，正規表現が色々と変化する場合に限定して利用したほうがよいでしょう，
+</ul>
+</section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="compile-and-matching">
+<h3 class="section">コンパイルとマッチング</h3>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="make-regexp">make-regexp（コンパイル）</span>
+<ul>
+<li> 呼び出し形式
+<pre class="list">
+(<myvar>make-regexp</myvar> <mysyn>pat</mysyn>)
+(<myvar>make-regexp</myvar> <mysyn>pat</mysyn> <mysyn>flag</mysyn> ... )
+</pre>
+make-regexp手続きは，<mysyn>pat</mysyn>によって指定された正規表現を内部的なデータ構造に変換（<em>コンパイル</em>）して，コンパイル後の正規表現（内部的なデータ構造）を返します．なお，検索対象文字列とのマッチング処理は，（文字列として記述した正規表現ではなく）コンパイル後の正規表現を利用して行います．
+<li>
+<em><mysyn>pat</mysyn></em> は正規表現を記述した文字列です．
+<li>
+<em><mysyn>flag</mysyn></em> はコンパイル後の正規表現の振る舞いを制御するためのフラグです．以下の大域変数が指定できます．
+   <ul>
+   <li><myvar>regexp/icase</myvar><br>
+   マッチングを行うときに大文字（uppercase）と小文字（lowercase）を区別しないようにコンパイル後の正規表現を作ります．（余談）「icase」は，おそらく，「ignore case」を略したもの思われます．
+   <li><myvar>regexp/newline</myvar><br>
+   検索対象の文字列が改行文字（'\n'）を含んでいるときに，ハット記号（<myrx>^</myrx>）が改行文字（'\n'）の直後の境界にマッチし，ドル記号（<myrx>$</myrx>）が
+改行文字の直前の境界にマッチするようにコンパイル後の正規表現を作ります．<br>
+（補足）ピリオド（<myrx>.</myrx>）や補集合演算を含むブラケット表現（<myrx>[^</myrx> ... <myrx>]</myrx>）が改行文字にマッチすることはありません．しかし，文字数にはカウントされるようです．<br>
+（補足）このフラグは，複数行からなるテキストデータが検索対象の文字列として与えられていて，その中の一つの行を正規表現を使って抽出するといった処理を意図しています．
+   <li><myvar>regexp/basic</myvar><br>
+   <mysyn>pat</mysyn>が基本正規表現（Basic Regular Expression）の文法に沿って記述されていることを指定します．ちなみに，基本正規表現はobsoleteです．
+   <li><myvar>regexp/extended</myvar><br>
+   <mysyn>pat</mysyn>が拡張正規表現（Extended Regular Expression）の文法に沿って記述されていることを指定します．<strong>これは既定値です</strong>．通常，指定する必要はありません．
+   </ul>
+まかり間違って<myvar>regexp/basic</myvar>と<myvar>regexp/extended</myvar>の両方を指定してしまったら，最後に指定したものが有効です．拡張正規表現を使う限り，どちらも指定することはないでしょう．
+<li>
+具体例
+<pre class="list">
+(make-regexp "[A-Z]+")  <span class="right">……(1)&nbsp;</span>
+(make-regexp "[A-Z]+" regexp/icase)  <span class="right">……(2)&nbsp;</span>
+(make-regexp "^[A-Z]+$") <span class="right">……(3)&nbsp;</span>
+(make-regexp "^[A-Z]+$" regexp/newline) <span class="right">……(4)&nbsp;</span>
+</pre>
+上記の(1)と(2)の正規表現は，英字（の大文字）からなる長さが1文字以上の文字列（検索対象文字列の部分列）がマッチします．(3)と(4)の正規表現は，英字（の大文字）であるような長さが1文字以上の文字列全体がマッチします．それぞれの手続き呼び出しは，文字列として与えられた正規表現を内部的なデータ構造に変換（コンパイル）して，コンパイル後の正規表現（内部的なデータ構造）を返します．ただし，フラグを指定したりしなかったりすることによって，コンパイル後の正規表現の振る舞いが次のように変化します．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   英字の大文字だけからなる<strong>部分列</strong>がマッチします．小文字はマッチしません．例えば：
+      <ul>
+      <li> "aaBBBcc"は，大文字だけからなる部分列"BBB"がマッチします．
+      <li> "aabbbcc"は，大文字をまったく含んでいないので，どの部分列もマッチしません．
+      </ul>
+   </td>
+<tr>
+</tr>
+   <td>(2)</td>
+   <td>
+   大文字と小文字の区別を無視して，英字からなる<strong>部分列</strong>にマッチします．例えば：
+      <ul>
+      <li> "aaBBBcc"と"aabbbcc"は文字列全体がマッチします．
+      <li> "**BBB**"は部分列"BBB"がマッチします．
+      <li> "**bbb**"は部分列"bbb"がマッチします．
+      <li> "**123**"は（どの部分列も）マッチしません．
+      </ul>
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   英字の大文字だけからなる<strong>文字列全体</strong>（文字列の先頭から末尾まで）がマッチします．例えば：
+      <ul>
+      <li>
+      上で示した文字列は，いずれも小文字や特殊記号（'*'）を含んでいるので，何もマッチしません．
+      <li> "ABC"や"PQR"は，大文字だけからなる文字列なので，文字列全体がマッチします．
+      </ul>
+   </td>   
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   検索対象の文字列が改行文字（'\n'）を含む場合，正規表現のハット記号（<myrx>^</myrx>）とドル記号（<myrx>$</myrx>）が，それぞれ，改行文字の直後と直前の境界にマッチします．このフラグを指定したことによって，次の条件を満たす部分列がマッチします     <ol type="a">
+   <li> 検索対象の文字列の先頭，改行文字，検索対象の文字列の末尾に挟まれていて，途中に改行文字を含まない．
+   <li> 英字の大文字だけから構成されている．
+   </ol>
+   例えば：
+   <ul>
+   <li> "AABBBCC"は文字列全体がマッチします．
+   <li> "aaBBBcc"や"**BBB**"は，小文字や特殊記号を含むので，何もマッチしません．
+   <li> "AABBB\nCC"は，部分列"AABBB"（文字列の先頭と改行文字に挟まれていて，英字の大文字だけで構成された部分列）がマッチします．
+   <li> "aa\nBBB\ncc"は，部分列"BBB"（改行文字に挟まれていて，英字の大文字だけで構成された部分列）がマッチします．
+   <li> "**\nbbb\nCC"は，部分列"CC"（改行文字と末尾に挟まれていて，英字の大文字だけで構成されている部分列）がマッチします．
+   <li> "**\nbbb\ncc"は，大文字からなる部分列がないので，何もマッチしません．
+   <li> "AAa\n*BBB\nCC+"は，先頭・改行文字・末尾に挟まれた部分列が小文字や特殊記号を含むので，何もマッチしません．
+   </ul>
+   </td>
+</tr>
+</table>
+
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="regexp-exec">regexp-exec（マッチング）</span>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<myvar>regexp-exec</myvar> <mysyn>rx</mysyn> <mysyn>str</mysyn>)
+(<myvar>regexp-exec</myvar> <mysyn>rx</mysyn> <mysyn>str</mysyn> <mysyn>start</mysyn>)
+(<myvar>regexp-exec</myvar> <mysyn>rx</mysyn> <mysyn>str</mysyn> <mysyn>start</mysyn> <mysyn>flags</mysyn>)
+</pre>
+正規表現<mysyn>rx</mysyn>に文字列<mysyn>str</mysyn>をマッチさせ，次のような値を返します．
+   <ul>
+   <li> 
+   マッチに成功したら
+      <ul>
+      <li> 検索対象文字列と
+      <li> マッチした部分列の開始位置と終了位置のペア
+      </ul>
+   からなるベクタを返します．これら以外にも正規表現の部分式（丸括弧で囲まれた式）に対する結果も含まれます．Guileは，このベクタのことを<em>マッチ構造</em>（match structure）と呼んでいます．マッチ構造については後ほど詳しく説明します．
+   <li>
+   マッチに失敗したら #f を返します．
+   </ul>
+<li>
+<em><mysyn>rx</mysyn></em> はコンパイル後の正規表現（make-regexp手続きの返り値）です．
+<li>
+<em><mysyn>str</mysyn></em> は文字列です．
+<li>
+<em><mysyn>start</mysyn></em> は$0$以上$\ell$以下の整数で（ただし，$\ell$は<mysyn>str</mysyn>の長さ），<mysyn>str</mysyn>の文字位置です．これを指定したとき，<mysyn>start</mysyn>文字目〜末尾の部分列が検索対象になります（<mysyn>start</mysyn>文字目の直前までの部分列は無視されます）．
+<li>
+<em><mysyn>flags</mysyn></em> はマッチング処理の振る舞いを制御するためのフラグです．次のような大域変数が指定できます．なお，以下の説明は，<mysyn>flags</mysyn>を指定するときには<mysyn>start</mysyn>を指定していること，および，<mysyn>start</mysyn>文字目は検索対象文字列の先頭文字になることを前提としています．
+   <ul>
+   <li>
+   <myvar>regexp/notbol</myvar><br>
+   これを指定したとき，<mysyn>start</mysyn>文字目の直前にある空文字列を正規表現としてのハット記号（<myrx>^</myrx>）にマッチさせないことにします．ちなみに，notbolは「not the beginning of a line」を略したものです．
+   <li>
+   <myvar>regexp/noteol</myvar><br>
+   文字列<mysyn>str</mysyn>の末尾にある空文字列を正規表現としてのドル記号（<myrx>$</myrx>）にマッチさせないことにします．ちなみに，noteolは「not the end of a line」を略したものです．
+   </ul>
+<li>
+（補足）上記のフラグは整数です．整数を表すビット列の各ビットをフラグとして利用しています．
+<li>
+（注意）上記の2つのフラグを同時に指定するときには，以下に示すように，<myvar>logior</myvar>手続きを使って2つのフラグを1つにまとめたものを指定します．
+<pre class="list">
+(<myvar>regexp-exec</myvar> <mysyn>rx</mysyn> <mysyn>str</mysyn> <mysyn>start</mysyn> (logior regexp/notbol regexp/noteol))
+</pre>
+なお，logior手続きは引数として指定されれたフラグ（整数）のビットごとの論理和を返します．
+<li> regexp-exec手続きの具体例は下記の実行例を参照して下さい．
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="compile-matching-example">実行例</span>
+<ul>
+<li> 簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+      ...... 起動メッセージ ......
+GNU Guile 3.0.5
+guile> <mycmd>(define rx (make-regexp "[a-z]+"))</mycmd> &crarr; <span class="right">……(1)&nbsp;</span>
+guile> <mycmd>(define str "#AbcDE#")</mycmd> &crarr; <span class="right">……(2)&nbsp;</span>
+guile> <mycmd>(regexp-exec rx str)</mycmd> &crarr; <span class="right">……(3)&nbsp;</span>
+$1 = #("#AbcDE#" (2 . 4)) <span class="right">……(4)&nbsp;</span>
+guile> <mycmd>(substring str 2 4)</mycmd> &crarr; <span class="right">……(5)&nbsp;</span>
+$2 = "bc"
+guile> <mycmd>(regexp-exec rx "ABCDE")</mycmd> &crarr; <span class="right">……(6)&nbsp;</span>
+$3 = #f
+guile> 
+</pre>
+これは次のような処理を行っています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   正規表現<myrx>[a-z]+</myrx>を内部的なデータ構造にコンパイル（make-regexp）し，コンパイル後の正規表現を変数rxに束縛しています．この正規表現には，英字の小文字からなる長さが1文字以上の文字列がマッチします．
+   </td>
+</tr>
+<tr>
+   <td>(2)</td>
+   <td>
+   文字列"#AbcDE#"を変数strに束縛しています．
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   rxに束縛されている正規表現（<myrx>[a-z]+</myrx>）に，strに束縛されている文字列（"#AbcDE#"）をマッチ（regexp-exec）させています．
+   </td>
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   上記のマッチ（regexp-exec）は成功し，その結果として，下記の要素からなるベクタが返ってきています．
+      <ul>
+      <li> 検索対象の文字列そのもの "#AbcDE#"
+      <li> マッチした部分列の開始位置と終了位置のペア (2 . 4)
+      </ul>
+   </td>
+</tr>
+<tr>
+   <td>(5)</td>
+   <td>
+   確認のために，上記の開始位置と終了位置を利用して，マッチした部分列（"bc"）を抽出（substring）しています．英字の小文字からなる部分列がマッチしたことが分かります．
+   </td>
+</tr>
+<tr>
+   <td>(6)</td>
+   <td>
+   rxに束縛されている正規表現（<myrx>[a-z]+</myrx>）に，他の文字列（"ABCDE"）をマッチ（regexp-exec）させています．このマッチ（regexp-exec）は失敗し，その結果として#fが返ってきています．マッチが失敗したとき，つまり，マッチする部分列がないときには #f が返ってきます．
+   </td>
+</table>
+<li>
+（注意）マッチした部分列の終了位置は，<strong>部分列の終端の文字位置に1を加えた値</strong>になります．これは，文字列を扱う様々な手続きの仕様に合わせるためです．例えば，(substring $s$ $p$ $q$) は，文字列$s$の$p$文字目〜$q-1$文字目の部分列を取り出すので，目的とする部分列を正しく取り出すためには，$q$ $=$ 部分列の終端の文字位置$+1$ でなければなりません．
+
+<li>
+もう一つ簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(define rx (make-regexp "^[a-z]+$" regexp/icase regexp/newline))</mycmd> &crarr; <span class="right">……(1)&nbsp;</span>
+guile> <mycmd>(regexp-exec rx "AABBBCC")</mycmd> &crarr; <span class="right">……(2)&nbsp;</span>
+$1 = #("AABBBCC" (0 . 7))
+guile> <mycmd>(regexp-exec rx "AaBbBCc")</mycmd> &crarr; <span class="right">……(3)&nbsp;</span>
+$2 = #("AaBbBCc" (0 . 7))
+guile> <mycmd>(regexp-exec rx "#AaBbBCc#")</mycmd> &crarr; <span class="right">……(4)&nbsp;</span>
+$3 = #f
+guile> <mycmd>(regexp-exec rx "#Aa\nBbB\nCc#")</mycmd> &crarr; <span class="right">……(5)&nbsp;</span>
+$4 = #("#Aa\nBbB\nCc#" (4 . 7))
+guile> <mycmd>(regexp-exec rx "#Aa\nBbB\nCc#" 1)</mycmd> &crarr; <span class="right">……(6)&nbsp;</span>
+$5 = #("#Aa\nBbB\nCc#" (1 . 3))
+guile> <mycmd>(regexp-exec rx "#Aa\nBbB\nCc#" 1 regexp/notbol)</mycmd> &crarr; <span class="right">……(7)&nbsp;</span>
+$6 = #("#Aa\nBbB\nCc#" (4 . 7))
+guile> 
+</pre>
+これは次のようなことを試しています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   正規表現 <myrx>^[a-z]+$</myrx> を内部的なデータ構造にコンパイル（make-regexp）し，コンパイル後の正規表現を変数rxに束縛しています．コンパイル後の正規表現は，次の条件を満たす文字列がマッチします．
+   <ol type="a">
+   <li> 英字から構成されている．<br>
+   <small>
+   （補足）regexp/icaseフラグを指定したことによって，大文字と小文字を区別しません．
+   </small>
+   <li> 検索対象文字列の先頭，改行文字（'\n'），検索対象文字列の末尾に挟まれていて，途中に改行文字を含まない．<br>
+   <small>
+   （補足）この条件はregexp/newlineを指定したことによって，ハット記号（<myrx>^</myrx>）とドル記号（<myrx>$</myrx>）は，それぞれ，検索対象文字列の先頭と末尾だけでなく，改行文字（'\n'）の直後と直前の境界にもマッチします．
+   </small>
+   </ol>
+   </td>
+</tr>
+<tr>
+   <td>(2)</td>
+   <td>
+   rxに束縛されている正規表現に，英字の大文字だけから構成された文字列（"AABBBCC"）をマッチ（regexp-exec）させています．この場合，文字列全体が上の条件a.とb.を満たすので，文字列全体がマッチしています．
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   rxに束縛されている正規表現に，英字の大文字と小文字が混在した文字列（"AaBbBCc"）をマッチ（regexp-exec）させています．この場合も，文字列全体が上の条件a.とb.を満たすので，文字列全体がマッチしています．
+   </td>
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   rxに束縛されている正規表現に，英字以外の文字（'#'）を含む文字列（"#AaBbBCc#"）をマッチ（regexp-exec）させています．この場合，上の条件a.とb.を同時に満たす部分列がまったくないので，マッチに失敗しています．
+   </td>
+</tr>
+<tr>
+   <td>(5)</td>
+   <td>
+   rxに束縛されている正規表現に，英字以外の文字（'#'）と改行文字（'\n'）を含む文字列（"#Aa\nBbB\nCc#"）をマッチ（regexp-exec）させています．その結果を見ると，改行文字に挟まれた部分列（4文字目〜6文字目の部分列"BbB"）がマッチしています.
+その部分列は上の条件a.とb.を満たしています．
+   </td>
+</tr>
+<tr>
+   <td>(6)</td>
+   <td>
+   rxに束縛されている正規表現に，英字以外の文字（'#'）と改行文字（'\n'）を含む文字列（"#Aa\nBbB\nCc#"）の1文字目以降をマッチ（regexp-exec）させています．つまり，先頭の'#'はマッチの対象から除外しています．その結果を見ると，1文字目〜2文字目の部分列"Aa"がマッチしています．先頭の'#'を無視したことによって，1文字目の'A'の直前の境界がハット記号（<myrx>^</myrx>）にマッチし，3文字目の改行文字の直前の境界がドル記号（<myrx>$</myrx>）にマッチしています．
+   </td>
+</tr>
+<tr>
+   <td>(7)</td>
+   <td>
+   regexp/notbolフラグを指定して，上の(6)と同じマッチ処理(regexp-exec）を行っています．この場合，1文字目の'A'の直前の境界がハット記号（<myrx>^</myrx>）にマッチできないので，その帰結として，改行記号に挟まれた部分列"BbB"がマッチしています．
+   </td>
+</tr>
+</table>
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="string-match">string-match（コンパイル＆マッチング）</span>
+<ul>
+<li>
+呼び出し形式
+<pre class="list">
+(<myvar>string-match</myvar> <mysyn>pat</mysyn> <mysyn>str</mysyn>)
+(<myvar>string-match</myvar> <mysyn>pat</mysyn> <mysyn>str</mysyn> <mysyn>start</mysyn>)
+</pre>
+1番目の呼び出し形式は
+   <div class="ddstyle">
+   (regexp-exec (make-regexp <mysyn>pat</mysyn>) <mysyn>str</mysyn>)
+   </div>
+と等価です．2番目の呼び出し形式は
+   <div class="ddstyle">
+   (regexp-exec (make-regexp <mysyn>pat</mysyn>) <mysyn>str</mysyn> <mysyn>start</mysyn>)
+   </div>
+と等価です．
+<li> 実行例
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+      ...... 起動メッセージ ......
+guile> <mycmd>(string-match "[a-z]+" "#AbcDe#")</mycmd> &crarr;
+$1 = #("#AbcDe#" (2 . 4))
+guile> 
+</pre>
+これは正規表現 <myrx>[a-z]+</myrx> を文字列 "#AbcDe#" にマッチ（string-match）させています．この場合，2文字目〜3文字目の部分列"bc"がマッチしています．
+<li>
+（参考）string-match手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define (string-match pattern str . args)
+  (let ((rx (make-regexp pattern))
+        (start (if (pair? args) (car args) 0)))
+    (regexp-exec rx str start)))
+</pre>
+<li>
+（補足）string-matchは，簡便に利用できる手続きです．しかし，呼び出されるたびに正規表現のコンパイル（make-regexp）を行います．正規表現を利用した処理は，一つの正規表現に対して複数の文字列をマッチさせることが多いと思います．そのような場合，正規表現を何度もコンパイルするのは無駄です．特にコンパイル（make-regexp）は実行コストの高い処理なので，そのような場合には，正規表現を一度だけコンパイル（make-regexp）して，複数の文字列に対してマッチ処理（regexp-exec）を繰り返すようにしたほうがよいでしょう．
+</ul>
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section  id="match-structure">
+<h3 class="section">マッチ構造（match structure）</h3>
+
+<ul>
+<li>
+マッチ構造に関する手続きを説明する前に，マッチ構造そのものについて説明します．
+</ul>
+
+<!-- ===head line================================== -->
+<span class="hdln" id="elements-of-match-structure">マッチ構造の成分</span>
+<ul>
+<li>
+regexp-exec手続きやstring-match手続きを使って，正規表現$\alpha$に文字列$x$をマッチさせたとき，マッチに失敗したときには#fが返ってきますが，マッチが成功したときには次のようなベクタが返ってきます．
+   <div class="ddstyle">
+      #($x$ ($s_0$ . $t_0$) ($s_1$ . $t_1$) ... ($s_n$ . $t_n$))
+   </div>
+ここで：
+   <ul>
+   <li> 第0成分の $x$ は，検索対象の文字列そのものです．
+   <li> 第1成分の ($s_0$ . $t_0$) は，正規表現$\alpha$にマッチした$x$の部分列の開始位置$s_0$と終了位置$t_0$のペアです．
+   <li> 第2成分以降の各成分 ($s_i$ . $t_i$) は，$\alpha$の$i$番目の部分式にマッチした$x$の部分列の開始位置$s_i$と終了位置$t_i$のペアです（部分式については後述します）．
+   </ul>
+ただし：
+   <ul>
+   <li> 
+   $\alpha$が部分式を持たないときには ($s_1$ . $t_1$) 〜 ($s_n$ . $t_n$) はありません．
+   <li> 
+   終了位置$t_i$は，文字列を扱う色々な手続きに合わせて，マッチした部分列の最後の文字位置に1を加えた値になっています．
+   </ul>
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(define rx (make-regexp "[0-9][.][0-9][.][0-9]"))</mycmd> &crarr; <span class="right">……(1)&nbsp;</span>
+guile> <mycmd>(define str "GNU Guile 3.0.7 released")</mycmd> &crarr; <span class="right">……(2)&nbsp;</span>
+guile> <mycmd>(regexp-exec rx str)</mycmd> &crarr; <span class="right">……(3)&nbsp;</span>
+$1 = #("GNU Guile 3.0.7 released" (10 . 15))
+guile> <mycmd>(substring str 10 15)</mycmd> &crarr; <span class="right">……(4)&nbsp;</span>
+$2 = "3.0.7"
+guile> 
+</pre>
+これは次のような処理を行っています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   ソフトウェアのバージョン番号によく利用されている "$a$.$b$.$c$" （$a$,$b$,$c$は数字）という形式にマッチする正規表現を変数rxに束縛しています．
+   </td>
+</tr>
+<tr>
+   <td>(2)</td>
+   <td>
+   文字列 "GNU Guile 3.0.7 released" を変数strに束縛しています．
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   正規表現rxに文字列strをマッチさせています．その結果（<span>$</span>1）として，
+      <ul>
+      <li> 検索対象の文字列strそのもの "GNU Guile 3.0.7 released"
+      <li> 正規表現にマッチした部分列の開始位置と終了位置のペア (10 . 15)
+      </ul>
+を成分とするベクタが返ってきています．なお，上記の正規表現は部分式を持っていないので，マッチ構造には($s_1$ . $t_1$)〜($s_n$ . $t_n$)に相当する成分はありません．
+   </td>
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   上の結果を見ると，10文字目〜14文字目の部分列がマッチしたことが分かります．そこで，確認のために，その部分列（<span>$</span>2）を求めています．
+   </td>
+</tr>
+</table>
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="subexpression-matching">部分式マッチング（subexpression matching）</span>
+<ul>
+<li>
+正規表現の<em>部分式</em>とは，<strong>丸括弧で囲まれた式</strong>のことです．部分式は，それを囲む<strong>左丸括弧の位置をもとに左から順に1番から始まる番号が付けられます</strong>．
+<li>
+例えば，正規表現 <myrx>((ab*)*(cd)?)(ef)* </myrx> は4つの部分式を持っていて，各部分式を囲む左丸括弧の位置をもとに左から順に番号が付けられます．従って，
+   <ul>
+   <li> 1番目の部分式は <myrx>((ab*)*(cd)?)</myrx>，
+   <li> 2番目の部分式は <myrx>(ab*)</myrx>，
+   <li> 3番目の部分式は <myrx>(cd)</myrx>，
+   <li> 4番目の部分式は <myrx>(ef)</myex>
+   </ul>
+となります．この正規表現に文字列をマッチ（regexp-execまたはstring-match）させて成功したときには，
+   <div class="ddstyle">
+      #($x$ ($s_0$ . $t_0$) ($s_1$ . $t_1$) ($s_2$ . $t_2$) ($s_3$ . $t_3$) ($s_4$ . $t_4$))
+   </div>
+といったマッチ構造（ベクタ）が返ってきます．ここで，
+   <ul>
+   <li> $x$ は検索対象の文字列そのもの
+   <li> ($s_0$ . $t_0$) は正規表現全体 <myrx>((ab*)*(cd)?)(ef)* </myrx> にマッチした$x$の部分列の位置情報
+   <li> ($s_1$ . $t_1$) は1番目の部分式 <myrx>((ab*)*(cd)?)</myrx> にマッチした$x$の部分列の位置情報
+   <li> ($s_2$ . $t_2$) は2番目の部分式 <myrx>(ab*)</myrx> にマッチした$x$の部分列の位置情報
+   <li> ($s_3$ . $t_3$) は3番目の部分式 <myrx>(cd)</myrx> にマッチした$x$の部分列の位置情報
+   <li> ($s_4$ . $t_4$) は4番目の部分式 <myrx>(ef)</myrx> にマッチした$x$の部分列の位置情報
+   </ul>
+となります．
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(string-match "(ab)*(cd)*" "abcd")</mycmd> &crarr;
+$1 = #("abcd" (0 . 4) (0 . 2) (2 . 4))
+guile> 
+</pre>
+これは，正規表現 <myrx>(ab)*(cd)*</myrx> に文字列 "abcd" をマッチ（string-match）させています．マッチは成功し，その結果として返ってきたマッチ構造（<span>$</span>1）は次のような情報を表しています．
+   <ul>
+   <li> "abcd" は，検索対象の文字列そのものです．
+   <li> (0 . 4) は，正規表現 <myrx>(ab)*(cd)*</myrx> にマッチした$x$の部分列の位置情報です．これは，文字列全体が正規表現にマッチしたことを示しています．
+   <li> (0 . 2) は，1番目の部分式 <myrx>(ab)</myrx> にマッチした$x$の部分列の位置情報です．これは，0文字目〜1文字目の部分列 "ab" がマッチしたことを示しています，
+   <li> (2 . 4) は，2番目の部分式 <myrx>(cd)</myrx> にマッチした$x$の部分列の位置情報です．これは，2文字目〜3文字目の部分列 "cd" がマッチしたことを示しています，
+   </ul>
+<li>
+（補足）繰り返しを指定された部分式は，複数の部分列にマッチする可能性があります．例えば，正規表現 <myrx>(ab)*</myrx> に文字列 "abab" をマッチさせたとき，正規表現全体は文字列全体（"abab"）にマッチし，そのマッチ処理の過程で部分式 <myrx>(ab) </myrx> は，0文字目〜1文字目の部分列"ab"と2文字目〜3文字目の部分列"ab"に2度マッチします．このような場合，つまり，正規表現全体のマッチ処理の過程で部分式が複数の部分列に繰り返しマッチした場合，
+   <ul>
+   <li>
+   部分式にマッチした部分列の位置情報は， <strong>最後にマッチした部分列の位置情報</strong>になります．
+   </ul>
+以下は，ここで述べた具体例を実行した結果です．
+<pre class="shell">
+guile> <mycmd>(string-match "(ab)*" "abab")</mycmd> &crarr;
+$2 = #("abab" (0 . 4) (2 . 4))
+</pre>
+この実行結果（<span>$</span>2）は，（1番目の）部分式 <myrx>(ab)</myrx> が2文字目〜3文字目の部分列 "ab" にマッチしたことを示しています．しかし，実際には0文字目〜1文字目の部分列"ab"と2文字目〜3文字目の部分列"ab"に2度マッチしていて，最後にマッチした部分列の位置情報を返してきています．
+
+<li>
+（補足）正規表現全体がマッチに成功した場合であっても，0回を含む繰り返し（<myrx>*</myrx>や<myrx>?</myrx>や<myrx>{0,</myrx>$n$<myrx>}</myrx>）が指定された部分式は，どの部分列にもマッチしていない可能性があります．繰り返し指定の意味を交えて言うと，その部分式は0回マッチしたと言えます．そのような場合，つまり，正規表現全体のマッチ処理の過程で部分式にマッチした部分列がなかった場合，
+   <ul>
+   <li>
+   部分式にマッチした部分列の位置情報は <strong>(-1 . -1)</strong> になります．
+   </ul>
+簡単な実行例を示します．
+<pre class="shell">
+guile> <mycmd>(string-match "(ab)*(cd)*" "cd")</mycmd> &crarr;
+$3 = #("cd" (0 . 2) (-1 . -1) (0 . 2))
+guile> 
+</pre>
+これは，正規表現 <myrx>(ab)*(cd)*</myrx> に文字列 "cd" をマッチ（string-match）させています．マッチは成功していますが，1番目の部分式 <myrx>(ab)</myrx> にマッチする部分列がありません．別の言い方をすると，1番目の部分式<myrx>(ab)</myrx>は0回マッチしたと言えます．そのため，1番目の部分式 <myrx>(ab)</myrx> にマッチした部分列の位置情報は (-1 . -1) になっています．
+</ul>
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="procedures-for-matches">
+<h3 class="section">マッチ構造を利用するための手続き</h3>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="match-proc-parameters">各手続きに共通の引数</span>
+<ul>
+<li>
+以下の手続きの説明において <em><mysyn>match</mysyn></em> は，次のようなマッチ構造（ベクタ）とします．
+   <div class="ddstyle">
+      #($x$ ($s_0$ . $t_0$) ($s_1$ . $t_1$) ... ($s_n$ . $t_n$))
+   </div>
+ここで，$x$は検索対象の文字列であり，($s_i$ . $t_i$)は正規表現全体や部分式にマッチした$x$の部分列の位置情報です．
+<li>
+さらに，<em><mysyn>num</mysyn></em> は0以上$n$以下の整数とします．これは正規表現全体または部分式（の番号）を示しています．<mysyn>num</mysyn>の値を$k$とおくとき，$k=0$ならば正規表現全体を示し，$k>0$ならば$k$番目の部分式を示しています．以下の呼び出し形式において，<mysyn>num</mysyn>を省略したときの既定値は$0$（正規表現全体）です．<mysyn>num</mysyn>に$n$（部分式の個数）より大きな整数を指定するとエラーが発生します．
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="match:substring">match:substring</span>
+<ul>
+<li>
+呼び出し形式
+<pre class="list">
+(<myvar>match:substring</myvar> <mysyn>match</mysyn>)
+(<myvar>match:substring</myvar> <mysyn>match</mysyn> <mysyn>num</mysyn>)
+</pre>
+   <ul style="margin-left:-20px">
+   <li>
+   マッチ構造<mysyn>match</mysyn>に含まれる成分を利用して，正規表現や部分式にマッチした部分列を返します．
+   <li>
+   <mysyn>num</mysyn>を省略するか，<mysyn>num</mysyn>に0を指定したときには，正規表現全体に対する部分列（$s_0$文字目〜$t_0-1$文字目の部分列）を返します．
+   <li>
+   <mysyn>num</mysyn>に正整数$k$を指定したときには，$k$番目の部分式に対する部分列（$s_k$文字目〜$t_k-1$文字目の部分列）を返します．ただし，$k$番目の部分式にマッチした部分列がないとき（つまり，$s_k=t_k=\,$-1のとき）には #f を返します．
+   </ul>
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(string-match "(ab)*(cd)+" "xabcdcdx")</mycmd> &crarr;<span class="right">……(1)&nbsp;</span>
+$1 = #("xabcdcdx" (1 . 7) (1 . 3) (5 . 7))
+guile> <mycmd>(match:substring $1)</mycmd> &crarr;<span class="right">……(2)&nbsp;</span>
+$2 = "abcdcd"
+guile> <mycmd>(match:substring $1 0)</mycmd> &crarr;<span class="right">……(3)&nbsp;</span>
+$3 = "abcdcd"
+guile> <mycmd>(match:substring $1 1)</mycmd> &crarr;<span class="right">……(4)&nbsp;</span>
+$4 = "ab"
+guile> <mycmd>(match:substring $1 2)</mycmd> &crarr;<span class="right">……(5)&nbsp;</span>
+$5 = "cd"
+guile> 
+</pre>
+これは次のような処理を行っています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   正規表現<myrx>(ab)*(cd)+</myrx>に文字列"xabcdcdx"をマッチ（string-match）させています．マッチは成功し，マッチ構造（上記の<span>$1</span>）が返ってきています．このマッチ構想は次の結果を示しています．
+   <ul>
+   <li>
+   正規表現<myrx>(ab)*(cd)+</myrx>は，1文字目〜6文字目の部分列がマッチしています．
+   <li>
+   1番目の部分式<myrx>(ab)</myrx>は，1文字目〜2文字目の部分列がマッチしています．
+   <li>
+   2番目の部分式<myrx>(cd)</myrx>は，5文字目〜6文字目の部分列がマッチしています．
+   </ul>
+   </td>
+</tr>
+<tr>
+   <td>(2)</td>
+   <td>
+   正規表現<myrx>(ab)*(cd)+</myrx>にマッチした部分列（1文字目〜6文字目の部分列"abcdcd"）を抽出（match:substring）しています．
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   これも，正規表現<myrx>(ab)*(cd)+</myrx>にマッチした部分列（1文字目〜6文字目の部分列"abcdcd"）を抽出（match:substring）しています．
+   </td>
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   1番目の部分式<myrx>(ab)</myrx>にマッチした部分列（1文字目〜2文字目の部分列"ab"）を抽出（match:substring）しています．
+   </td>
+</tr>
+<tr>
+   <td>(5)</td>
+   <td>
+   2番目の部分式<myrx>(cd)</myrx>にマッチした部分列（5文字目〜6文字目の部分列"cd"）を抽出（match:substring）しています．
+   </td>
+</tr>
+</table>
+
+<li>
+（参考）match:substring手続きは(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define* (match:substring match #:optional (num 0))
+  (let* ((start (match:start match num))
+         (end   (match:end match num)))
+    (and start end (substring (match:string match) start end))))
+</pre>
+なお，このノートの説明と合わせるために，オプション引数の名前をnumに変更しています（元々の名前はnです）．
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="match:start">match:start</span>
+<ul>
+<li>
+呼び出し形式
+<pre class="list">
+(<myvar>match:start</myvar> <mysyn>match</mysyn>)
+(<myvar>match:start</myvar> <mysyn>match</mysyn> <mysyn>num</mysyn>)
+</pre>
+   <ul style="margin-left:-20px">
+   <li>
+   マッチ構造<mysyn>match</mysyn>に含まれる成分を利用して，正規表現や部分式にマッチした部分列の開始位置（$s_i$）を返します．
+   <li>
+   <mysyn>num</mysyn>を省略するか，<mysyn>num</mysyn>に0を指定したときには，正規表現全体に対する部分列の開始位置（$s_0$）を返します．
+   <li>
+   <mysyn>num</mysyn>に正整数$k$を指定したときには，$k$番目の部分式に対する部分列の開始位置（$s_k$）を返します．ただし，$k$番目の部分式にマッチした部分列がないとき（つまり，$s_k=t_k=\,$-1のとき）には #f を返します．
+   </ul>
+<li>
+（参考）match:start手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define* (match:start match #:optional (num 0))
+  (let ((start (car (vector-ref match (1+ num)))))
+    (if (= start -1) #f start)))
+</pre>
+なお，このノートの説明と合わせるために，オプション引数の名前をnumに変更しています（元々の名前はnです）．
+</ul>
+
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="match:end">match:end</span>
+<ul>
+<li>
+呼び出し形式
+<pre class="list">
+(<myvar>match:end</myvar> <mysyn>match</mysyn>)
+(<myvar>match:end</myvar> <mysyn>match</mysyn> <mysyn>num</mysyn>)
+</pre>
+   <ul style="margin-left:-20px">
+   <li>
+   マッチ構造<mysyn>match</mysyn>に含まれる成分を利用して，正規表現や部分式にマッチした部分列の終了位置（$t_i$）を返します．
+   <li>
+   <mysyn>num</mysyn>を省略するか，<mysyn>num</mysyn>に0を指定したときには，正規表現全体に対する部分列の終了位置（$t_0$）を返します．
+   <li>
+   <mysyn>num</mysyn>に正整数$k$を指定したときには，$k$番目の部分式に対する部分列の終了位置（$t_k$）を返します．ただし，$k$番目の部分式にマッチした部分列がないとき（つまり，$s_k=t_k=\,$-1のとき）には #f を返します．
+   </ul>
+<li>
+（参考）match:end手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define* (match:end match #:optional (num 0))
+  (let* ((end (cdr (vector-ref match (1+ num)))))
+    (if (= end -1) #f end)))
+</pre>
+なお，このノートの説明と合わせるために，オプション引数の名前をnumに変更しています（元々の名前はnです）．
+</ul>
+
+<!-- ===head line================================== -->
+<p></p>
+<span class="hdln" id="match-others">match:count，match:string，match:prefix，match:suffix，regexp-match?</span>
+<ul>
+<li>
+呼び出し形式
+<pre class="list">
+(<myvar>match:count</myvar> <mysyn>match</mysyn>)
+(<myvar>match:string</myvar> <mysyn>match</mysyn>)
+(<myvar>match:prefix</myvar> <mysyn>match</mysyn>)
+(<myvar>match:suffix</myvar> <mysyn>match</mysyn>)
+(<myvar>regexp-match?</myvar> <mysyn>obj</mysyn>)
+</pre>
+   <ul style="margin-left:-20px">
+   <li>
+   match:count手続きは，正規表現と部分式の個数を返します．別の言い方をすると，マッチ構造（ベクタ）の成分数から1（文字列$x$の分）を引いた値を返します．
+   <li>
+   match:string手続きは，検索対象の文字列$x$（マッチ構造の第0成分）を返します．
+   <li>
+   match:prefix手続きは，正規表現にマッチした部分列の前にある部分列（0文字目〜$s_0-1$文字目の部分列）を返します．
+   <li>
+   match:suffix手続きは，正規表現にマッチした部分列の後ろにある部分列（$t_0$文字目〜文字列$x$の末尾の部分列）を返します．
+   <li>
+   regexp-match?手続きは，<mysyn>obj</mysyn>がマッチ構造のデータ型に適合すれば#tを返し，そうでなければ#fを返します．ここで，<mysyn>obj</mysyn>は任意のオブジェクトです．（補足）マッチ構造のデータ型とは，第0成分が文字列型で，第1成分以降が整数型のペア型であるようなベクタ型のことを言います．詳しくは下記のプログラムを参照して下さい．
+   </ul>
+<li>
+（参考）上記の手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define (match:count match)
+  (- (vector-length match) 1))
+
+(define (match:string match)
+  (vector-ref match 0))
+
+(define (match:prefix match)
+  (substring (match:string match) 0 (match:start match 0)))
+
+(define (match:suffix match)
+  (substring (match:string match) (match:end match 0)))
+
+(define (regexp-match? obj)
+  (and (vector? obj)
+       (string? (vector-ref obj 0))
+       (let loop ((i 1))
+         (cond ((>= i (vector-length obj)) #t)
+               ((and (pair? (vector-ref obj i))
+                     (integer? (car (vector-ref obj i)))
+                     (integer? (cdr (vector-ref obj i))))
+                (loop (+ 1 i)))
+               (else #f)))))
+</pre>
+なお，regexp-match?の引数名を<a class="nopline" href="https://www.gnu.org/software/guile/manual/html_node/Match-Structures.html">Guileのマニュアル</a>に合わせてobjに変更しています（元々の名前はmatchです）．
+</ul>
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="other-procedures">
+<h3 class="section">その他の手続き</h3>
+
+<!-- ===head line================================== -->
+<span class="hdln" id="regexp?">regexp?</span>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<myvar>regexp?</myvar> <mysyn>obj</mysyn>)
+</pre>
+<mysyn>obj</mysyn>がコンパイル後の正規表現だったとき#tを返し，そうでないときには#fを返します．
+<li>
+<em><mysyn>obj</mysyn></em> は任意のオブジェクトです．
+</ul>
+
+<!-- ===head line================================== -->
+<span class="hdln" id="fold-matches">fold-matches</span>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<myvar>fold-matches</myvar> <mysyn>regexp</mysyn> <mysyn>str</mysyn> <mysyn>init</mysyn> <mysyn>proc</mysyn>)
+(<myvar>fold-matches</myvar> <mysyn>regexp</mysyn> <mysyn>str</mysyn> <mysyn>init</mysyn> <mysyn>proc</mysyn> <mysyn>flags</mysyn>)
+</pre>
+文字列<mysyn>str</mysyn>に対して，正規表現<mysyn>regexp</mysyn>にマッチする部分列のマッチ構造を次々と求めて，それらに<mysyn>proc</mysyn>を適用した結果を累積して返します．おおよそ次のような処理を行っています．
+   <ol>
+   <li> 
+   start&thinsp;$\leftarrow$&thinsp;$0$;  
+   value&thinsp;$\leftarrow$&thinsp;<mysyn>init</mysyn>;<br>
+   <small>（補足）
+      startは文字列<mysyn>str</mysyn>の文字位置です．
+      valueは<mysyn>proc</mysyn>を適用した結果を累積するための変数です．
+   </small>
+   <li> 以下のa.〜c.を終了するまで繰り返します．
+      <ol type="a">
+      <li> startが<mysyn>str</mysyn>の長さを超えたときには m&thinsp;$\leftarrow$&thinsp;#f とし，そうでないときには<br>
+      &emsp;&emsp;
+         m&thinsp;$\leftarrow$&thinsp;regexp-exec(<mysyn>regexp</mysyn>,<mysyn>str</mysyn>,start)<br>
+      とします．
+      <li>
+      m$=$#fのとき（つまり，startが<mysyn>str</mysyn>の長さを超えたか，または，上記のマッチが失敗したとき），valueを返して終了する．
+      <li>
+      m$\not=$#fのとき（つまり，上記のマッチが成功して，mがマッチ構造のとき），<br>
+      &emsp;&emsp;
+         start&thinsp;$\leftarrow$&thinsp;match:end(m);  
+         value&thinsp;$\leftarrow$&thinsp;<mysyn>proc</mysyn>(m,value);<br>
+      とします（そして，a.に戻って処理を続けます）．
+      </ol>
+   </ol>
+正確な処理内容はあとで示すプログラムを参照して下さい．
+<li>
+<em><mysyn>regexp</mysn></em> は正規表現です．文字列で記述しても，コンパイル後のものを指定しても，どちらでもかまいません．
+<li>
+<em><mysyn>str</mysyn></em> は検索対象の文字列です．
+<li>
+<em><mysyn>init</mysyn></em> は累積を始めるための初期値です．
+<li>
+<em><mysyn>proc</mysyn></em> は累積していくための手続きです．この手続きは，
+   <div class="ddstyle">
+   (<mysyn>proc</mysyn> <mysyn>match</mysyn> <mysyn>value</mysyn>)
+   </div>
+という形式で呼び出すことができて，<mysyn>value</mysyn>と同じ型の値を返すものでなければいけません．ここで，<mysyn>match</mysyn>はマッチ構造であり，<mysyn>value</mysyn>はそれまでの累積結果です．
+<li>
+<em><mysyn>flags</mysyn></em> はregexp-exec手続きのものとまったく同じです．
+<li> 
+（参考）fold-matches手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．その処理の骨格は上で述べた通りです．ただし，以下の処理では，（変数abutsを利用して）マッチした部分列の直後にある空文字列を累積の対象としないように制御しています．さらに，（変数bolを利用して）start$>0$のとき，ハット記号（<myrx>^</myrx>）が文字列の先頭にマッチしないように制御しています．
+<pre class="list">
+(define* (fold-matches regexp string init proc #:optional (flags 0))
+  (let ((regexp (if (regexp? regexp) regexp (make-regexp regexp))))
+    (let loop ((start 0)
+               (value init)
+               (abuts #f))              ; True if start abuts a previous match.
+      (define bol (if (zero? start) 0 regexp/notbol))
+      (let ((m (if (> start (string-length string)) #f
+                   (regexp-exec regexp string start (logior flags bol)))))
+        (cond
+         ((not m) value)
+         ((and (= (match:start m) (match:end m)) abuts)
+          ;; We matched an empty string, but that would overlap the
+          ;; match immediately before.  Try again at a position
+          ;; further to the right.
+          (loop (+ start 1) value #f))
+         (else
+          (loop (match:end m) (proc m value) #t)))))))
+</pre>
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(define (add-list m lst) (cons (match:substring m) lst))</mycmd> &crarr; <span class="right">……(1)&nbsp;</span>
+guile> <mycmd>(fold-matches "&lt;[a-zA-Z0-9]*&gt;" "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z" '() add-list)</mycmd> &crarr; <span class="right">……(2)&nbsp;</span>
+$1 = ("&lt;Y&gt;" "&lt;1&gt;" "&lt;ab&gt;")
+guile> 
+</pre>
+これは次のような処理を行っています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   マッチ構造（m）からマッチした部分列を抽出（match:substring）して，リスト（lst）に追加する手続きadd-listを定義しています．
+   </td>
+</tr>
+<tr>
+   <td>(2)</td>
+   <td>
+   文字列 "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z" からHTMLのタグのような部分列（三角括弧で囲まれた英数字列）を取り出して，そのような部分列からなるリスト（<span>$</span>1）を作成しています．つまり，まず"&lt;ab&gt;"を取り出してリストに追加し，次に"&lt;1&gt;"を取り出してリストに追加し，最後に"&lt;Y&gt;"を取り出してリストに追加しています．なお，リストの要素は抽出された順の逆順に並んでいます．
+   </td>
+</tr>
+</table>
+</ul>
+
+<!-- ===head line================================== -->
+<span class="hdln" id="list-matches">list-matches</span>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<myvar>list-matches</myvar> <mysyn>regexp</mysyn> <mysyn>str</mysyn>)
+(<myvar>list-matches</myvar> <mysyn>regexp</mysyn> <mysyn>str</mysyn> <mysyn>flags</mysyn>)
+</pre>
+文字列<mysyn>str</mysyn>に対して，正規表現<mysyn>regexp</mysyn>にマッチする部分列のマッチ構造を次々と求めて，それらマッチ構造からなるリストを返します．正確な処理は下記のプログラムを参照して下さい．
+<li>
+<em><mysyn>regexp</mysn></em> は正規表現です．文字列で記述しても，コンパイル後のものを指定しても，どちらでもかまいません．
+<li>
+<em><mysyn>str</mysyn></em> は検索対象の文字列です．
+<li>
+<em><mysyn>flags</mysyn></em> はregexp-exec手続きのものとまったく同じです．
+<li>
+（参考）list-matches手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define* (list-matches regexp string #:optional (flags 0))
+  (reverse! (fold-matches regexp string '() cons flags)))
+</pre>
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(define (disp-substr m) (write (match:substring m)) (newline))</mycmd> &crarr;
+guile> <mycmd>(for-each disp-substr (list-matches "&lt;[a-zA-Z0-9]*&gt;" "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z"))</mycmd> &crarr;
+"&lt;ab&gt;"
+"&lt;1&gt;"
+"&lt;Y&gt;"
+guile> 
+</pre>
+これはfold-matchesのところで示した実行例とほとんど同じ処理を行っています．つまり，文字列 "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z" からHTMLのタグのような部分列（三角括弧で囲まれた英数字列）を取り出してリストを作っています．ただし，list-matchesは，部分列のリストではなく，マッチ構造のリストを返してきます．そこで，それぞれのマッチ構造にdisp-substr手続きを適用することによって，マッチした部分列を一覧表示しています．
+</ul>
+
+<!-- ===head line================================== -->
+<span class="hdln" id="regexp-substitute">regexp-substitute</span>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<myvar>regexp-substitute</myvar> <mysyn>port</mysyn> <mysyn>match</mysyn> <mysyn>item</mysyn> ...)
+</pre>
+<mysyn>item</mysyn> ... に指定した文字列を左から順に<mysyn>port</mysyn>に出力します．<mysyn>port</mysyn>が#fのときには，出力する内容からなる文字列を作って返します．
+<li>
+<em><mysyn>port</mysyn></em> は出力ポートです．
+<li>
+<em><mysyn>match</mysyn></em> はマッチ構造です．
+<li>
+<em><mysyn>item</mysyn></em> として次のものが指定できます．
+   <table class="symbol">
+   <tr>
+      <th><mysyn>item</mysyn></th>
+      <th>説明</th>
+   </tr>
+   <tr>
+      <td>文字列</td>
+      <td>
+      文字列を指定したときには，文字列そのものを出力します．
+      </td>
+   </tr>
+   <tr>
+      <td>整数</td>
+      <td>
+      整数$k$を指定したときには，(match:substring match $k$) を出力します．
+      </td>
+   </tr>
+   <tr>
+      <td>'pre</td>
+      <td>
+         シンボル 'pre を指定したときには，(match:prefix match) を出力します．
+      </td>
+   </tr>
+   <tr>
+      <td>'post</td>
+      <td>
+         シンボル 'post を指定したときには，(match:suffix match) を出力します．
+      </td>
+   </tr>
+   </table>
+（補足）<mysyn>item</mysyn>を省略する（1つも指定しない）ことができますが，そのときには何も出力されません（<mysyn>port</mysyn>が#fのときには空文字列""が返ってきます）．
+
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(string-match "((two)|(three)|/)+" "one/two/three/four")</mycmd> &crarr; <span class="right">……(1)&nbsp;</span>
+$1 = #("one/two/three/four" (3 . 14) (13 . 14) (4 . 7) (8 . 13))
+guile> <mycmd>(regexp-substitute (current-output-port) $1 'pre " to " 'post "\n")</mycmd> &crarr; <span class="right">……(2a)&nbsp;</span>
+one to four
+guile> <mycmd>(let ((p (current-output-port)))</mycmd>
+... <mycmd>(display (match:prefix $1) p)</mycmd>
+... <mycmd>(display " to " p)</mycmd>
+... <mycmd>(display (match:suffix $1) p)</mycmd>
+... <mycmd>(display "\n" p))</mycmd> &crarr; <span class="right">……(2b)</span>&nbsp;
+one to four
+guile> <mycmd>(regexp-substitute (current-output-port) $1 'post 0 'pre "\n")</mycmd> &crarr; <span class="right">……(3)&nbsp;</span>
+four/two/three/one
+guile> <mycmd>(regexp-substitute (current-output-port) $1 'post "/" 3 "/" 2 "/" 'pre "\n")</mycmd> &crarr;  <span class="right">……(4)&nbsp;</span>
+four/three/two/one
+guile> 
+</pre>
+これは次のような処理を行っています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+   正規表現 <myrx>((two)|(three)|/)+</myrx> に文字列 "one/two/three/four" をマッチ（string-match）させています．その返り値のマッチ構造（<span>$</span>1）から次のような事実が分かります．
+   <ul>
+   <li>
+   正規表現全体は3文字目〜13文字目の部分列 "/two/three/" にマッチしています．
+   <li>
+   その正規表現全体に対する結果から，
+      <ul>
+      <li> (match:prefix <span>$1</span>) は0文字目〜2文字目の部分列 "one" を返し，
+      <li> (match:suffix $1) は14文字目〜17文字目の部分列 "four" を返す
+      </ul>
+ということが分かります．
+
+   <li> 
+   2番目の部分式 <myrx>(two)</myrx> は4文字目〜6文字目の部分列 "two" にマッチしています．
+   <li>
+   3番目の部分式 <myrx>(three)</myrx> は8文字目〜12文字目の部分列 "three" にマッチしています．
+   </ul>
+   なお，この実行例では1番目の部分式 <myrx>((two)|(three)|/)</myrx> のマッチ構造に保存された結果（最後のスラッシュにマッチしていること）は使用しません．
+   </td>
+</tr>
+<tr>
+   <td>(2a)</td>
+   <td>
+   regexp-substitute手続きを使って，
+      <ul>
+      <li> シンボル 'pre が表す文字列（注：(match:prefix <span>$</span>1)の返り値）
+      <li> 文字列 " to " 
+      <li> シンボル 'post が表す文字列（注：(match:suffix <span>$</span>1)の返り値）
+      <li> 改行文字 "\n"
+      </ul>
+   の4つを標準出力（current-output-port）に出力しています．
+   </td>
+</tr>
+<tr>
+   <td>(2b)</td>
+   <td>
+   シンボル 'pre や 'post の意味を確かめるために，regexp-substitute手続きの代わりに，display手続き，match:prefix手続き，match:suffix手続きを使って(2a)と同じ文字列を直接出力しています．
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   regexp-substitute手続きを使って，
+      <ul>
+      <li> シンボル 'post が表す文字列（注：(match-suffix $1)の返り値）
+      <li> 正規表現全体にマッチした部分列（注：(match:subtring $1 0)の返り値）
+      <li> シンボル 'pre が表す文字列（注：(match-prefix $1)の返り値）
+      <li> 改行文字 "\n"
+      </ul>
+   の4つを標準出力（current-output-port）に出力しています．この処理は
+   <div class="dstyle">
+   <table>
+   <tr><td>(let ((p (current-output-port)))<td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:suffix $1) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:substring $1 0) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:prefix $1) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display "\n" p))</td></tr>
+   </table>
+   </div>
+と等価です．
+   </td>
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   2番目と3番目の部分式にマッチした部分列を利用して，"one"，"two"，"three"，"four"を逆順に並べてスラッシュ（'/'）で区切った文字列を標準出力に出力しています．この処理は
+   <div class="dstyle">
+   <table>
+   <tr><td>(let ((p (current-output-port)))<td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:suffix $1) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display "/" p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:substring $1 3) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display "/" p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:substring $1 2) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display "/" p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display (match:prefix $1) p)</td></tr>
+   <tr><td>&nbsp;&emsp;&emsp;(display "\n" p))</td></tr>
+   </table>
+   </div>
+   と等価です．
+   </td>
+</tr>
+</table>
+
+<li>
+（参考）regexp-substitute手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define (regexp-substitute port match . items)
+  ;; If `port' is #f, send output to a string.
+  (if (not port)
+      (call-with-output-string
+       (lambda (p)
+         (apply regexp-substitute p match items)))
+
+      ;; Otherwise, process each substitution argument in `items'.
+      (for-each (lambda (obj)
+                  (cond ((string? obj)   (display obj port))
+                        ((integer? obj)  (display (match:substring match obj) port))
+                        ((eq? 'pre obj)  (display (match:prefix match) port))
+                        ((eq? 'post obj) (display (match:suffix match) port))
+                        (else (error 'wrong-type-arg obj))))
+                items)))
+</pre>
+</ul>
+
+<!-- ===head line================================== -->
+<span class="hdln" id="regexp-substitute/global">regexp-substitute/global</span>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<myvar>regexp-substitute/global </myvar> <mysyn>port</mysyn> <mysyn>regexp</mysyn> <mysyn>str</mysyn> <mysyn>item</mysyn> ...)
+</pre>
+正規表現 <mysyn>regexp</mysyn> に文字列 <mysyn>str</mysyn> をマッチさせた結果をもとに，<mysyn>item</mysyn> に指定した文字列（やオブジェクト）を左から順に<mysyn>port</mysyn>に出力します．<mysyn>port</mysyn>が#fのときには，出力する内容からなる文字列を作って返します．
+<li>
+<em><mysyn>port</mysyn></em> は出力ポートです．
+<li>
+<em><mysyn>regexp</mysyn></em> は正規表現です．文字列で記述したものと，コンパイル後のものの，どちらでも指定できます．
+<li>
+<em><mysyn>str</mysyn></em> は検索対象の文字列です．
+<li>
+<em><mysyn>item</mysyn></em> として次のものが指定できます．
+   <table class="symbol">
+   <tr>
+      <th><mysyn>item</mysyn></th>
+      <th>説明</th>
+   </tr>
+   <tr>
+      <td>文字列</td>
+      <td>
+      文字列を指定したときには，文字列そのものを出力します．
+      </td>
+   </tr>
+   <tr>
+      <td>整数</td>
+      <td>
+      整数$k$を指定したときには，(match:substring match $k$) を出力します．
+      </td>
+   </tr>
+   <tr>
+      <td>手続き</td>
+      <td>
+         マッチ構造を引数とする手続きが指定できます．その手続きをマッチ構造に適用した返り値を出力します．その返り値は，出力ポート<mysyn>port</mysyn>に出力可能なオブジェクトであれば何でもかまいません（文字列である必要はありません）．
+      </td>
+   </tr>
+   <tr>
+      <td>'pre</td>
+      <td>
+         シンボル 'pre を指定したときには，(match:prefix match) を出力します．
+      </td>
+   </tr>
+   <tr>
+      <td>'post</td>
+      <td>
+         下記参照．
+      </td>
+   </tr>
+   </table>
+<li>
+<em>シンボル 'post を指定したとき</em>，正規表現にマッチするすべての部分列に対してregexp-substitute/globalを再帰的に実行します．おおよそ次のような処理を行います．
+   <ol>
+   <li> 
+   m&thinsp;$\leftarrow$&thinsp;regexp-exec(<mysyn>regexp</mysyn>,<mysyn>str</mysyn>) または string-match(<mysyn>regexp</mysyn>,<mysyn>str</mysyn>);
+   <li> 
+   マッチに失敗したとき，<mysyn>str</mysyn>を出力して終了する．
+   <li>
+   マッチに成功したとき，<mysyn>item</mysyn> ... に対して，次の処理を繰り返す．      <ol type="a">
+      <li> <mysyn>item</mysyn>&thinsp;$=$&thinsp;'postのとき，
+         <div class="dstyle">
+         (regexp-substitute/global </myvar> <mysyn>port</mysyn> <mysyn>regexp</mysyn> (match:suffix m) <mysyn>item</mysyn> ...)
+         </div>
+      を（再帰的に）実行する．
+      <li> <mysyn>item</mysyn>&thinsp;$\not=$&thinsp;'postのとき，<mysyn>item</mysyn> を（regexp-substituteの場合と同じように）出力する．         
+      </ol>
+   </ol>
+正確な処理内容は下記のプログラムを参照して下さい．
+
+<li>
+実行例
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(define (to-upcase m) (string-upcase (match:substring m)))</mycmd> &crarr; <span class="right">……(1)&nbsp;</span>
+guile> <mycmd>(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc --&gt;" to-upcase)</mycmd> &crarr; <span class="right">……(2)&nbsp;</span>
+$1 = "ABC"
+guile> <mycmd>(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc --&gt;" 'pre to-upcase 'post)</mycmd> &crarr; <span class="right">……(3)&nbsp;</span>
+$2 = "&lt;!-- ABC --&gt;"
+guile> <mycmd>(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc:def --&gt;" 'pre to-upcase 'post)</mycmd> &crarr; <span class="right">……(4)&nbsp;</span>
+$3 = "&lt;!-- ABC:DEF --&gt;"
+guile> 
+</pre>
+これは次のような処理を行っています．
+<table class="item">
+<tr>
+   <td>(1)</td>
+   <td>
+      マッチ構造mを受け取って，正規表現にマッチした部分列（match:substring）の中の英字の小文字を大文字に変換して返す手続きを定義しています．
+   </td>
+</tr>
+<tr>
+   <td>(2)</td>
+   <td>
+   正規表現 <myrx>[a-z]+</myrx> を文字列 "&lt;!-- abc --&gt;" させて，マッチした部分列 "abc" を大文字に変換して返しています．
+   </td>
+</tr>
+<tr>
+   <td>(3)</td>
+   <td>
+   上と同じマッチング処理を行っているのですが，マッチした部分列を大文字に変換したもの（"ABC"）に，マッチした部分列の前後の部分列（"&lt;!-- "と" --&gt;"）を連結して返しています．この場合の <span>'</span>post は
+   <div class="dstyle">
+   (regexp-substitute/global #f "[a-z]+" " --&gt;" &#39;pre to-upcase &#39;post)
+   </div>
+と同じ処理を行っています．つまり，マッチした部分列 "abc" の残りの部分列 " --&gt;" に対して再帰的に処理しています．ただし，この再帰的な処理はマッチに失敗するので，文字列 " --&gt;" を返して終了します（結果的に，regexp-substituteの<span>&#39;</span>postと同じ処理を行っています）．
+   </td>
+</tr>
+<tr>
+   <td>(4)</td>
+   <td>
+   検索対象の文字列を "&lt;!-- abc:def --&gt;" に変えて上と同じような処理を行っていす．正規表現 <myrx>[a-z]+</myrx> は，まず部分列 "abc" がマッチします．そのときには，'pre（"abc"の前にある"&lt;!-- "）と"abc"を大文字に変換した文字列（"ABC"）を出力して，'postを処理します．この'postは
+   <div class="dstyle">
+   (regexp-substitute/global #f "[a-z]+" ":def --&gt;" &#39;pre to-upcase &#39;post)
+   </div>
+と同じ処理を行います．今度は"def"がマッチし，'pre（":"）と"DEF"を出力して，'postを処理します．この'postは
+   <div class="dstyle">
+   (regexp-substitute/global #f "[a-z]+" " --&gt;" &#39;pre to-upcase &#39;post)
+   </div>
+と同じ処理を行います．今度はマッチに失敗するので，文字列 " --&gt;" を出力して終了します．<br>
+&emsp;以上をまとめると，"&lt;!-- "， "ABC"， ":"， "DEF"，" --&gt;" が順に出力され，結果的にこれらを連結した文字列（<span>$</span>3）が返ってきます．
+   </td>
+</tr>
+</table>
+<li>
+（参考）上記の実行例のように，'post を <mysyn>item</mysyn> ... の最後に指定したときには，正規表現にマッチする部分列に関してループ処理（Scheme的な言い方をすれば，末尾再帰的な処理）を行います．実際には，下位の呼び出しは上位の呼び出しに戻っていくのですが，'postのあとに何も処理することがないので，結果的に（あるいは，見かけ上）末尾再帰的な処理を行うことになります．
+
+<li>
+（参考）regexp-substitute手続きは，(ice-9 regexp)モジュールの中で次のように定義されています．
+<pre class="list">
+(define (regexp-substitute/global port regexp string . items)
+
+  ;; If `port' is #f, send output to a string.
+  (if (not port)
+      (call-with-output-string
+       (lambda (p)
+         (apply regexp-substitute/global p regexp string items)))
+
+      ;; Walk the set of non-overlapping, maximal matches.
+      (let next-match ((matches (list-matches regexp string))
+                       (start 0))
+        (if (null? matches)
+            (display (substring string start) port)
+            (let ((m (car matches)))
+
+              ;; Process all of the items for this match.  Don't use
+              ;; for-each, because we need to make sure 'post at the
+              ;; end of the item list is a tail call.
+              (let next-item ((items items))
+
+                (define (do-item item)
+                  (cond
+                   ((string? item)    (display item port))
+                   ((integer? item)   (display (match:substring m item) port))
+                   ((procedure? item) (display (item m) port))
+                   ((eq? item 'pre)
+                    (display
+                     (substring string start (match:start m))
+                     port))
+                   ((eq? item 'post)
+                    (next-match (cdr matches) (match:end m)))
+                   (else (error 'wrong-type-arg item))))
+
+                (if (pair? items)
+                    (if (null? (cdr items))
+                        (do-item (car items)) ; This is a tail call.
+                        (begin
+                          (do-item (car items)) ; This is not.
+                          (next-item (cdr items)))))))))))
+</pre>
+<li>
+（補足）正規表現<mysyn>regexp</mysyn>に検索対象文字列<mysyn>str</mysyn>がまったくマッチしなかったときには，<mysyn>str</mysyn>そのものが出力されます．この点は，regexp-substituteと異なります（regexp-substituteは何も出力しません）．比較のための実行例を以下に示します．
+<pre class="shell">
+$ <mycmd>guile</mycmd> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <mycmd>(regexp-substitute #f (string-match "[^a-z]+" "abc"))</mycmd> &crarr;
+$1 = ""
+guile> <mycmd>(regexp-substitute/global #f "[^a-z]+" "abc")</mycmd> &crarr;
+$2 = "abc"
+guile> 
+</pre>
+何も出力しないほうが好ましいように思いますが，マッチに成功しないような正規表現と文字列の組み合わせに対してこの手続きを適用するとは考えにくいので，実用上の問題になることはないように思います．
+</ul>
+
+</section>
+
+</div> <!-- END of main division -->
+
+
+<div id="thatsall">(おしまい)</div>
+
+
+</body>
+</html>

@@ -69,21 +69,31 @@ body {
     font-size: 95%;
 }
 
-
-#main {
-    /* float: left;  */
-    width: 100%; 
-    margin-top: 10px;
-}
-
 #revise {
-    font-size: 90%;
+    font-size: 85%;
     border-top: 1px solid #aaaaaa;  
     border-bottom: 1px solid #aaaaaa;  
     padding-top: 3px;
     padding-bottom: 3px;
     margin-bottom: 10px; 
  }
+
+#thatsall {
+    text-align: right;
+    /* font-weight: bold;  */
+    font-size: 85%;
+    color: #555555;
+    border-top: 3px solid #aaaaaa;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-top: 5px;
+}
+
+#main {
+    /* float: left;  */
+    width: 100%; 
+    margin-top: 10px;
+}
 
 .noline {
     text-decoration: none; 
@@ -150,8 +160,18 @@ ul li.menu {
     padding-bottom: 0px;
 }
 
+ul.revise {
+    margin-top: 0px; 
+}
+
+ul li.revise {
+    line-height: 110%;
+    padding: 0px;
+}
+
+
 ol {
-    margin-left: -5px; 
+    margin-left: 10px;
     margin-top: 5px; 
     margin-bottom: 0px; 
 }
@@ -259,7 +279,7 @@ table.symbol {
     border-bottom: solid 1px #404040;
 }
 
-table th {
+table.symbol th {
     padding-left: 10px;
     padding-right: 10px;
     border: none;
@@ -267,15 +287,26 @@ table th {
     border-bottom: solid 1px #404040;
 }
 
-tr:nth-child(odd) {
+table.symbol tr:nth-child(odd) {
     background-color:  #f0f0f0;
 }
 
-table td {
+table.symbol td {
     vertical-align: top;
     padding-left: 10px;
     padding-right: 10px;
     border: none;
+}
+
+table.item {
+    width: 100%;  
+    /* background-color:  #f0f0f0; */
+}
+
+table.item td {
+    vertical-align: top;
+    padding-left:  5px;
+    padding-right: 2px;
 }
 
 .ref{
@@ -363,6 +394,24 @@ span.mykw {
     color: darkviolet; 
 }
 
+mydate { 
+    font-weight: bold;
+    color: darkviolet; 
+}
+span.mydate { 
+    font-weight: bold;
+    color: darkviolet; 
+}
+
+myvar { 
+    /* font-weight: bold; */
+    color: darkviolet; 
+}
+span.myvar { 
+    /* font-weight: bold; */
+    color: darkviolet; 
+}
+
 mybksl {
     font-family: monospace;
 }
@@ -370,3 +419,9 @@ mybksl:before { content: "\\"; }
 span.mybksl {
     font-family: monospace;
 }
+span.mybksl:before { content: "\\"; }
+
+span.right {
+    float: right;
+}
+
