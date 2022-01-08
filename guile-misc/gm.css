@@ -19,22 +19,15 @@ body {
     color: #aaaaaa;
 }
 
-#title {
-    width: 100%;  
-    margin-top: 0px;
-    margin-bottom: 0px;
-    color: #000080;
-}
-
-.titlename {
+#title { /* this was .titlename  */
     display: inline-block; 
     padding-top: 10px; 
     padding-bottom: 10px; 
     font-size: 140%;
     font-weight: bold;
-    width: 85%;
+    width: 100%;
+    color: #000080;
 }
-
 
 .date { 
     display: inline-block; 
@@ -125,6 +118,7 @@ h3.section {
     border-left: solid 15px #000080;    
     border-bottom: solid 1px #000080; 
     margin-top: 25px;
+    margin-bottom: 5px; 
     box-shadow: 3px 3px 5px #aaaaaa; /* 5px 5px #cccccc outset;  */
 }
 
@@ -132,6 +126,15 @@ h4.revise {
     font-weight: normal;
     margin-top: 0px; 
     margin-bottom: 0px; 
+}
+
+h4.hdln {
+    font-weight: bold;
+    margin-right: 5px; 
+    margin-top: 10px;
+    margin-bottom: 5px;   
+    background: linear-gradient(transparent 80%, #a8eaff 20%);
+    display: inline-block;
 }
 
 .hdln {

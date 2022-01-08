@@ -53,18 +53,17 @@
 
 <!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="title">
-<div class="titlename">
 Guile色々／POSIX拡張正規表現
-</div>
-<!-- <div class="date"><span class="date1"></span></div> -->
 </div>
 
 
 <!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <p></p>
-<section id="revise">
+<div id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.8</span>：HTMLの誤りを訂正．
 <li class="revise">
 <span class="mydate">2022.1.6</span>：マッチに関する用語を追加．
 <li class="revise">
@@ -72,13 +71,12 @@ Guile色々／POSIX拡張正規表現
 <li class="revise">
 <span class="mydate">2021.12.28</span>：初出
 </ul>
-</section>
+</div>
 
 
 <!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
-<p></p>
-<span class="hdln">概 要</span>
+<h4 class="hdln">概 要</h4>
 <ul>
 <li>
 Guileは<em>POSIXの拡張正規表現</em>（POSIX Extended Regular Expression；以下，<em>POSIX.ERE</em>）をサポートしています．内部的には，Gnu Cの正規表現ライブラリを使用しているそうです．このノートは以下の2つの資料に基づいてPOSIX.EREについて勉強したことを記録しています．
@@ -101,8 +99,7 @@ POSIX.1とPOSIX.2とでは，微妙な違いがありますが，大きな違い
 <!-- %%% 目　次 %%% -->
 <!-- %%%%%%%%%%%%%% -->
 <div id="contents">
-<p></p>
-<span class="hdln">目 次</span>
+<h4 class="hdln">目 次</h4>
 <ul class="menu">
 <li class="menu"><a class="noline" href="#preliminaries">準備</a>
    <ul class="menu">
@@ -166,8 +163,7 @@ POSIX.1とPOSIX.2とでは，微妙な違いがありますが，大きな違い
 <!-- %%% 参考資料 %%% -->
 <!-- %%%%%%%%%%%%%%%% -->
 <div id="references">
-<p></p>
-<span class="hdln">参考資料</span>
+<h4 class="hdln">参考資料</h4>
 <ul>
 <li>
 Guile, Scheme
@@ -261,11 +257,11 @@ Unicode一覧表（ウィキペディア）
 <div id="main">
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="preliminaries">
-<h3 class="section">準備</h3>
+<section>
+<h3 class="section" id="preliminaries">準備</h3>
 
-<p></p>
-<span class="hdln" id="math-symbols">文字列に関する数学的な記法</span>
+<!-- ============================================= -->
+<h4 class="hdln" id="math-symbols">文字列に関する数学的な記法</h4>
 <ul>
 <li>
 正規表現（regular expression）は，元来，文字列の集合を数学的に定義するためのものです．このノートでは，POSIX.EREの意味を，それが表現している文字列の集合によって示します．そのため次のような数学的な記法を使用します．以下の$x$や$y$は文字列を表し，$A$や$B$は文字列からなる集合を表しています．
@@ -339,8 +335,8 @@ Unicode一覧表（ウィキペディア）
 $\Sigma$はロケールに応じて変化します．筆者の環境（日本語版のDebian 11）ではja_JP.UTF-8で定義されているすべての文字からなる集合になります．
 </ul>
 
-<p></p>
-<span class="hdln" id="color-of-regular-expression">正規表現の色分けについて</span>
+<!-- ================================================ -->
+<h4 class="hdln" id="color-of-regular-expression">正規表現の色分けについて</h4>
 <ul>
 <li>
 正規表現の中で使用する文字（例えば，英字のaなど）は，単なる文字を表しているのではなく，その文字からなる集合（例えば，$\{$a$\}$など）を表しています．プログラミングに比喩して言うと，正規表現の中で使用する文字と文字列データの中で使用する文字はデータ型が異なるのです．そのため，オートマトン理論や形式言語理論の教科書では，データ型の違いを明記するために，正規表現の中の文字を太字で示したりしています．
@@ -348,8 +344,8 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
 このノートでは，<strong>正規表現を色を変えて示します</strong>．例えば，abcという文字列を正規表現として使うときには <span class="myrx">abc</span> といったように色を変えます．
 </ul>
 
-<p></p>
-<span class="hdln" id="on-matches">マッチについて</span>
+<!-- ================================================ -->
+<h4 class="hdln" id="on-matches">マッチについて</h4>
 <ul>
 <li>
 正規表現$\alpha$に文字列$z$が<em>マッチする</em>とは，$z$が$L(\alpha)$に属すること（$z \in L(\alpha)$が成り立つこと）を言います．
@@ -369,8 +365,8 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
 最左最長原則は正規表現の部分式に対しても適用されます．ただし，<a class="noline" href="#on-back-reference">前方参照（back-reference）</a>を使わないのであれば，上で述べた正規表現全体に関する最左最長原則だけを気にしていればよいと言えます．詳細は省略します．
 </ul>
 
-<p></p>
-<span class="hdln" id="beginning-end-edge">先頭，末尾，境界</span>
+<!-- ========================================================= -->
+<h4 class="hdln" id="beginning-end-edge">先頭，末尾，境界</h4>
 <ul>
 <li>
 以下の説明の中で，「文字列の先頭にマッチする」，「文字列の末尾にマッチする」，「境界にマッチする」といった言葉が出てきます．これらは次のように考えます．検索対象の文字列　$x=c_0c_1c_2 \,\cdots\, c_n$（各$c_i$は文字）が与えられたとき，各文字の前後に空文字列（$\varepsilon$）が付加されていて，さらに，それぞれの空文字列に文字列内の位置情報が付随していると仮定します．つまり，
@@ -409,10 +405,10 @@ guile>
 </section>
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="POSIX.ERE">
-<h3 class="section">POSIX拡張正規表現（POSIX.ERE）</h3>
-<p></p>
-<span class="hdln" id="characters-in-POSIX.ERE">POSIX.EREにおける文字</span>
+<section>
+<h3 class="section" id="POSIX.ERE">POSIX拡張正規表現（POSIX.ERE）</h3>
+
+<h4 class="hdln" id="characters-in-POSIX.ERE">POSIX.EREにおける文字</h4>
 <ul>
 <li>
 POSIX.EREは，文字を通常文字（ordinary character）と特殊文字（special character）に分類しています．<em>通常文字</em>は特殊文字以外の文字のことです．<em>特殊文字</em>はPOSIX.EREの中で<strong>特別な機能を果たす文字</strong>のことで，以下のものがあります．
@@ -491,8 +487,8 @@ https://manpages.debian.org/testing/manpages/regex.7.en.html
 これらは，対応する左角括弧や左丸括弧がないとき，通常文字として処理されます．一方，対応する左角括弧や左丸括弧があるときには，それぞれ，ブラケット表現を終了したり，有限回の繰り返し指定を終了するといった機能を果たします．
 </ul>
 
-<p></p>
-<span class="hdln" id="description-of-POSIX.ERE">POSIX.EREの記述形式</span>
+<!-- ========================================================= -->
+<h4 class="hdln" id="description-of-POSIX.ERE">POSIX.EREの記述形式</h4>
 <ul>
 <li>
 POSIX.EREは，一般に
@@ -692,8 +688,8 @@ guile>
 POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字としてのハット記号（^）を途中に指定するような表現も構文的に許しています．しかし，文字列の途中に先頭があるといった文字列はあり得ないので，そのような正規表現はどんな文字列ともマッチすることはありません．ドル記号（<span>$</span>）についても同様です．
 </ul>
 
-<p></p>
-<span class="hdln" id="grammer-of-POSIX.ERE">POSIX.EREの文法</span>
+<!-- ===================================================== -->
+<h4 class="hdln" id="grammer-of-POSIX.ERE">POSIX.EREの文法</h4>
 <ul>
 <li>
 <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>に掲載されているPOSIX.EREの文法を示します．
@@ -775,10 +771,11 @@ POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字とし�
 
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="bracket-expression">
-<h3 class="section">ブラケット表現</h3>
+<section>
+<h3 class="section" id="bracket-expression">ブラケット表現</h3>
 
-<span class="hdln" id="description-of-bracket-expression">ブラケット表現の記述形式</span>
+<!-- =================================================== -->
+<h4 class="hdln" id="description-of-bracket-expression">ブラケット表現の記述形式</h4>
 <ul>
 <li>
 <em>ブラケット表現</em>（bracket expression）は，<strong>文字集合（$\Sigma$の部分集合）を定義する</strong>ための正規表現です．以下のいずれかの形式によって記述します．
@@ -883,8 +880,8 @@ POSIX.EREは，<span class="myrx">a^b</span> のような，特殊文字とし�
 ブラケット表現の中で一つの文字を複数回指定してもエラーにはなりません．何回指定しても1回指定したものとして処理されます．例えば，ブラケット表現の<span class="myrx">[aaa]</span>は，文字'a'を3回指定していますが，$\{$'a'$\}$という文字集合を表します．
 </ul>
 
-<p></p>
-<span class="hdln" id="characeters-in-bracket-expression">ブラケット表現における文字の分類</span>
+<!-- ======================================================= -->
+<h4 class="hdln" id="characeters-in-bracket-expression">ブラケット表現における文字の分類</h4>
 <ul>
 <li>
 ブラケット表現の中では，通常文字／特殊文字といった分類や機能はキャンセルされ，文字の分類・機能がリセットされます．つまり，ブラケット表現の中と外では文字の処理の仕方（文字の分類・機能）がまったく異なります．
@@ -915,8 +912,8 @@ $C_i$がメタ文字のときには，文脈に応じて解釈が変わります
 <em id="right-bracket">右角括弧</em>（]）は，ブラケット表現の先頭（1番目の形式の$C_0$，または，2番目の形式の$C_1$）に指定したときには普通の文字として処理されます．一方，先頭以外に指定したときにはメタ文字（ブラケット表現の終了）として処理されます．
 </ul>
 
-<p></p>
-<span class="hdln" id="collating-symbol">照合記号表現</span>
+<!-- ===================================================== -->
+<h4 class="hdln" id="collating-symbol">照合記号表現</h4>
 <ul>
 <li>
 POSIX.EREの<em>照合記号表現</em>は，<strong>ブラケット表現の中で単一の照合要素からなる集合を指定する</strong>ためのものです．次の形式によって表現します．
@@ -936,8 +933,8 @@ POSIX.EREの<em>照合記号表現</em>は，<strong>ブラケット表現の中
 一方，照合要素にはメタ文字も含まれるので，<strong>ブラケット表現の中でメタ文字を普通の文字として指定するために利用できます</strong>．つまり，照合記号表現の中ではメタ文字も普通の文字として処理されます．例えば，ブラケット表現 <span class="myrx">[[.^.][.-.][.].]]</span> は，メタ文字からなる集合$\{$'^'$,$'-'$,$']'$\}$を表します．
 </ul>
 
-<p></p>
-<span class="hdln" id="equivalence-class">等価クラス表現</span>
+<!-- ==================================================== -->
+<h4 class="hdln" id="equivalence-class">等価クラス表現</h4>
 <ul>
 <li> 
 POSIX.EREの<em>等価クラス表現</em>は，<strong>ブラケット表現の中で等価な照合要素からなる集合を指定する</strong>ためのものです．次の形式によって表現します．
@@ -957,8 +954,8 @@ POSIX.EREの<em>等価クラス表現</em>は，<strong>ブラケット表現の
 残念ながら，筆者の環境（Debian 11）のロケール（ja_JP）は，2つの異なる照合要素間の等価性を何も定義していません．従って，筆者の環境では，$c$が何であろうとも，上記の等価クラスは$c$だけからなる集合$\{c\}$を表すことになります．
 </ul>
 
-<p></p>
-<span class="hdln" id="character-class">文字クラス表現</span>
+<!-- ==================================================== -->
+<h4 class="hdln" id="character-class">文字クラス表現</h4>
 <ul>
 <li> 
 POSIX.EREは以下に示すような文字集合を用意しています．これらを<em>文字クラス</em>（character class）と呼んでいます．
@@ -1056,8 +1053,8 @@ guile>
 -->
 </ul>
 
-<p></p>
-<span class="hdln" id="range-expression">範囲表現</span>
+<!-- =========================================================== -->
+<h4 class="hdln" id="range-expression">範囲表現</h4>
 <ul>
 <li> 
 <em>範囲表現</em> $d$<span class="myrx">-</span>$e$ は$d$以上$e$以下の文字からなる集合を表しています．$d$を範囲表現の<em>始点</em>（starting point）と呼び，$e$を<em>終点</em>（ending point）と呼びます．始点と終点の間はハイフン（マイナス記号）です．
@@ -1071,8 +1068,8 @@ guile>
 （注意）文字の順序は<strong>文字コードの大小順とは限りません</strong>．
 </ul>
 
-<p></p>
-<span class="hdln" id="on-hyphen">ハイフンについて</span>
+<!-- ================================================= -->
+<h4 class="hdln" id="on-hyphen">ハイフンについて</h4>
 <ul>
 <li>
 ブラケット表現の中でハイフンを見たら，ほぼ直ちに範囲表現を表していると考えてしまいます．しかし，そういった考えがしばしば混乱を引き起こすことがあります．
@@ -1093,9 +1090,8 @@ guile>
    </ul>
 </ul>
 
-
-<p></p>
-<span class="hdln" id="grammar-bracket-expression">ブラケット表現の文法</span>
+<!-- ============================================================ -->
+<h4 class="hdln" id="grammar-bracket-expression">ブラケット表現の文法</h4>
 <ul>
 <li>
 <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html">POSIX.1（仕様書）</a>に掲載されているブラケット表現の文法を示します．
@@ -1183,8 +1179,8 @@ guile>
 （注意）以下の内容は<strong>あやふやです</strong>．あまり信用しないで下さい．あやふやと言わざるを得ない理由は，正確な仕様が（少なくとも今の筆者には）見つけられないからです．
 </ul>
 
-<p></p>
-<span class="hdln" id="on-locale">ロケールについて</span>
+<!-- ==================================================== -->
+<h4 class="hdln" id="on-locale">ロケールについて</h4>
 <ul>
 <li>
 正規表現の機能のうち，少なくとも次の機能はロケール（の言語に関する定義）に依存します．
@@ -1233,8 +1229,8 @@ guile [1]>
 
 </ul>
 
-<p></p>
-<span class="hdln" id="on-quoted-characters">クォート（エスケープ）について</span>
+<!-- ===================================================== -->
+<h4 class="hdln" id="on-quoted-characters">クォート（エスケープ）について</h4>
 <ul>
 <li>
 1〜9の数字をクォートした場合（<span class="myrx">\1</span>，<span class="myrx">\2</span>，...， <span class="myrx">\9</span>），
@@ -1426,8 +1422,8 @@ guile [1]>
 </pre>
 </ul>
 
-<p></p>
-<span class="hdln" id="on-back-reference">前方参照（back-reference）について</span>
+<!-- ========================================================= -->
+<h4 class="hdln" id="on-back-reference">前方参照（back-reference）について</h4>
 <ul>
 <li>
 以下は余談（negligible）です．
