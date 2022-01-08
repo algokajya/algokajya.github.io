@@ -37,9 +37,7 @@
 
 <body>
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="header">
 <a class="noline" href="regex.html">[Prev]</a>
 &ensp; 
@@ -51,39 +49,32 @@
 </div>
 
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="title">
-<div class="titlename">
 Guile色々／正規表現のための手続き
 </div>
-<!-- <div class="date"><span class="date0"></span></div> -->
-</div>
 
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <p></p>
-<section id="revise">
+<div id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
-<span class="mydate">2021.1.7</span>：HTMLの誤りを訂正．
+<span class="mydate">2022.1.8</span>：regexp-quote手続きを追加．
 <li class="revise">
-<span class="mydate">2021.1.6</span>：初出
+<span class="mydate">2022.1.7</span>：HTMLの誤りを訂正．
+<li class="revise">
+<span class="mydate">2022.1.6</span>：初出
 </ul>
-</section>
+</div>
 
 
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
 <p></p>
-<span class="hdln">概 要</span>
+<h4 class="hdln">概 要</h4>
 <ul>
 <li>
 このノートは，以下の2つの資料を参照しながら，Guileが用意している正規表現を処理するための手続きについて勉強したことを記録しています．
@@ -104,12 +95,9 @@ Guile色々／正規表現のための手続き
 
 
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="contents">
-<p></p>
-<span class="hdln">目 次</span>
+<h4 class="hdln">目 次</h4>
 <ul class="menu">
 <li class="menu">
 <a class="noline" href="#preliminaries">準備</a>
@@ -148,40 +136,39 @@ Guile色々／正規表現のための手続き
    <li class="menu">
    <a class="noline" href="#match-proc-parameters">各手続きに共通の引数</a>
    <li class="menu">
-<a class="noline" href="#match:substring">match:substring</a>
+   <a class="noline" href="#match:substring">match:substring</a>
    <li class="menu">
-<a class="noline" href="#match:start">match:start</a>
+   <a class="noline" href="#match:start">match:start</a>
    <li class="menu">
-<a class="noline" href="#match:end">match:end</a>
+   <a class="noline" href="#match:end">match:end</a>
    <li class="menu">
-<a class="noline" href="#match-others">match:count，match:string，match:prefix，match:suffix，regexp-match?</a>
+   <a class="noline" href="#match-others">match:count，match:string，match:prefix，match:suffix，regexp-match?</a>
    </ul>
 
 <li class="menu">
 <a class="noline" href="#other-procedures">その他の手続き</a>
    <ul class="menu">
    <li class="menu">
-<a class="noline" href="#regexp?">regexp?</a>
+   <a class="noline" href="#regexp?">regexp?</a>
    <li class="menu">
-<a class="noline" href="#fold-matches">fold-matches</a>
+   <a class="noline" href="#fold-matches">fold-matches</a>
    <li class="menu">
-<a class="noline" href="#list-matches">list-matches</a>
+   <a class="noline" href="#list-matches">list-matches</a>
    <li class="menu">
-<a class="noline" href="#regexp-substitute">regexp-substitute</a>
+   <a class="noline" href="#regexp-substitute">regexp-substitute</a>
    <li class="menu">
-<a class="noline" href="#regexp-substitute/global">regexp-substitute/global</a>
+   <a class="noline" href="#regexp-substitute/global">regexp-substitute/global</a>
+   <li class="menu">
+   <a class="noline" href="#regexp-quote">regexp-quote</a>
    </ul>
 </ul>
 </div>
 
 
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="references">
-<p></p>
-<span class="hdln">参考資料</span>
+<h4 class="hdln">参考資料</h4>
 <ul>
 <li>
 Guile, Scheme
@@ -242,12 +229,11 @@ https://manpages.debian.org/testing/manpages/regex.7.en.html
 <div id="main">
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="preliminaries">
-<h3 class="section">準備</h3>
+<section>
+<h3 class="section" id="preliminaries">準備</h3>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="ice-9-regex">モジュールのロード</span>
+<h4 class="hdln" id="ice-9-regex">モジュールのロード</h4>
 <ul>
 <li>
 Guileの正規表現ライブラリを使うときには，<em>(ice-9 regex)</em> モジュールをプログラムの冒頭などでロードする必要があります．このモジュールの中に正規表現用の手続きが定義されています．
@@ -276,8 +262,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="how-to-use">基本的な利用方法</span>
+<h4 class="hdln" id="how-to-use">基本的な利用方法</h4>
 <ul>
 <li>
 正規表現を使ったマッチング処理はおおよそ次のような手順で行います．
@@ -296,12 +281,11 @@ make-regexp手続きとregexp-exec手続きの組み合わせの代わりに<spa
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="compile-and-matching">
-<h3 class="section">コンパイルとマッチング</h3>
+<section>
+<h3 class="section" id="compile-and-matching">コンパイルとマッチング</h3>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="make-regexp">make-regexp（コンパイル）</span>
+<h4 class="hdln" id="make-regexp">make-regexp（コンパイル）</h4>
 <ul>
 <li> 呼び出し形式
 <pre class="list">
@@ -394,8 +378,7 @@ make-regexp手続きは，<span class="mysyn">pat</span>によって指定され
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="regexp-exec">regexp-exec（マッチング）</span>
+<h4 class="hdln" id="regexp-exec">regexp-exec（マッチング）</h4>
 <ul>
 <li>呼び出し形式
 <pre class="list">
@@ -443,8 +426,7 @@ make-regexp手続きは，<span class="mysyn">pat</span>によって指定され
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="compile-matching-example">実行例</span>
+<h4 class="hdln" id="compile-matching-example">実行例</h4>
 <ul>
 <li> 簡単な実行例を示します．
 <pre class="shell">
@@ -586,8 +568,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="string-match">string-match（コンパイル＆マッチング）</span>
+<h4 class="hdln" id="string-match">string-match（コンパイル＆マッチング）</h4>
 <ul>
 <li>
 呼び出し形式
@@ -629,8 +610,8 @@ guile>
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section  id="match-structure">
-<h3 class="section">マッチ構造（match structure）</h3>
+<section>
+<h3 class="section" id="match-structure">マッチ構造（match structure）</h3>
 
 <ul>
 <li>
@@ -638,7 +619,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<span class="hdln" id="elements-of-match-structure">マッチ構造の成分</span>
+<h4 class="hdln" id="elements-of-match-structure">マッチ構造の成分</h4>
 <ul>
 <li>
 regexp-exec手続きやstring-match手続きを使って，正規表現$\alpha$に文字列$x$をマッチさせたとき，マッチに失敗したときには#fが返ってきますが，マッチが成功したときには次のようなベクタが返ってきます．
@@ -707,8 +688,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="subexpression-matching">部分式マッチング（subexpression matching）</span>
+<h4 class="hdln" id="subexpression-matching">部分式マッチング（subexpression matching）</h4>
 <ul>
 <li>
 正規表現の<em>部分式</em>とは，<strong>丸括弧で囲まれた式</strong>のことです．部分式は，それを囲む<strong>左丸括弧の位置をもとに左から順に1番から始まる番号が付けられます</strong>．
@@ -783,12 +763,11 @@ guile>
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="procedures-for-matches">
-<h3 class="section">マッチ構造を利用するための手続き</h3>
+<section>
+<h3 class="section" id="procedures-for-matches">マッチ構造を利用するための手続き</h3>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="match-proc-parameters">各手続きに共通の引数</span>
+<h4 class="hdln" id="match-proc-parameters">各手続きに共通の引数</h4>
 <ul>
 <li>
 以下の手続きの説明において <em><span class="mysyn">match</span></em> は，次のようなマッチ構造（ベクタ）とします．
@@ -801,8 +780,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="match:substring">match:substring</span>
+<h4 class="hdln" id="match:substring">match:substring</h4>
 <ul>
 <li>
 呼び出し形式
@@ -890,8 +868,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="match:start">match:start</span>
+<h4 class="hdln" id="match:start">match:start</h4>
 <ul>
 <li>
 呼び出し形式
@@ -919,8 +896,7 @@ guile>
 
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="match:end">match:end</span>
+<h4 class="hdln" id="match:end">match:end</h4>
 <ul>
 <li>
 呼び出し形式
@@ -947,8 +923,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<p></p>
-<span class="hdln" id="match-others">match:count，match:string，match:prefix，match:suffix，regexp-match?</span>
+<h4 class="hdln" id="match-others">match:count，match:string，match:prefix，match:suffix，regexp-match?</h4>
 <ul>
 <li>
 呼び出し形式
@@ -1004,11 +979,11 @@ guile>
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<section id="other-procedures">
-<h3 class="section">その他の手続き</h3>
+<section>
+<h3 class="section" id="other-procedures">その他の手続き</h3>
 
 <!-- ===head line================================== -->
-<span class="hdln" id="regexp?">regexp?</span>
+<h4 class="hdln" id="regexp?">regexp?</h4>
 <ul>
 <li>呼び出し形式
 <pre class="list">
@@ -1020,7 +995,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<span class="hdln" id="fold-matches">fold-matches</span>
+<h4 class="hdln" id="fold-matches">fold-matches</h4>
 <ul>
 <li>呼び出し形式
 <pre class="list">
@@ -1117,7 +1092,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<span class="hdln" id="list-matches">list-matches</span>
+<h4 class="hdln" id="list-matches">list-matches</h4>
 <ul>
 <li>呼び出し形式
 <pre class="list">
@@ -1154,7 +1129,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<span class="hdln" id="regexp-substitute">regexp-substitute</span>
+<h4 class="hdln" id="regexp-substitute">regexp-substitute</h4>
 <ul>
 <li>呼び出し形式
 <pre class="list">
@@ -1357,7 +1332,7 @@ guile>
 </ul>
 
 <!-- ===head line================================== -->
-<span class="hdln" id="regexp-substitute/global">regexp-substitute/global</span>
+<h4 class="hdln" id="regexp-substitute/global">regexp-substitute/global</h4>
 <ul>
 <li>呼び出し形式
 <pre class="list">
@@ -1543,6 +1518,38 @@ guile>
 何も出力しないほうが好ましいように思いますが，マッチに成功しないような正規表現と文字列の組み合わせに対してこの手続きを適用するとは考えにくいので，実用上の問題になることはないように思います．
 </ul>
 
+<!-- ===head line================================== -->
+<h4 class="hdln" id="regexp-quote">regexp-quote</h4>
+<ul>
+<li>呼び出し形式
+<pre class="list">
+(<span class="myvar">regexp-quote</span> <span class="mysyn">str</span>)
+</pre>
+文字列<span class="mysyn">str</span>が拡張正規表現を記述しているものと見なして，その中の特殊文字（注：拡張正規表現の特殊文字）をバックスラッシュによってクォート（エスケープ）します．
+<li>
+<em><span class="mysyn">str</span></em>
+は文字列です．
+<li>
+簡単な実行例を示します．
+<pre class="shell">
+$ <span class="mycmd">guile</span> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <span class="mycmd">(regexp-quote "[0-9].[0-9]")</span> &crarr;
+$1 = "\\[0-9]\\.\\[0-9]"
+guile> 
+</pre>
+これは，バージョン番号風の数字とピリオドからなる正規表現の中のピリオドをクォートしようと思ってregexp-quoteを実行しています．しかしながら，少し意図に反して，左角括弧もクォートされています．
+<li>
+（余談）この手続きはすべての特殊文字をクォートしてしまうので，一般的に役立つとは思えません．それから，仕様書はバックスラッシュによってクォート（エスケープ）すると説明しているのですが，中括弧はブラケット表現に変換したりします（理由は不明です）．なお，メタ文字（^,-,]）を除くと，ブラケット表現も特殊文字の特殊機能を無効化するので，間違いではありません．
+<li>
+（注意）特殊文字をクォート（エスケープ）するときには，バックスラッシュを2重にしなければなりません．これは，Guileのreaderにバックスラッシュをエスケープさせるためです．例えば，正規表現の
+<span class="myrx">\</span><span class="myrx">\</span>
+をGuileの手続きなどで指定するときには，それぞれのバックスラッシュを2重にして
+"<span>\</span><span>\</span><span>\</span><span>\</span>"
+としなければなりません．
+
+</ul>
 </section>
 
 </div> <!-- END of main division -->
