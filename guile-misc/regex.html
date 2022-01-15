@@ -63,6 +63,8 @@ Guile色々／POSIX拡張正規表現
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.1.15</span>：CSSを一部変更．
+<li class="revise">
 <span class="mydate">2022.1.8</span>：HTMLの誤りを訂正．
 <li class="revise">
 <span class="mydate">2022.1.6</span>：マッチに関する用語を追加．
@@ -389,14 +391,14 @@ $\Sigma$はロケールに応じて変化します．筆者の環境（日本語
 <li>
 参考のために，簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "^" "#word#")</span> &crarr;
+guile> <span class="mycmd">(string-match "^" "#word#")</span> 
 $1 = #("#word#" (0 . 0))
-guile> <span class="mycmd">(string-match "$" "#word#")</span> &crarr;
+guile> <span class="mycmd">(string-match "$" "#word#")</span> 
 $2 = #("#word#" (6 . 6))
-guile> <span class="mycmd">(string-match "\\b" "#word#")</span> &crarr;
+guile> <span class="mycmd">(string-match "\\b" "#word#")</span> 
 $3 = #("#word#" (1 . 1))
 guile> 
 </pre>
@@ -662,16 +664,16 @@ https://manpages.debian.org/unstable/manpages/int16_t.3.en.html
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2（オンラインマニュアル）</a>は何も述べていません．Guileでは問題なく使えるようです．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "abab")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "abab")</span> 
 $1 = #f
-guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "ababab")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "ababab")</span> 
 $2 = #("ababab" (0 . 6) (4 . 6))
-guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "ababababab")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "ababababab")</span> 
 $3 = #("ababababab" (0 . 6) (4 . 6))
-guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "abababababab")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab){3}{1,2}" "abababababab")</span> 
 $4 = #("abababababab" (0 . 12) (10 . 12))
 guile> 
 </pre>
@@ -1021,12 +1023,12 @@ POSIX.EREは以下に示すような文字集合を用意しています．こ�
    </ul>
 例えば，文字クラス <span class="myrx">[[:alpha:]]</span> は，英字だけでなく，半角のカタカナや全角のひらがな・カタカナ・漢字をすべて含んでいるようです．以下に簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "[[:alpha:]]" " ｱ ")</span> &crarr;
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " ｱ ")</span> 
 $1 = #(" ｱ " (1 . 2))
-guile> <span class="mycmd">(string-match "[[:alpha:]]" " あ ")</span> &crarr;
+guile> <span class="mycmd">(string-match "[[:alpha:]]" " あ ")</span> 
 $2 = #(" あ " (1 . 2))
 guile> <span class="mycmd">(string-match "[[:alpha:]]" " ア ")</span>
 $3 = #(" ア " (1 . 2))
@@ -1215,10 +1217,10 @@ Debian 11の場合，ロケール定義ファイルは次の通りです．
 <li>
 jspaceなどの文字クラスが定義されているのですが，残念ながら，これらは利用できないようです．以下に実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "[[:jspace:]]" "　　")</span> &crarr;
+guile> <span class="mycmd">(string-match "[[:jspace:]]" "　　")</span> 
 ice-9/boot-9.scm:1669:16: In procedure raise-exception:
 In procedure make-regexp: 無効な文字クラス名です
 
@@ -1309,12 +1311,12 @@ https://manpages.debian.org/testing/manpages/regex.7.en.html
 https://manpages.debian.org/unstable/grep/grep.1.en.html
 ">grepのオンラインマニュアル</a>を参照しています．そのgrepのオンラインマニュアルによれば，<em>単語</em>（word）とは，数字，英字，アンダースコアーによって構成される文字列のことを言います．ただ，どのように構成すべきかについは何も述べていません．Guileで試してみると，数字から始まっていても，あるいは，数字列（数字だけの文字列）だったとしても単語として認識するようです．以下は簡単な実行例です．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "\\b" "#123#")</span> &crarr;
+guile> <span class="mycmd">(string-match "\\b" "#123#")</span> 
 $1 = #("#123#" (1 . 1))
-guile> <span class="mycmd">(string-match "\\>" "#123#")</span> &crarr;
+guile> <span class="mycmd">(string-match "\\>" "#123#")</span> 
 $2 = #("#123#" (4 . 4))
 guile> 
 </pre>
@@ -1322,10 +1324,10 @@ guile>
 <li>
 <em>back-reference</em>を「後方参照」と訳すのが一般的なようです．しかし，以下に示すようにGuileのエラーメッセージは「前方参照」と表示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "\\1" "a")</span> &crarr;
+guile> <span class="mycmd">(string-match "\\1" "a")</span> 
 ice-9/boot-9.scm:1669:16: In procedure raise-exception:
 In procedure make-regexp: 無効な前方参照です
 
@@ -1395,7 +1397,7 @@ guile [1]>
 </pre>
 main手続きは，ASCIIコード表の数字（1〜9）を除く印字可能な文字（ASCIIコードで #x20〜#x30 と #x3a〜#x7e）に関してtest-quote手続きを実行します．DISPLAY-ALLが#tのときには，これらのすべての文字に関する結果を表示します．DISPLAY-ALLが#fのときには，<span class="myrx">\</span>$c$が普通の文字として処理されなかった文字$c$の結果だけを表示します．以下は上記のプログラムの実行結果です．
 <pre class="shell">
-$ <span class="mycmd">./test-quote.scm</span> &crarr;  
+$ <span class="mycmd">./test-quote.scm</span>   
 (regex:\'  str:"&'("  result:(3 . 3) ""
  regex:\&lt;  str:";&lt;="  result:#f
  regex:\&gt;  str:"=&gt;?"  result:#f
@@ -1410,10 +1412,10 @@ $ <span class="mycmd">./test-quote.scm</span> &crarr;
 </pre>
 上記の結果（文字の一覧）は先に示した一覧表と一致します．なお，1〜9の数字については「無効な前方参照」といったエラーが発生します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "\\1" "abc")</span> &crarr;
+guile> <span class="mycmd">(string-match "\\1" "abc")</span> 
 ice-9/boot-9.scm:1669:16: In procedure raise-exception:
 In procedure make-regexp: 無効な前方参照です
 
@@ -1459,10 +1461,10 @@ Back references are a dreadful botch, posing major problems for efficient implem
    </div>
 といった集合を定義しています．従って，文字列"abbbd"は正規表現 <span class="myrx">a((b)*\2)*d</span> に（数学的には）明らかにマッチします．実際に試してみると次のようになります．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "a((b)*\\2)*d" "abbbd")</span> &crarr;
+guile> <span class="mycmd">(string-match "a((b)*\\2)*d" "abbbd")</span> 
 $1 = #("abbbd" (0 . 5) (1 . 4) (2 . 3))
 guile> 
 </pre>
@@ -1475,7 +1477,7 @@ guile>
 </blockquote>
 正規表現 <span class="myrx">(a(b)*)*\2</span> は <span class="myrx">(a(b)*)*b</span> と等価（なはず）なので，以下に示すように，文字列"abab"はこの正規表現にマッチします．
 <pre class="shell">
-guile> <span class="mycmd">(string-match "(a(b)*)*\\2" "abab")</span> &crarr; 
+guile> <span class="mycmd">(string-match "(a(b)*)*\\2" "abab")</span>  
 $4 = #("abab" (0 . 4) (2 . 3) (1 . 2))
 guile> 
 </pre>

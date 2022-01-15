@@ -137,11 +137,22 @@ h4.hdln {
     display: inline-block;
 }
 
+h4.item {
+    font-weight: bold;
+    margin-right: 5px; 
+    margin-top: 10px;
+    margin-bottom: 5px;   
+    background: linear-gradient(transparent 85%, #98fb98 15%);
+    display: inline-block;
+}
+
+/*
 .hdln {
     font-weight: bold;
     margin-right: 5px; 
     background: linear-gradient(transparent 70%, #a8eaff 30%);
 }
+*/
 
 ul {
     margin-left: -5px;
@@ -302,7 +313,9 @@ table.symbol td {
 }
 
 table.item {
-    width: 100%;  
+    /* width: 100%;   */
+    border-collapse: collapse; 
+    border: none;
     /* background-color:  #f0f0f0; */
 }
 
@@ -310,7 +323,23 @@ table.item td {
     vertical-align: top;
     padding-left:  5px;
     padding-right: 2px;
+    border: none;
 }
+
+table.equation {
+    /* width: 100%;   */
+    border-collapse: collapse; 
+    border: none;
+    /* background-color:  #f0f0f0; */
+}
+
+table.equation td {
+    vertical-align: top;
+    padding-left:  5px;
+    padding-right: 2px;
+    border: none;
+}
+
 
 .ref{
     margin-left: 10%;
@@ -356,8 +385,20 @@ hr {
     border-color: silver; /* 色 */
 }
 
+figcaption {
+    text-align: center;
+}
+
 mycmd { color: blue; }
+mycmd:after { 
+    color: black;
+    content: " \021B5";
+}
 span.mycmd { color: blue; }
+span.mycmd:after { 
+    color: black;
+    content: " \021B5";
+}
 
 mysyn {
     font-style: italic;

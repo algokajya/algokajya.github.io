@@ -43,7 +43,7 @@
 &ensp; 
 <a class="noline" href="index.html">[Up]</a>
 &ensp; 
-<span class="nolink">[Next]</span>
+<a class="noline" href="regex-example.html">[Next]</span>
 &ensp; 
 <a class="noline" href="../index.html">ホーム</a><br>
 </div>
@@ -60,6 +60,8 @@ Guile色々／正規表現のための手続き
 <div id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.15</span>：CSSを一部変更．
 <li class="revise">
 <span class="mydate">2022.1.8</span>：regexp-quote手続きを追加．
 <li class="revise">
@@ -173,10 +175,10 @@ Guile色々／正規表現のための手続き
 <li>
 Guile, Scheme
    <ul class="menu">
-   <li class="menu">
-   <a class="noline" href="
-   https://www.gnu.org/software/libc/manual/html_node/Regular-Expressions.html#Regular-Expressions
-">The GNU C Library Reference Manual, for version 2.34：Regular Expression Matching</a>
+<li class="menu">
+<a class="noline" href="https://www.gnu.org/software/guile/manual/">
+GNU Guile Reference Manual（最新版）
+</a>
    <li class="menu"> 
    <a class="noline" href="
 https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
@@ -189,16 +191,6 @@ Regular Expression
    <ul class="menu">
    <li class="menu">
    <a class="noline" href="
-   https://www.gnu.org/software/libc/manual/html_node/index.html
-">The GNU C Library Reference Manual, for version 2.34
-   </a>
-   <li class="menu"> 
-   <a class="noline" href="
-https://manpages.debian.org/testing/manpages-dev/regex.3.en.html
-">POSIX regex functions（Linux Programmer&apos;s Manual: man -s3 regex &crarr;）
-   </a>
-   <li class="menu">
-   <a class="noline" href="
 https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html
 ">
 POSIX.1正規表現（The Open Group Base Specifications Issue 7, 2018 edition IEEE Std 1003.1-2017: Regular Expression）
@@ -207,6 +199,15 @@ POSIX.1正規表現（The Open Group Base Specifications Issue 7, 2018 edition I
    <a class="noline" href="
 https://manpages.debian.org/testing/manpages/regex.7.en.html
 ">POSIX.2正規表現（Linux Programmer&apos;s Manual: man -s7 regex &crarr; ）
+   </a>
+   <li class="menu">
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Regular-Expressions.html#Regular-Expressions
+">The GNU C Library Reference Manual, for version 2.34：Regular Expression Matching</a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://manpages.debian.org/testing/manpages-dev/regex.3.en.html
+">POSIX regex functions（Linux Programmer&apos;s Manual: man -s3 regex &crarr;）
    </a>
    </ul>
 <li class="menu"> 
@@ -243,10 +244,10 @@ Guileの正規表現ライブラリを使うときには，<em>(ice-9 regex)</em
 <li>
 REPLは上記のモジュールを自動的にロードします．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">,import</span> &crarr;
+guile> <span class="mycmd">,import</span> 
 (guile)
 (system base compile)
 (ice-9 readline)
@@ -430,16 +431,16 @@ make-regexp手続きは，<span class="mysyn">pat</span>によって指定され
 <ul>
 <li> 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
       ...... 起動メッセージ ......
 GNU Guile 3.0.5
-guile> <span class="mycmd">(define rx (make-regexp "[a-z]+"))</span> &crarr; <span class="right">……(1)&nbsp;</span>
-guile> <span class="mycmd">(define str "#AbcDE#")</span> &crarr; <span class="right">……(2)&nbsp;</span>
-guile> <span class="mycmd">(regexp-exec rx str)</span> &crarr; <span class="right">……(3)&nbsp;</span>
+guile> <span class="mycmd">(define rx (make-regexp "[a-z]+"))</span>  <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(define str "#AbcDE#")</span>  <span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx str)</span>  <span class="right">……(3)&nbsp;</span>
 $1 = #("#AbcDE#" (2 . 4)) <span class="right">……(4)&nbsp;</span>
-guile> <span class="mycmd">(substring str 2 4)</span> &crarr; <span class="right">……(5)&nbsp;</span>
+guile> <span class="mycmd">(substring str 2 4)</span>  <span class="right">……(5)&nbsp;</span>
 $2 = "bc"
-guile> <span class="mycmd">(regexp-exec rx "ABCDE")</span> &crarr; <span class="right">……(6)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "ABCDE")</span>  <span class="right">……(6)&nbsp;</span>
 $3 = #f
 guile> 
 </pre>
@@ -491,21 +492,21 @@ guile>
 <li>
 もう一つ簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(define rx (make-regexp "^[a-z]+$" regexp/icase regexp/newline))</span> &crarr; <span class="right">……(1)&nbsp;</span>
-guile> <span class="mycmd">(regexp-exec rx "AABBBCC")</span> &crarr; <span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(define rx (make-regexp "^[a-z]+$" regexp/icase regexp/newline))</span>  <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "AABBBCC")</span>  <span class="right">……(2)&nbsp;</span>
 $1 = #("AABBBCC" (0 . 7))
-guile> <span class="mycmd">(regexp-exec rx "AaBbBCc")</span> &crarr; <span class="right">……(3)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "AaBbBCc")</span>  <span class="right">……(3)&nbsp;</span>
 $2 = #("AaBbBCc" (0 . 7))
-guile> <span class="mycmd">(regexp-exec rx "#AaBbBCc#")</span> &crarr; <span class="right">……(4)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "#AaBbBCc#")</span>  <span class="right">……(4)&nbsp;</span>
 $3 = #f
-guile> <span class="mycmd">(regexp-exec rx "#Aa\nBbB\nCc#")</span> &crarr; <span class="right">……(5)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "#Aa\nBbB\nCc#")</span>  <span class="right">……(5)&nbsp;</span>
 $4 = #("#Aa\nBbB\nCc#" (4 . 7))
-guile> <span class="mycmd">(regexp-exec rx "#Aa\nBbB\nCc#" 1)</span> &crarr; <span class="right">……(6)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "#Aa\nBbB\nCc#" 1)</span>  <span class="right">……(6)&nbsp;</span>
 $5 = #("#Aa\nBbB\nCc#" (1 . 3))
-guile> <span class="mycmd">(regexp-exec rx "#Aa\nBbB\nCc#" 1 regexp/notbol)</span> &crarr; <span class="right">……(7)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx "#Aa\nBbB\nCc#" 1 regexp/notbol)</span>  <span class="right">……(7)&nbsp;</span>
 $6 = #("#Aa\nBbB\nCc#" (4 . 7))
 guile> 
 </pre>
@@ -587,9 +588,9 @@ guile>
 と等価です．
 <li> 実行例
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "[a-z]+" "#AbcDe#")</span> &crarr;
+guile> <span class="mycmd">(string-match "[a-z]+" "#AbcDe#")</span> 
 $1 = #("#AbcDe#" (2 . 4))
 guile> 
 </pre>
@@ -642,14 +643,14 @@ regexp-exec手続きやstring-match手続きを使って，正規表現$\alpha$�
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(define rx (make-regexp "[0-9][.][0-9][.][0-9]"))</span> &crarr; <span class="right">……(1)&nbsp;</span>
-guile> <span class="mycmd">(define str "GNU Guile 3.0.7 released")</span> &crarr; <span class="right">……(2)&nbsp;</span>
-guile> <span class="mycmd">(regexp-exec rx str)</span> &crarr; <span class="right">……(3)&nbsp;</span>
+guile> <span class="mycmd">(define rx (make-regexp "[0-9][.][0-9][.][0-9]"))</span>  <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(define str "GNU Guile 3.0.7 released")</span>  <span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(regexp-exec rx str)</span>  <span class="right">……(3)&nbsp;</span>
 $1 = #("GNU Guile 3.0.7 released" (10 . 15))
-guile> <span class="mycmd">(substring str 10 15)</span> &crarr; <span class="right">……(4)&nbsp;</span>
+guile> <span class="mycmd">(substring str 10 15)</span>  <span class="right">……(4)&nbsp;</span>
 $2 = "3.0.7"
 guile> 
 </pre>
@@ -717,10 +718,10 @@ guile>
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "(ab)*(cd)*" "abcd")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab)*(cd)*" "abcd")</span> 
 $1 = #("abcd" (0 . 4) (0 . 2) (2 . 4))
 guile> 
 </pre>
@@ -739,7 +740,7 @@ guile>
    </ul>
 以下は，ここで述べた具体例を実行した結果です．
 <pre class="shell">
-guile> <span class="mycmd">(string-match "(ab)*" "abab")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab)*" "abab")</span> 
 $2 = #("abab" (0 . 4) (2 . 4))
 </pre>
 この実行結果（<span>$</span>2）は，（1番目の）部分式 <span class="myrx">(ab)</span> が2文字目〜3文字目の部分列 "ab" にマッチしたことを示しています．しかし，実際には0文字目〜1文字目の部分列"ab"と2文字目〜3文字目の部分列"ab"に2度マッチしていて，最後にマッチした部分列の位置情報を返してきています．
@@ -752,7 +753,7 @@ $2 = #("abab" (0 . 4) (2 . 4))
    </ul>
 簡単な実行例を示します．
 <pre class="shell">
-guile> <span class="mycmd">(string-match "(ab)*(cd)*" "cd")</span> &crarr;
+guile> <span class="mycmd">(string-match "(ab)*(cd)*" "cd")</span> 
 $3 = #("cd" (0 . 2) (-1 . -1) (0 . 2))
 guile> 
 </pre>
@@ -799,18 +800,18 @@ guile>
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "(ab)*(cd)+" "xabcdcdx")</span> &crarr;<span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(string-match "(ab)*(cd)+" "xabcdcdx")</span> <span class="right">……(1)&nbsp;</span>
 $1 = #("xabcdcdx" (1 . 7) (1 . 3) (5 . 7))
-guile> <span class="mycmd">(match:substring $1)</span> &crarr;<span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(match:substring $1)</span> <span class="right">……(2)&nbsp;</span>
 $2 = "abcdcd"
-guile> <span class="mycmd">(match:substring $1 0)</span> &crarr;<span class="right">……(3)&nbsp;</span>
+guile> <span class="mycmd">(match:substring $1 0)</span> <span class="right">……(3)&nbsp;</span>
 $3 = "abcdcd"
-guile> <span class="mycmd">(match:substring $1 1)</span> &crarr;<span class="right">……(4)&nbsp;</span>
+guile> <span class="mycmd">(match:substring $1 1)</span> <span class="right">……(4)&nbsp;</span>
 $4 = "ab"
-guile> <span class="mycmd">(match:substring $1 2)</span> &crarr;<span class="right">……(5)&nbsp;</span>
+guile> <span class="mycmd">(match:substring $1 2)</span> <span class="right">……(5)&nbsp;</span>
 $5 = "cd"
 guile> 
 </pre>
@@ -1066,11 +1067,11 @@ guile>
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(define (add-list m lst) (cons (match:substring m) lst))</span> &crarr; <span class="right">……(1)&nbsp;</span>
-guile> <span class="mycmd">(fold-matches "&lt;[a-zA-Z0-9]*&gt;" "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z" '() add-list)</span> &crarr; <span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(define (add-list m lst) (cons (match:substring m) lst))</span>  <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(fold-matches "&lt;[a-zA-Z0-9]*&gt;" "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z" '() add-list)</span>  <span class="right">……(2)&nbsp;</span>
 $1 = ("&lt;Y&gt;" "&lt;1&gt;" "&lt;ab&gt;")
 guile> 
 </pre>
@@ -1115,11 +1116,11 @@ guile>
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(define (disp-substr m) (write (match:substring m)) (newline))</span> &crarr;
-guile> <span class="mycmd">(for-each disp-substr (list-matches "&lt;[a-zA-Z0-9]*&gt;" "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z"))</span> &crarr;
+guile> <span class="mycmd">(define (disp-substr m) (write (match:substring m)) (newline))</span> 
+guile> <span class="mycmd">(for-each disp-substr (list-matches "&lt;[a-zA-Z0-9]*&gt;" "&lt;ab&gt;c &lt;1&gt;23 X&lt;Y&gt;Z"))</span> 
 "&lt;ab&gt;"
 "&lt;1&gt;"
 "&lt;Y&gt;"
@@ -1177,8 +1178,8 @@ guile>
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-guile> <span class="mycmd">(define m (string-match "&lt;(my.*)&gt;" "&lt;mycmd&gt;"))</span> &crarr; <span class="right">……(1)&nbsp;</span>
-guile> <span class="mycmd">(regexp-substitute (current-output-port) m "&lt;span class=\"" 1 "\"&gt;") (newline)</span> &crarr; <span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(define m (string-match "&lt;(my.*)&gt;" "&lt;mycmd&gt;"))</span>  <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute (current-output-port) m "&lt;span class=\"" 1 "\"&gt;") (newline)</span>  <span class="right">……(2)&nbsp;</span>
 &lt;span class="mycmd"&gt;
 guile> 
 </pre>
@@ -1202,22 +1203,22 @@ guile>
 <li>
 もう1つ実行例を示します.
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(string-match "((two)|(three)|/)+" "one/two/three/four")</span> &crarr; <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(string-match "((two)|(three)|/)+" "one/two/three/four")</span>  <span class="right">……(1)&nbsp;</span>
 $1 = #("one/two/three/four" (3 . 14) (13 . 14) (4 . 7) (8 . 13))
-guile> <span class="mycmd">(regexp-substitute (current-output-port) $1 'pre " to " 'post "\n")</span> &crarr; <span class="right">……(2a)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute (current-output-port) $1 'pre " to " 'post "\n")</span>  <span class="right">……(2a)&nbsp;</span>
 one to four
 guile> <span class="mycmd">(let ((p (current-output-port)))</span>
 ... <span class="mycmd">(display (match:prefix $1) p)</span>
 ... <span class="mycmd">(display " to " p)</span>
 ... <span class="mycmd">(display (match:suffix $1) p)</span>
-... <span class="mycmd">(display "\n" p))</span> &crarr; <span class="right">……(2b)</span>&nbsp;
+... <span class="mycmd">(display "\n" p))</span>  <span class="right">……(2b)</span>&nbsp;
 one to four
-guile> <span class="mycmd">(regexp-substitute (current-output-port) $1 'post 0 'pre "\n")</span> &crarr; <span class="right">……(3)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute (current-output-port) $1 'post 0 'pre "\n")</span>  <span class="right">……(3)&nbsp;</span>
 four/two/three/one
-guile> <span class="mycmd">(regexp-substitute (current-output-port) $1 'post "/" 3 "/" 2 "/" 'pre "\n")</span> &crarr;  <span class="right">……(4)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute (current-output-port) $1 'post "/" 3 "/" 2 "/" 'pre "\n")</span>   <span class="right">……(4)&nbsp;</span>
 four/three/two/one
 guile> 
 </pre>
@@ -1405,15 +1406,15 @@ guile>
 <li>
 実行例
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(define (to-upcase m) (string-upcase (match:substring m)))</span> &crarr; <span class="right">……(1)&nbsp;</span>
-guile> <span class="mycmd">(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc --&gt;" to-upcase)</span> &crarr; <span class="right">……(2)&nbsp;</span>
+guile> <span class="mycmd">(define (to-upcase m) (string-upcase (match:substring m)))</span>  <span class="right">……(1)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc --&gt;" to-upcase)</span>  <span class="right">……(2)&nbsp;</span>
 $1 = "ABC"
-guile> <span class="mycmd">(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc --&gt;" 'pre to-upcase 'post)</span> &crarr; <span class="right">……(3)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc --&gt;" 'pre to-upcase 'post)</span>  <span class="right">……(3)&nbsp;</span>
 $2 = "&lt;!-- ABC --&gt;"
-guile> <span class="mycmd">(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc:def --&gt;" 'pre to-upcase 'post)</span> &crarr; <span class="right">……(4)&nbsp;</span>
+guile> <span class="mycmd">(regexp-substitute/global #f "[a-z]+" "&lt;!-- abc:def --&gt;" 'pre to-upcase 'post)</span>  <span class="right">……(4)&nbsp;</span>
 $3 = "&lt;!-- ABC:DEF --&gt;"
 guile> 
 </pre>
@@ -1506,12 +1507,12 @@ guile>
 <li>
 （補足）正規表現<span class="mysyn">regexp</span>に検索対象文字列<span class="mysyn">str</span>がまったくマッチしなかったときには，<span class="mysyn">str</span>そのものが出力されます．この点は，regexp-substituteと異なります（regexp-substituteは何も出力しません）．比較のための実行例を以下に示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(regexp-substitute #f (string-match "[^a-z]+" "abc"))</span> &crarr;
+guile> <span class="mycmd">(regexp-substitute #f (string-match "[^a-z]+" "abc"))</span> 
 $1 = ""
-guile> <span class="mycmd">(regexp-substitute/global #f "[^a-z]+" "abc")</span> &crarr;
+guile> <span class="mycmd">(regexp-substitute/global #f "[^a-z]+" "abc")</span> 
 $2 = "abc"
 guile> 
 </pre>
@@ -1532,10 +1533,10 @@ guile>
 <li>
 簡単な実行例を示します．
 <pre class="shell">
-$ <span class="mycmd">guile</span> &crarr;
+$ <span class="mycmd">guile</span> 
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile> <span class="mycmd">(regexp-quote "[0-9].[0-9]")</span> &crarr;
+guile> <span class="mycmd">(regexp-quote "[0-9].[0-9]")</span> 
 $1 = "\\[0-9]\\.\\[0-9]"
 guile> 
 </pre>
