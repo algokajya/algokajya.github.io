@@ -195,15 +195,15 @@ regexp-substitute/global
 下図は開始タグ（を表す文字列）を認識する（決定性の）有限オートマトンです．
 以下，<em>DFA</em>と略します．
 
-<figure style="width:70%">
-<img src="dfa-tag.gif" width="100%" alt="開始タグのDFA">
+<figure style="width:60%">
+<img src="dfa-tag.gif" height="170" alt="開始タグのDFA">
 <figcaption>図1：開始タグのDFA</figcaption>
 </figure>
 
 このDFAは次のような考え方に基づいて設計しています．
    <ul>
    <li>
-   開始タグは左三角括弧 < から始まって，タグ名を表す英字列が続く
+   開始タグは左三角括弧（&lt;）から始まって，タグ名を表す英字列が続く
    （状態0から状態2への遷移）．
    <li>
    タグ名のあと，右三角括弧（>）で直ちに閉じて終わるか（状態2から状態5への遷移），または，class属性などを指定したあとに右三角括弧で閉じて終わる（状態2から状態3,4を経由して状態5へと至る遷移）．
@@ -493,7 +493,7 @@ extract-tags
 HTMLのテキストデータ（text）を受け取って，
 それに含まれる開始タグのリストを返します．
 <pre class="list">
-(define tag-regexp "&lt;[a-zA-Z]+([^>a-zA-Z]([^>\"]|\"[^\"]*\")*)?&gt;")
+(define tag-regexp "&lt;[a-zA-Z]+([^&gt;a-zA-Z]([^&gt;\"]|\"[^\"]*\")*)?&gt;")
 (define tag-rx (make-regexp tag-regexp))
 (define (extract-tags text)
   (let ((tags '()))
@@ -538,7 +538,7 @@ extract-tags
         (tags (extract-tags text)))
     (show-tags tags)))
 
-(define tag-regexp "<[a-zA-Z]+([^>a-zA-Z]([^>\"]|\"[^\"]*\")*)?>")
+(define tag-regexp "&lt;[a-zA-Z]+([^&gt;a-zA-Z]([^&gt;\"]|\"[^\"]*\")*)?&gt;")
 (define tag-rx (make-regexp tag-regexp))
 (define (extract-tags text)
   (let ((tags '()))
@@ -702,7 +702,7 @@ $\alpha$
 は以下のようになります．
    <div class="dstyle">
       $\alpha$ $=$
-      <span class="myrx">&lt;(h[34])[ ]+class="[^&quot;]*"[ ]+id="([^&quot;]*)"&gt;
+      <span class="myrx">&lt;(h[34])[ ]+class="[^&quot;]*"[ ]+id="([^&quot;]*)"&gt;</span>
    </div>
 ただし，タグの種類（h3かh4）を抽出して区別する必要があるので，
 タグ名の正規表現（<span class="myrx">h[34]</span>）を丸括弧で囲んで部分式にしています．
@@ -749,8 +749,8 @@ b.は筆者個人のHTMLテキストを処理対象とすることを前提に�
 これら2つを仮定しないとき，有限オートマトンはもう少し複雑になって，
 その分，正規表現も複雑になります．
 
-<figure style="width:70%">
-<img src="dfa-title.gif" width="100%" alt="開始タグのDFA">
+<figure style="width:60%">
+<img src="dfa-title.gif" height="170" alt="開始タグのDFA">
 <figcaption>図2：タイトルのDFA</figcaption>
 </figure>
 
