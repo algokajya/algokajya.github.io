@@ -5,11 +5,9 @@
    <title>AlgoKajya Guile入門／Guileの準備</title>
    <link rel="stylesheet" type="text/css" href="gi.css">
    <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-   <!--
    <style>
       .date0:before{ content: "2021.11.19"; }
    </style>
-   -->
 </head>
 
 
@@ -35,14 +33,16 @@ Guile入門／Guileの準備
 <div class="date"><span class="date0"></span></div>
 </div>
 
-
 <!-- %%% revise %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <p></p>
 <section id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.1.16</span>：本文中の日付が欠落していたので修正．<br>
+<li class="revise">
 <span class="mydate">2022.1.6</span>：変更履歴の形式を変更<br>
+<li class="revise">
 <span class="mydate">2021.11.19</span>：初出
 </ul>
 </section>
@@ -106,9 +106,11 @@ $ <span class="mycmd">sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</sp
 <span class="date0"></span>時点のGuileの最新版は Guile 3.0.7 ですが，上記の公式パッケージは Guile 3.0.5 です．
 
 <li>
-<em>guile-3.0-doc</em>はInfo形式のマニュアルです．公式サイトで公開されているマニュアルと，Guileのバージョンは異なりますが，内容的には同じだと思います（少なくとも目次は同じです）．
+<em>guile-3.0-doc</em>
+は，Info形式のマニュアルです．<a class="noline" href="https://www.gnu.org/software/guile/">公式サイト</a>で公開されている<a class="noline" href="https://www.gnu.org/software/guile/manual/">マニュアル</a>と，Guileのバージョンは異なりますが，内容的には同じだと思います（少なくとも目次は同じです）．
 <li>
-<em>guile-3.0-dev</em>はGuileを利用しているソフトウェアをコンパイルするときなどに必要になります．おそらく，C言語と連携するときにも必要になるだろうと思います．
+<em>guile-3.0-dev</em>
+は，Guileを利用しているソフトウェアをコンパイルするときなどに必要になります．おそらく，C言語と連携するときにも必要になるだろうと思います．
 </ul>
 </section>
 
@@ -156,7 +158,7 @@ scheme@(guile-user)&gt; <span class="mycmd">Ctrl-D</span>を押す
 scheme@(guile-user)&gt; <span class="mycmd">,quit</span> &crarr;
 scheme@(guile-user)&gt; <span class="mycmd">,q</span> &crarr;
 </pre>
-<em>exit</em>は<em>quit</em>の別名です．<em>,quit</em>はREPL固有のコマンドです．<em>,q</em>は,quitの省略形です．GuileのREPL固有のコマンドは，Schemeの変数名や構文キーワードなどと確実に区別するため，カンマで始めることになっています．
+<em>exit</em> は <em>quit</em> の別名です．<em>,quit</em> はREPL固有のコマンドです．<em>,q</em> は ,quit の省略形です．GuileのREPL固有のコマンドは，Schemeの変数名や構文キーワードなどと確実に区別するため，カンマで始めることになっています．
 </ul>
 </section>
 
@@ -174,7 +176,7 @@ scheme@(guile-user)&gt; <span class="mycmd">,q</span> &crarr;
 (activate-readline)
 </pre>
 <li>
-<em>~/.guile</em>はGuileの初期化ファイルで，Schemeのプログラムを保存しておきます．Guileを起動したときに，初期設定の一環として，これに保存してあるプログラムが実行されます．上で示した1行目は(ice-9 readline)というモジュールをロードして，2行目はその中のactivate-readline手続きを実行します．
+<em>~/.guile</em> はGuileの初期化ファイルで，Schemeのプログラムを保存しておきます．Guileを起動したときに，初期設定の一環として，これに保存してあるプログラムが実行されます．上で示した1行目は (ice-9 readline) というモジュールをロードして，2行目はその中の activate-readline という手続きを実行します．
 <li>
 履歴は <em>~/.guile_history</em> に保存されます．このファイルは自動的に生成されます．
 <li>
