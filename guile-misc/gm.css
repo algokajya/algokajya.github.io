@@ -140,9 +140,9 @@ h4.hdln {
 h4.item {
     font-weight: bold;
     margin-right: 5px; 
-    margin-top: 10px;
+    margin-top: 0px; 
     margin-bottom: 5px;   
-    background: linear-gradient(transparent 85%, #98fb98 15%);
+    background: linear-gradient(transparent 88%, #98fb98 12%);
     display: inline-block;
 }
 
@@ -183,6 +183,13 @@ ul li.revise {
     padding: 0px;
 }
 
+
+ul.item {
+    margin-left: -20px;
+    margin-top: 0px; 
+    margin-bottom: 0px;
+    list-style: none; 
+}
 
 ol {
     margin-left: 10px;
@@ -387,6 +394,14 @@ hr {
 
 figcaption {
     text-align: center;
+}
+
+span.item {
+    font-weight: bold;
+    margin-right: 5px; 
+    margin-top: 10px;
+    margin-bottom: 5px;   
+    background: linear-gradient(transparent 88%, #98fb98 12%);
 }
 
 mycmd { color: blue; }
