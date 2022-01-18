@@ -55,6 +55,12 @@ Guile色々／正規表現のプログラム例
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.1.19</span>：h3,h4タグの空白列の正規表現を
+<span class="myrx">[ ]+</span>
+から
+<span class="myrx">[[:space:]]+</span>
+に変更．わずかな誤りを訂正．
+<li class="revise">
 <span class="mydate">2022.1.15</span>：初出
 </ul>
 </div>
@@ -335,7 +341,7 @@ DFAによって認識される文字列の集合 $L$ は
    <li>
    $L_1 = \{ x \in \Sigma^* \mid x:0 \to^* 2 \}$
    <li>
-   $L_2 = \{ c \in \Sigma \mid c:2 \to 3 \}$
+   $L_2 = \{ c \in \Sigma \mid c:2 \to 5 \}$
    <li>
    $L_3 = \{ x \in \Sigma^* \mid x:2 \to 3 \to^* 5 \}$
    </ul>
@@ -464,9 +470,6 @@ $L_{322}$ の正規表現は <span class="myrx">"[^"]*"</span> です．
 これで十分なのですが，
 $L_2 \cup L_3$（タグ名を除く残りの部分列）
 の正規表現は（文字列集合の同等性の意味で）次のように変形できます．
-以下の1番目の等式は，
-選択演算（<span class="myrx">|</span>）の両側にある右三角括弧（<span class="myrx">&gt;</span>）を括り出しています．さらに，空文字列 $\varepsilon$ は拡張正規表現ではないので，
-2番目の等式は空文字列を含む拡張正規表現に書き換えています．
       <div class="ddstyle">
       <span class="myrx">(&gt;|[^a-zA-Z>]([^>"]|"[^"]*")*&gt;)</span><br> 
       &emsp;&emsp;$=$
@@ -475,6 +478,10 @@ $L_2 \cup L_3$（タグ名を除く残りの部分列）
       &emsp;&emsp;$=$
       <span class="myrx">([^a-zA-Z>]([^>"]|"[^"]*")*)?&gt;</span> 
       </div>
+上記の1番目の等式は，
+選択演算（<span class="myrx">|</span>）の両側にある右三角括弧（<span class="myrx">&gt;</span>）を括り出しています．さらに，空文字列 $\varepsilon$ は拡張正規表現ではないので，
+2番目の等式は空文字列を含む拡張正規表現に書き換えています．
+<p></p>
 こちらのほうが，
 （タグ名のあと）残りの部分列を処理して右三角括弧で終わるといった直観に合っています．よって，$L$ の正規表現 $\alpha$（最終版）は
    <div class="dstyle">
@@ -580,9 +587,9 @@ https://github.com/algokajya/algokajya.github.io/blob/main/guile-misc/sample.htm
 sample.html
 </a>
 はテスト用に作成したHTMLファイルです．
-上記の&lt;div&gt;タグと&lt;span&gt;タグの属性値に（わざと）三角括弧を入れています．
-さらに，2番目の&lt;span&gt;タグは右三角括弧で閉じるのを忘れていて，
-そのために&lt;span&gt;に続くコメントの右三角括弧までを開始タグとして処理しています．
+上記のdivタグとspanタグの属性値に（わざと）三角括弧を入れています．
+さらに，2番目のspanタグは右三角括弧で閉じるのを忘れていて，
+そのためにspanに続くコメントの右三角括弧までを開始タグとして処理しています．
 </ul>
 </section>
 
@@ -702,13 +709,21 @@ $\alpha$
 は以下のようになります．
    <div class="dstyle">
       $\alpha$ $=$
-      <span class="myrx">&lt;(h[34])[ ]+class="[^&quot;]*"[ ]+id="([^&quot;]*)"&gt;</span>
+      <span class="myrx">&lt;(h[34])[[:space:]]+class="[^&quot;]*"[[:space:]]+id="([^&quot;]*)"&gt;</span>
    </div>
 ただし，タグの種類（h3かh4）を抽出して区別する必要があるので，
 タグ名の正規表現（<span class="myrx">h[34]</span>）を丸括弧で囲んで部分式にしています．
 さらに，識別子を抽出するために，
 識別子の正規表現（id=のあとの<span class="myrx">[^&quot;]*</span>）
 も丸括弧で囲んで部分式にしています．
+<p></p>
+それから，空白列の正規表現を
+<span class="myrx">[ ]+</span>
+ではなく
+<span class="myrx">[[:space:]]+</span>
+にすると，改行文字もマッチするようになります．つまり，
+class属性やid属性の前後で改行していても上記の正規表現にマッチします．
+
 <li>
 終了タグの正規表現
 $\gamma$
@@ -840,7 +855,7 @@ $L$
     </tr>
    <tr>
       <td></td>
-      <td>$=$ $L_0\cdot\{\varepsilon$ &lt;$,$&lt;/$,$&lt;/h$,$&lt;/h3$,$&lt;/h4$\}$
+      <td>$=$ $L_0\cdot\{\varepsilon,$&lt;$,$&lt;/$,$&lt;/h$,$&lt;/h3$,$&lt;/h4$\}$
     </tr>
    </table>
    </div>
@@ -950,7 +965,7 @@ ectract-items
 正規表現と抽出する部分列が異なることを除けば，
 開始タグの抽出（extract-tags）とまったく同じと言えます．
 <pre class="list">
-(define alpha "&lt;(h[34])[ ]+class=\"[^\&quot;]*\"[ ]+id=\"([^\&quot;]*)\"&gt;")
+(define alpha "&lt;(h[34])[[:space:]]+class=\"[^\"]*\"[[:space:]]+id=\"([^\"]*)\"&gt;")
 (define beta "(([^&lt;]|&lt;[^/]|&lt;/[^h]|&lt;/h[^34]|&lt;/h[34][^&gt;])*(&lt;|&lt;/|&lt;/h|&lt;/h[34])?)")
 (define gamma "&lt;/h[34]&gt;")
 (define item-regexp (string-append alpha beta gamma))
