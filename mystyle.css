@@ -1,8 +1,14 @@
 
+html {
+    font-size: 62.5%;;
+}
+
+
 body {
     line-height: 150%;
     width: 95%; 
     padding-left: 40px;
+    font-size: 1.6rem;
 }
 
 #about {
