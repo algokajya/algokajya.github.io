@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／モジュールシステムの概要</title>
+   <link rel="stylesheet" type="text/css" href="../gb.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="use-module.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／モジュールシステムの概要
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.23</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+モジュールの格納場所，モジュールをロードするときのおおよその手順，
+モジュール名について学んだことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">モジュールに関する一般的な説明</a>
+<li class="menu"><a class="noline" href="#1">モジュールの所在</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#2">グローバル変数 %load-path</a>
+   <li class="menu"><a class="noline" href="#3">グローバル変数 %load-compiled-path</a>
+   <li class="menu"><a class="noline" href="#4">モジュールのロード</a>
+   </ul>
+<li class="menu"><a class="noline" href="#module-name">モジュール名</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Modules.html#Modules
+   ">［6.18 Modules］</a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Load-Paths.html
+   ">［6.16.8 Load Paths］
+   </a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Eval-When.html#Eval-When
+   ">［6.8.8 Eval-When］
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">モジュールに関する一般的な説明</h3>
+<div class="abstract">
+<small>
+<ul>
+<li>
+以下の説明は
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/General-Information-about-Modules.html
+">Guileのマニュアル［6.18.1 General Information about Modules］</a>
+を要約したものです．
+</ul>
+</small>
+</div>
+
+<p></p>
+Guileのモジュールは，名前の付いた手続きや変数やマクロの集まりです．
+もっと正確に言うと，<em>モジュール</em>（module）は，
+シンボル（名前）のSchemeオブジェクトへの束縛の集合です．
+
+<p></p>
+モジュールの中では，すべての束縛はvisibleです．
+つまり，すべての束縛が利用できます．
+幾つかの束縛は，<em>エクスポートリスト</em>（export list）
+に登録することによって，
+他のモジュールやプログラムに公開できます．
+公開された束縛の集合のことを，
+そのモジュールの<em>パブリックインターフェース</em>（public interface）と呼びます．
+
+<p></p>
+あるモジュールの公開された束縛は，
+そのモジュールが定めたパブリックインターフェースを通して利用したり，
+カスタムインタフェース（利用者側で独自に調整したインターフェース）
+を通して利用できます．カスタムインターフェースでは，
+束縛の一部を選択したり，
+束縛の名前を変更したりできます．
+
+<p></p>
+すべてのモジュールは，
+(ice-9 popen)
+とか
+(srfi srfi-11)
+などのような一意的な名前（<em>モジュール名</em>）を持ちます．
+モジュール名は1つ以上のシンボルのリストとして表現され，そのリストは，
+ファイルシステムにおけるモジュールファイルの相対パスを示しています．
+
+<p></p>
+あるモジュールが他のプログラムから利用されるとき，Guileは，
+まずそのモジュールがすでにロードされているかどうかを検査します．
+そのモジュールがまだロードされていないとき，Guileはそのモジュール名からモジュールファイルを検索してロードします．
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">モジュールの所在</h3>
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">グローバル変数 %load-path</h4>
+<p></p>
+&rtri;
+Guileは，あらゆるモジュール（ソースコード）のファイルを，
+グローバル変数 <em>%load-path</em> に登録されたディレクトリを検索してロードします．
+このグローバル変数の値はディレクトリのリストです．
+例えば，筆者の環境では次のようなリストになっています．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ...... 
+guile&gt; <span class="mycmd">%load-path</span>
+&#36;1 = ("/usr/share/guile/3.0" "/usr/share/guile/site/3.0" "/usr/share/guile/site" "/usr/share/guile")
+guile&gt; 
+</pre>
+
+%load-path
+の値は，
+   <div class="dstyle">
+   (list (%library-dir) (%site-dir) (%global-site-dir) (%package-data-dir))
+   </div>
+という式によって初期設定されます．この式を試しに実行してみると，
+その結果は上記の %load-path の値と一致します．
+ちなみに，筆者の環境では，%load-path に登録されているディレクトリのうち，
+先頭の /usr/share/guile/3.0 だけが存在し，他のディレクトリは存在しません．
+他のディレクトリは，必要に応じて自前で作成するのだと思います．
+
+<p></p>
+&rtri;
+モジュール（ソースコード）を新たに作成して，
+どこかのディレクトリに格納したときには，
+そのディレクトリを %load-path に登録しなければなりません．
+その登録方法は，モジュールを定義する方法と一緒に説明します．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">グローバル変数 %load-compiled-path</h4>
+<p></p>
+&rtri;
+Guileは，モジュールのソースコードをVMコードにコンパイルします．
+そのVMコードは，
+グローバル変数 <em>%load-compiled-path</em> に登録されたディレクトリにキャッシュされ，再利用されます．このグローバル変数の値はディレクトリのリストです．
+例えば，筆者の環境では次のようなリストになっています．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">%load-compiled-path</span>
+&#36;1 = ("/usr/lib/x86_64-linux-gnu/guile/3.0/ccache" "/usr/lib/x86_64-linux-gnu/guile/3.0/site-ccache")
+guile&gt; 
+</pre>
+
+%load-compiled-path
+の初期値は，
+   <ul>
+   <li>
+   Guileが利用するキャシュ用ディレクトリと，
+   <li>
+   サイト固有のキャッシュ用ディレクトリ
+   </ul>
+の2つの要素からなります．
+筆者の環境では，上記の第1要素がGuile用のディレクトリで，
+第2要素がサイト固有のディレクトリです．
+ただし，筆者の環境ではサイト固有のディレクトリは存在していません．
+これも必要に応じて作成するのだと思います．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">モジュールのロード</h4>
+<p></p>
+&rtri;
+Guileは，モジュールをおおよそ次の手順に沿ってロードします．
+<p></p>
+   <ol>
+   <li>
+   モジュール名（下記参照）が示すモジュールのソースコードのファイルと，キャッシュされているVMコードのファイルを探します．
+   <li>
+   キャッシュされているVMコードがソースコードより古くなければ，
+   そのVMコードをロードします．
+   <li>
+   VMコードがキャシュされていない（存在しない）か，
+   または，ソースコードより古いときには，
+   ソースコードをコンパイルして，
+   コンパイル後のVMコードをキャッシュして，
+   そのVMコードをロードします．
+   </ol>
+%load-path や %load-compiled-path には複数のディレクトリが登録されているので，
+ディレクトリに対する検索の順序があるはずです．
+残念ながら，マニュアルを見ても順序に関する記述を見つけ出せないのですが，
+常識的にはそれぞれのリストの先頭から検索するのだろうと思います．
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="module-name">モジュール名</h3>
+
+<p></p>
+&rtri;
+モジュール名は，
+   <div class="dstyle">
+   (ice-9 textual-ports) や (ice-9 regex) や (srfi srfi-11)
+   </div>
+などのように，シンボルのリストです．
+ただし，各シンボルにクォート（&apos;）は付けません．
+これらのモジュール名は，モジュールファイルの相対パスを示しています．
+相対パスの起点は
+%load-path
+や
+%load-compiled-path
+に登録されているディレクトリです．
+例えば，
+   <div class="dstyle">
+   (ice-9 textual-ports)
+   </div>
+というモジュール名は
+   <div class="dstyle">
+   ice-9/textual-ports.scm &emsp;（ソースコード）<br>
+   ice-9/textual-ports.go &emsp;（VMコード）
+   </div>
+というファイル（の相対パス）を示しています．
+ソースコードファイルの起点は
+%loda-path
+に登録されているディレクトリで，
+VMコードファイルの起点は
+%load-compiled-path
+に登録されているディレクトリです．
+ただし，
+".scm" はソースコードファイルの標準の拡張子で，
+".go" はVMコードファイルの標準の拡張子です．
+これらは自動的に付加されます．
+
+<p></p>
+&rtri;
+一般に，Guileのモジュール名は，次のような形式のリストです．
+   <div class="dstyle">
+   (<span class="mysyn">subdir$_1$</span> ... <span class="mysyn">subdir$_n$</span> <span class="mysyn">filename</span>)
+   </div>
+ここで:
+   <ul>
+   <li>
+   <span class="mysyn">subdir$_i$</span> は 
+   %load-path
+   や
+   %load-compiled-path
+   に登録されているディレクトリを起点とするサブディレクトリの名前です．
+   <li>
+   <span class="mysyn">filename</span> は，
+   モジュール（のコード）を格納したファイルの名前です．
+   ただし，拡張子は含みません．
+   <li>
+   このモジュール名は
+      <div class="dstyle">
+      <span class="mysyn">subdir$_1$</span>/ ... /<span class="mysyn">subdir$_n$</span>/<span class="mysyn">filename</span>.scm &emsp;（ソースコード）<br>
+      <span class="mysyn">subdir$_1$</span>/ ... /<span class="mysyn">subdir$_n$</span>/<span class="mysyn">filename</span>.go &emsp;（VMコード）
+      </div>
+   といったファイルの相対パスを示しています．相対パスの起点は
+   %load-path
+   や
+   %loda-compiled-path
+   に登録されているディレクトリです．
+   </ul>
+
+</section>
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／モジュールの利用</title>
+   <link rel="stylesheet" type="text/css" href="../gb.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="overview.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／モジュールの利用
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.23</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+モジュールの利用方法（<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Using-Guile-Modules.html
+">6.18.2 Using Guile Modules</a>）について学んだことを記録しています．
+<li>
+モジュールの利用方法には，
+   <ul>
+   <li> パブリックインターフェースを通して利用する方法と，
+   <li> カスタムインターフェースを通して利用する方法
+   </ul>
+の2つがあります．
+パブリックインターフェースとは，
+モジュール側が公開した束縛（つまり，エクスポートリストに登録した束縛）の集合のことです．
+カスタムインターフェースとは，パブリックインターフェースを材料に，
+一部の束縛だけを選択したり，束縛の名前を変更することによって，
+利用する側が調整したインターフェースのことです．
+<li>
+いずれの方法も，原則として，<em>use-modules</em> を使用します．
+use-modules はモジュールをロードし，
+モジュール内の束縛を利用できるようにする構文形式です．
+一方，
+モジュール内の手続きや変数を個別的に引き抜いて利用するといった方法もあります．
+さらに，公開されていない手続きや変数を引き抜くといった怪しい方法もあります．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">パブリックインターフェース</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">use-modulesの利用方法</a>
+   <li class="menu"><a class="noline" href="#2">具体例</a>
+   </ul>
+<li class="menu"><a class="noline" href="#3">カスタムインターフェース</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#4">概要</a>
+   <li class="menu"><a class="noline" href="#5">インターフェース仕様の一般的な形式</a>
+   <li class="menu"><a class="noline" href="#6">#:select <span class="mysyn">select</span></a>
+   <li class="menu"><a class="noline" href="#7">#:prefix <span class="mysyn">prefix</span></a>
+   <li class="menu"><a class="noline" href="#8">#:rename <span class="mysyn">renamer</span></a>
+   <li class="menu"><a class="noline" href="#9">Eval-When（いつ評価するか？）</span></a>
+   <li class="menu"><a class="noline" href="#10">具体例</a>
+   </ul>
+<li class="menu"><a class="noline" href="#11">個別に引き抜く</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#12">公開されている束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#13">非公開の束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#14">具体例</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Modules.html#Modules
+   ">［6.18 Modules］</a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Load-Paths.html
+   ">［6.16.8 Load Paths］
+   </a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Eval-When.html#Eval-When
+   ">［6.8.8 Eval-When］
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">パブリックインターフェース</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">use-modulesの利用方法</h4>
+<p></p>
+&rtri;
+パブリックインターフェースを通してモジュールを利用する方法は単純です．
+use-modules 構文形式の引数にモジュール名を指定するだけのことです．
+例えば，(ice-9 popen) という名前のモジュールをパブリックインターフェースを通して利用したければ，REPLやスクリプトファイルの冒頭などで次を実行します．
+<pre class="list">
+(use-modules (ice-9 popen))
+</pre>
+これによって，(ice-9 popen) モジュールが公開する束縛をすべて利用することができます．さらに，use-modules には複数のモジュール名を指定できます．
+例えば，(ice-9 popen) に加えて，(srfi srfi-11) モジュールを利用したいとき，
+次のように指定できます（もちろん，ばらばらに指定してもかまいません）．
+<pre class="list">
+(use-modules (ice-9 popen)
+             (srfi srfi-11))
+</pre>
+
+<p></p>
+&rtri;
+一般に，
+パブリックインターフェースを通してモジュールを利用するときには，
+次のような use-modules 構文形式を使用します．
+   <div class="dstyle">
+   (<span class="myvar">use-modules</span> <span class="mysyn">module name</span>$_1$ ... <span class="mysyn">module name</span>$_n$)
+   </div>
+ここで，<span class="mysyn">module name</span>$_i$ はモジュール名です．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">具体例</h4>
+<p></p>
+&rtri;
+簡単な（でも，ちょっと無理筋な）具体例を示します．
+下記のプログラムは，次の3つのモジュールを利用しています．
+<ul>
+<li> (ice-9 textual-ports) <br>
+   このモジュールは，
+   テキストファイルの入出力を行うための手続きを定義しています．
+   下記のプログラムは，このモジュールの get-line 手続きを利用しています．
+<li> (srfi srfi-1) <br>
+   このモジュールは，
+   リストを処理するための色々と便利な手続きを定義しています．
+   下記のプログラムは，このモジュールの fold 手続きを利用しています．
+<li> (srfi srfi-11) <br>
+   このモジュールは let-values を定義していて，
+   下記のプログラムはこれを利用しています．
+</ul>
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+;; use-module-a.scm
+
+(use-modules (ice-9 textual-ports)    ;; to use get-line
+             (srfi srfi-1)            ;; to use fold  
+             (srfi srfi-11))          ;; to use let-values 
+
+(define (main args)
+  (let* ((filename (cadr args))
+         (lines (get-line-all filename))
+         (nums (map string->number lines)))
+    (let-values (((average variance) (calc-ave-var nums)))
+      (format (current-output-port) 
+              "nums: ~A \naverage: ~A  variance: ~A\n" 
+              nums average variance))
+    ))
+
+(define (get-line-all filename)        
+  (call-with-input-file filename
+    (lambda (port)
+      (let loop ((lst '()) (line (get-line port)))
+        (if (eof-object? line) 
+            lst 
+            (loop (cons line lst) (get-line port)))))))
+
+(define (calc-ave-var nums)
+  (define len (length nums))
+  (define (add x acc) (+ x acc))
+  (define average (/ (fold add 0 nums) len))
+  (define (addv x acc) (+ (* (- x average) (- x average)) acc))
+  (define variance (/ (fold addv 0 nums) len))
+  (values average variance))
+</pre>
+<p></p>
+上記の
+main は，
+テキストファイルのファイル名（filename）をコマンドライン引数から取得して，
+そのテキストファイルの各行からなるリスト（lines）を作り，
+その各行を数値に変換したリスト（nums）を作って，
+そのリストの平均値（average）と分散（variance）を求めます．
+最後に，数値リスト（nums），平均値（average），分散（variance）を適当な形式（format）で表示しています．
+ただし，テキストファイルの各行は数値に変換可能なテキストデータ（つまり，
+数字列データ）であることを仮定しています．
+この main の中で，(srfi srfi-11) モジュールが提供する let-values を利用しています．
+<p></p>
+get-line-all は，テキストファイルのファイル名（filename）を受け取って，
+そのファイルの各行からなるリスト（lst）を返します．
+この手続きの中で，(ice-9 textual-ports) モジュールが提供する get-line 手続きを利用しています．
+<p></p>
+calc-ave-var は，数値からなるリスト（nums）を受け取って，
+その平均値（average）と分散（variance）を求めて，
+これら2つの値をまとめて（多値として）返します．
+<p></p>
+簡単な実行例を示します．
+<pre class="shell">
+&#36; <span class="mycmd">./use-module-a.scm numbers.txt</span>
+nums: (500 400 300 200 100) 
+average: 300  variance: 20000
+</pre>
+ここで，numbers.txt は次のようなテキストファイルです．
+<pre class="list">
+100
+200
+300
+400
+500
+</pre>
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="3">カスタムインターフェース</h3>
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">概要</h4>
+<p></p>
+&rtri;
+筆者のような，単なる趣味としてプログラミングを楽しんでいるような者にとっては，
+パブリックインターフェースだけで十分に思えます．
+しかし，大規模なソフトウェアを開発するときには，
+それだけではおそらく不便なのでしょう．
+そのため，カスタムインターフェースを構築する仕組みが用意されています．
+カスタムインターフェースは，
+モジュールからロードするものを制限することと，
+束縛の名前を変更して，名前の重複を回避したり，
+利便性を高めたりすることを目的としています．
+
+<p></p>
+&rtri;
+カスタムインターフェースは，
+モジュール名にオプションを付加することによって構築します．
+モジュール名そのもの，および，オプションが付加されたモジュール名を総称して，<em>インターフェース仕様</em>（interface specification）と呼びます．
+この言葉はちょっと長いので，以後，<em><span class="mysyn">iSpec</span></em> と略すことにします．
+use-modules の引数に<span class="mysyn">iSpec</span>を指定することによってカスタムインターフェースを構成することになり，
+そのインターフェースを通してモジュールを利用することになります．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="5">インターフェース仕様の一般的な形式</h4>
+<p></p>
+&rtri;
+インターフェース仕様の文法を示します．
+下記の角括弧 [ ... ] は，括弧内の構文要素が省略可能であることを示しています．
+<pre class="grammar">
+<span class="mysyn">iSepc</span>       ::= '(' <span class="mysyn">module name</span> ['#:select' <span class="mysyn">selection</span>]
+                                    ['#:prefix' <span class="mysyn">prefix</span>]
+                                    ['#:renamer' <span class="mysyn">renamer</span>] ')'
+<span class="mysyn">module name</span> ::= '(' <span class="mysyn">symbol</span> ... ')'                    ;; モジュール名
+<span class="mysyn">selection</span>   ::= '(' <span class="mysyn">selSpec</span> ... ')'                   ;; <span class="mysyn">selSpec</span> のリスト
+<span class="mysyn">selSpec</span>     ::= <span class="mysyn">orig-name</span>  
+               |  '(' <span class="mysyn">orig-name</span> ' . ' <span class="mysyn">new-name</span> ')'    ;; <span class="mysyn">orig-name</span> と <span class="mysyn">new-name</span> のペア
+<span class="mysyn">orig-name</span>   ::= <span class="mysyn">symbol</span>
+<span class="mysyn">new-name</span>    ::= <span class="mysyn">symbol</span>
+<span class="mysyn">prefix</span>      ::= <span class="mysyn">symbol</span>
+<span class="mysyn">renamer</span>     ::= シンボルを受け取ってシンボルを返す手続き．
+<span class="mysyn">symbol</span>      ::= シンボル．ただし，クォート（&apos;）は付けない．
+</pre>
+
+<p></p>
+&rtri;
+<span class="mysyn">selSpec</span> は<em>選択スペック</em>（selection-spec）と呼びます．
+<span class="mysyn">prefix</span> と <span class="mysyn">renamer</span> は，
+そのまま，<em>プリフィックス</em> および <em>リネーマー</em> と呼びます．
+
+<p></p>
+&rtri;
+各構文要素の意味は後述するとして，(ice-9 textual-ports) モジュールを題材に，
+イメージを喚起するするための具体例を示します．
+<ul>
+<li> 
+<pre class="list">
+((ice-9 textual-ports) #:select (get-char put-char)) 
+</pre>
+上記の<span class="mysyn">iSpec</span>は，(ice-9 textual-ports) モジュールから get-char 手続きとput-char 手続きだけを選択しています．そのため，他の手続き（例えば，get-line など）は使えません．
+
+<li> 
+<pre class="list">
+((ice-9 textual-ports) #:select ((get-char . give-me-char) put-char)) 
+</pre>
+これは，(ice-9 textual-ports) モジュールから get-char 手続きと put-char 手続きだけを選択するとともに，get-char の名前を give-me-char に変えて使用することを示しています．
+
+<li> 
+<pre class="list">
+((ice-9 textual-ports) #:prefix hoge:) 
+</pre>
+これは，(ice-9 textual-ports) が提供するすべての束縛名に hoge: というプリフィックスを付けて利用することを示しています．例えば，get-char は hoge:get-char という名前で利用することになります．
+
+<li> 
+<pre class="list">
+((ice-9 textual-ports) #:select ((get-char . give-me-char) put-char)
+                       #:prefix text:))
+</pre>
+これは，(ice-9 textual-ports) モジュールから get-char 手続きと put-char 手続きだけを選択し，get-char の名前を give-me-char に変更し，
+give-me-char と put-char に text: というプリフィックスを付けて利用することを示しています．
+結果的に，(ice-9 textual-ports) モジュール内の get-char と put-char は，
+それぞれ，text:give-me-char と text:put-char という名前で利用することになります.
+</ul>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="6">#:select <span class="mysyn">select</span></h4>
+<p></p>
+&rtri;
+上記の文法が示すように，<span class="mysyn">select</span>は，
+   <div class="dstyle">
+   <span class="mysyn">orig-name</span> 
+   または
+   (<span class="mysyn">orig-name</span> . <span class="mysyn">new-name</span>)
+   </div>
+からなるリストです．
+ここで，<span class="mysyn">orig-name</span> は，
+モジュール内の（オリジナルの）束縛名を表し，
+<span class="mysyn">new-name</span> は，利用する側で使用する新たな名前を表しています．
+このオプションは，<span class="mysyn">orig-name</span> で指定された束縛を選択し，<span class="mysyn">new-name</span> が指定された束縛についてはその新たな名前で利用することを示しています．
+なお，選択しなかった束縛は利用できなくなります．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="7">#:prefix <span class="mysyn">prefix</span></h4>
+<p></p>
+&rtri;
+このオプションは，
+モジュール内の束縛名の前に <span class="mysyn">prefix</span> を付けて利用することを示しています．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="8">#:rename <span class="mysyn">renamer</span></h4>
+<p></p>
+&rtri;
+ <span class="mysyn">renamer</span> はシンボルを受け取ってシンボルを返す手続きです．
+このオプションは，
+モジュール内の束縛名（シンボル）に対して <span class="mysyn">renamer</span> を適用し，
+その結果として得られるシンボル（名前）を元々の束縛名の代わりに利用することを示しています．
+<p></p>
+&rtri;
+例えば，あるスクリプトの冒頭に次のような断片があったとしましょう．
+<pre class="list">
+(define (sym-proc sym)
+   (string->symbol (string-append "text:" (symbol->string sym) "_hoge")))
+(use-modules ((ice-9 textual-ports) #:renamer sym-proc))
+</pre>
+sym-proc は，シンボル（sym）を受け取って，
+その前後に text: と _hoge を付加したシンボルを返す手続きです．
+例えば，get-char というシンボルを受け取ったら text:get-cahr_hoge というシンボルを返します．そのため，上記の
+   <div class="dstyle">
+   #:rename sym-proc
+   </div>
+というオブションは，(ice-9 textual-pots) モジュールのすべての束縛名に対して，sym-proc を適用したあとの名前を利用すること，つまり，元々の束縛名の前後に text: と _hoge を付加した名前を利用することを示しています．
+<p></p>
+&rtri;
+（補足） #:prefix オプションと #:renamer オプションを同時に指定したときには #:prefix オプションは無視されるようです．
+でも，両方を同時に指定することはないでしょう．
+<p></p>
+&rtri;
+（注意）上の具体例は，動きはするのですが，
+コンパイル時に「sym-procが未定義」といったエラー（warningレベル）が発生して，
+コンパイルしてくれません（VMコードがキャッシュされません）．
+そのため，Guileはコンパイルをあきらめて，
+ソースコードを直接，解釈実行します．
+<p></p>
+エラーの原因は，use-modules のマクロ展開時に sym-proc の define 形式の評価が行われていないためです．
+<p></p>
+use-modules をマクロ展開するときに（おそらく）sym-proc が定義されているか否かを検査しているのだと思います．
+マクロ展開時には sym-proc の define 形式が評価（コンパイル）されていないので，sym-proc を発見できずにエラーが発生しているのだと思います．
+本音としては，マクロ展開後のコンパイル時に検査して欲しいところです．use-modules は，
+厳密に言えば，
+マクロではなくて，Guileシステムの基盤プログラム（C言語のプログラム）として実装されています．
+そういったことも関係しているのかも知れません．
+<p></p>
+以上はあくまで筆者の推測です．でも，大きくはずれてはいないと思います．
+例えば，次のような現象を観測することができます．
+<ul>
+<li>
+REPLの中で上記のスクリプトをロードしてみると，
+当初はコンパイルせずに直接解釈実行します．
+でも，このときに sym-proc の束縛が（REPLの中で）確立するので，
+もう一度ロードしてみるとコンパイルされます．
+<li>
+sym-proc の定義を別ファイルにして，guile コマンドの -l スイッチを使って別ファイルをロードすると，
+別ファイルが先にコンパイル＆ロードされて sym-proc の束縛が確立するので，
+スクリプト自体もコンパイルされます．
+<li>
+sym-proc の定義はあきらめて，sym-proc の本体であるラムダ式を <span class="mysyn">renamer</span> に指定するとコンパイルされます．
+</ul>
+実のところ，時間をかけて色々と試してみたのです．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="9">Eval-When（いつ評価するか？）</span></h4>
+<p></p>
+&rtri;
+リネーマーの問題についてあれこれと調べているうちに解決策が分かりました．
+先に示した断片を次のように変更します．
+赤字が変更したところです．
+<pre class="list">
+<span class="myred">(eval-when 
+ (expand load eval)</span>
+ (define (sym-proc sym)
+   (string->symbol (string-append "text:" (symbol->string sym) "_hoge")))<span class="myred">)</span>
+(use-modules ((ice-9 textual-ports) #:renamer sym-proc))
+</pre>
+eval-when は，
+第2引数として指定された式や構文形式をいつ評価するかを指定するための構文形式です．
+第1引数で「いつ」を指定します．
+上記の (expand load eval) は，マクロ展開時と，
+コンパイル後のプログラムをロード（実行）するときと，
+直接解釈実行するときに評価することを指定しています．
+上記のように変更すると，無事，コンパイルされます．
+ちなみに，ロード（実行）時に評価するのは当たり前だと思いますが，
+load を指定しておかないとロード時に評価してくれなくなります．
+なので，eval-when は厳密にいつ評価するかを指定するものだと思います．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="10">具体例</h4>
+<p></p>
+&rtri;
+具体例を示します．
+以下は先に示したスクリプトを，
+モジュールに関係するところだけを変更したものです．
+紫色は変更箇所を示しています．
+処理内容は先のものとまったく同じなので，実行結果は省略します．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+
+;; use-module-b.scm
+
+<span class="myvar">(eval-when 
+ (expand load eval)
+ (define (add-infix str)
+   (lambda (sym) 
+     (let* ((sym-str (symbol->string sym))
+            (lst (string-split sym-str #\-)))
+       (if (= (length lst) 2)
+           (string->symbol (string-append (car lst) "-" str "-" (cadr lst)))
+           sym))))
+ )</span>
+
+(use-modules <span class="myvar">((ice-9 textual-ports) 
+              #:select (get-line)
+              #:renamer (add-infix "text"))
+             ((srfi srfi-1)
+              #:select (fold)
+              #:prefix srfi-1:)
+             ((srfi srfi-11)
+              #:select ((let-values . let-multi-values)))</span>
+             )
+
+(define (main args)
+  (let* ((filename (cadr args))
+         (lines (get-line-all filename))
+         (nums (map string->number lines)))
+    (<span class="myvar">let-multi-values</span> (((average variance) (calc-ave-var nums)))
+      (format (current-output-port) 
+              "nums: ~A \naverage: ~A  variance: ~A\n" 
+              nums average variance))
+    ))
+
+(define (get-line-all filename)
+  (call-with-input-file filename
+    (lambda (port)
+      (let loop ((lst '()) (line (<span class="myvar">get-text-line</span> port)))
+        (if (eof-object? line) 
+            lst 
+            (loop (cons line lst) (<span class="myvar">get-text-line</span> port)))))))
+     
+(define (calc-ave-var nums)
+  (define len (length nums))
+  (define (add x acc) (+ x acc))
+  (define average (/ (<span class="myvar">srfi-1:fold</span> add 0 nums) len))
+  (define (addv x acc) (+ (* (- x average) (- x average)) acc))
+  (define variance (/ (<span class="myvar">srfi-1:fold</span> addv 0 nums) len))
+  (values average variance))
+</pre>
+add-infix の中のラムダ式が定める手続きは，
+シンボル（sym）を受け取って，
+それ（sym）がハイフンで2つの部分に区切られているとき，
+その2つの部分の間に文字列（str）で指定されたシンボルを（ハイフンで区切って）挿入して返します．ハイフンがなかったり，3つ以上の部分に区切られているとき（ハイフンが2つ以上含まれているとき）にはシンボル（sym）そのものを返します．
+<P></p>
+上記の (ice-9 textual-ports) モジュールについては，get-line だけを選択し，
+その名前の真ん中に -text- というシンボルを挿入して使うことを指定しています．
+<P></p>
+(srfi srfi-1) モジュールについては，fold だけを選択し，
+その名前に srfi-1 というプリフィックスを付けて使うことを指定しています．
+<P></p>
+(srfi srfi-11) モジュールについては，let-values だけを選択し，
+その名前を let-multi-values に変更して使うことを指定しています．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="11">個別に引き抜く</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="12">公開されている束縛を引き抜く</h4>
+<p></p>
+&rtri;
+次の形式を使うことによって，use-modules を使うことなく，
+モジュール内の束縛を個別的に利用することができます．
+<pre class="list">
+(@ <span class="mysyn">module name</span> <span class="mysyn">name</span>)
+</pre>
+ここで，<span class="mysyn">module name</span> はモジュール名，<span class="mysyn">name</span> はモジュール内で定義された束縛名です．
+例えば，
+   <div class="dstyle">
+   (@ (ice-9 textual-ports) get-line) 
+   </div>
+によって，use-modules を使うことなく，(ice-9 testual-ports) モジュール内の
+get-line
+を利用することができます．
+以下は，これを確認するための実行例です．
+(a)はREPLを起動した時点では get-line が束縛されていないことを確認しています．
+(b)は上記の形式によって get-line の束縛が取り出せることを確認しています．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">get-line</span>    <span class="myright">……(a)&emsp;</span>
+      ......
+Unbound variable: get-line
+      ......
+guile [1]&gt;
+
+guile&gt; <span class="mycmd">(@ (ice-9 textual-ports) get-line)</span>    <span class="myright">……(b)&emsp;</span>
+$1 = #&lt;procedure get-line (port)&gt;
+guile&gt; 
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="13">非公開の束縛を引き抜く</h4>
+<p></p>
+&rtri;
+次の形式を使うことによって，
+モジュール内の非公開の束縛を個別的に利用することができます．
+<pre class="list">
+(@@ <span class="mysyn">module name</span> <span class="mysyn">name</span>)
+</pre>
+ここで，<span class="mysyn">module name</span> はモジュール名，<span class="mysyn">name</span> はモジュール内で定義された束縛名です．
+例えば，(srfi srfi-1) モジュールの中に非公開の any1 という手続きがあるのですが，
+   <div class="dstyle">
+   (@@ (srfi srfi-1) any1) 
+   </div>
+によってその手続きを利用することができます．
+以下は，これを確認するための実行例です．
+(a)はREPLを起動した時点では any1 が束縛されていないことを確認しています．
+(b)は公開済みの束縛を引き抜く方法では any1 を取り出せないことを確認しています．
+最後に，(c)は上記の形式によって any1 の束縛が取り出せることを確認しています．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">any1</span>  <span class="myright">……(a)&emsp;</span>
+      ......
+Unbound variable: any1
+      ......
+guile [1]&gt; 
+
+guile> <span class="mycmd">(@ (srfi srfi-1) any1)</span>  <span class="myright">……(b)&emsp;</span>
+      ......
+Unbound variable: any1
+      ......
+guile [1]> 
+
+guile&gt; <span class="mycmd">(@@ (srfi srfi-1) any1)</span>  <span class="myright">……(c)&emsp;</span>
+$1 = #&lt;procedure any1 (pred ls)&gt;
+guile&gt; 
+</pre>
+
+ただ，
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Using-Guile-Modules.html
+">Guileのマニュアル</a>は，この方法は最終手段（last resort）として，
+もしくはデバッグのためだけに利用すべしと述べています．
+（でも，最終手段とせざるを得ない状況（必然性）はあるのでしょうか？）
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="14">具体例</h4>
+<p></p>
+&rtri;
+これまでに示したスクリプトを，use-modules を利用しないものに書き換えてみます．
+紫色が変更したところです．
+処理内容はこれまでのものとまったく同じなので，実行例は省略します．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+;; use-module-c.scm
+
+(define (main args)
+  (let* ((filename (cadr args))
+         (lines (get-line-all filename))
+         (nums (map string->number lines)))
+    (<span class="myvar">(@ (srfi srfi-11) let-values)</span> 
+     (((average variance) (calc-ave-var nums)))
+      (format (current-output-port) 
+              "nums: ~A \naverage: ~A  variance: ~A\n" 
+              nums average variance))
+    ))
+
+(define (get-line-all filename)
+  (call-with-input-file filename
+    (lambda (port)
+      (let loop ((lst '()) 
+                 (line (<span class="myvar">(@ (ice-9 textual-ports) get-line)</span> port)))
+        (if (eof-object? line) 
+            lst 
+            (loop (cons line lst) 
+                  (<span class="myvar">(@ (ice-9 textual-ports) get-line)</span> port)))))))
+
+(define (calc-ave-var nums)
+  (define len (length nums))
+  (define (add x acc) (+ x acc))
+  (define average (/ (<span class="myvar">(@ (srfi srfi-1) fold)</span> add 0 nums) len))
+  (define (addv x acc) (+ (* (- x average) (- x average)) acc))
+  (define variance (/ (<span class="myvar">(@ (srfi srfi-1) fold)</span> addv 0 nums) len))
+  (values average variance))
+</pre>
+
+</section>
+
+
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
