@@ -39,7 +39,7 @@
 &ensp; 
 <a class="noline" href="../index.html">[Up]</a>
 &ensp; 
-<span class="nolink">[Next]</span>
+<a class="noline" href="create-module.html">[Next]</a>
 &ensp; 
 <a class="noline" href="../../index.html">ホーム</a><br>
 </div>
@@ -52,7 +52,7 @@ Guile基礎／モジュールの利用
 
 
 <!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<p></p>
+<p class="short"></p>
 <div id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
@@ -62,10 +62,12 @@ Guile基礎／モジュールの利用
 </div>
 
 
+<p class="short"></p>
 <!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
-<p></p>
+<p class="short"></p>
 <h4 class="hdln">概 要</h4>
+<p class="short"></p>
 <ul>
 <li>
 モジュールの利用方法（<a class="noline" href="
@@ -95,9 +97,11 @@ use-modules はモジュールをロードし，
 
 
 
+<p class="short"></p>
 <!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="contents">
 <h4 class="hdln">目 次</h4>
+<p class="short"></p>
 
 <ul class="menu">
 <li class="menu"><a class="noline" href="#0">パブリックインターフェース</a>
@@ -112,14 +116,15 @@ use-modules はモジュールをロードし，
    <li class="menu"><a class="noline" href="#6">#:select <span class="mysyn">select</span></a>
    <li class="menu"><a class="noline" href="#7">#:prefix <span class="mysyn">prefix</span></a>
    <li class="menu"><a class="noline" href="#8">#:rename <span class="mysyn">renamer</span></a>
-   <li class="menu"><a class="noline" href="#9">Eval-When（いつ評価するか？）</a>
-   <li class="menu"><a class="noline" href="#10">具体例</a>
+   <li class="menu"><a class="noline" href="#9">リネーマー（renamer）に関する問題点</a>
+   <li class="menu"><a class="noline" href="#10">Eval-When（いつ評価するか？）</a>
+   <li class="menu"><a class="noline" href="#11">具体例</a>
    </ul>
-<li class="menu"><a class="noline" href="#11">個別に引き抜く</a>
+<li class="menu"><a class="noline" href="#12">個別に引き抜く</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#12">公開されている束縛を引き抜く</a>
-   <li class="menu"><a class="noline" href="#13">非公開の束縛を引き抜く</a>
-   <li class="menu"><a class="noline" href="#14">具体例</a>
+   <li class="menu"><a class="noline" href="#13">公開されている束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#14">非公開の束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#15">具体例</a>
    </ul>
 </ul>
 
@@ -127,10 +132,11 @@ use-modules はモジュールをロードし，
 </div>
 
 
-
+<p class="short"></p>
 <!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="references">
 <h4 class="hdln">参考資料</h4>
+<p class="short"></p>
 <ul>
 <li>
 Guile, Scheme
@@ -186,7 +192,7 @@ Guile, Scheme
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="1">use-modulesの利用方法</h4>
-<p></p>
+<p class="short"></p>
 &rtri;
 パブリックインターフェースを通してモジュールを利用する方法は単純です．
 use-modules 構文形式の引数にモジュール名を指定するだけのことです．
@@ -215,7 +221,7 @@ use-modules 構文形式の引数にモジュール名を指定するだけの�
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="2">具体例</h4>
-<p></p>
+<p class="short"></p>
 &rtri;
 簡単な（でも，ちょっと無理筋な）具体例を示します．
 下記のプログラムは，次の3つのモジュールを利用しています．
@@ -287,6 +293,8 @@ get-line-all は，テキストファイルのファイル名（filename）を�
 calc-ave-var は，数値からなるリスト（nums）を受け取って，
 その平均値（average）と分散（variance）を求めて，
 これら2つの値をまとめて（多値として）返します．
+この手続きの中で，(srfi srfi-1) モジュールが提供する fold を利用しています．
+
 <p></p>
 簡単な実行例を示します．
 <pre class="shell">
@@ -312,7 +320,7 @@ average: 300  variance: 20000
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="4">概要</h4>
-<p></p>
+<p class="short"></p>
 &rtri;
 筆者のような，単なる趣味としてプログラミングを楽しんでいるような者にとっては，
 パブリックインターフェースだけで十分に思えます．
@@ -336,7 +344,7 @@ use-modules の引数に<span class="mysyn">iSpec</span>を指定することに
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="5">インターフェース仕様の一般的な形式</h4>
-<p></p>
+<p class="short"></p>
 &rtri;
 インターフェース仕様の文法を示します．
 下記の角括弧 [ ... ] は，括弧内の構文要素が省略可能であることを示しています．
@@ -398,9 +406,9 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="6">#:select <span class="mysyn">select</span></h4>
-<p></p>
+<p class="short"></p>
 &rtri;
-上記の文法が示すように，<span class="mysyn">select</span>は，
+上記の文法が示すように，<span class="mysyn">select</span> は，
    <div class="dstyle">
    <span class="mysyn">orig-name</span> 
    または
@@ -410,13 +418,13 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 ここで，<span class="mysyn">orig-name</span> は，
 モジュール内の（オリジナルの）束縛名を表し，
 <span class="mysyn">new-name</span> は，利用する側で使用する新たな名前を表しています．
-このオプションは，<span class="mysyn">orig-name</span> で指定された束縛を選択し，<span class="mysyn">new-name</span> が指定された束縛についてはその新たな名前で利用することを示しています．
+このオプションは，<span class="mysyn">orig-name</span> で指定された束縛を選択することを示しています．ただし，<span class="mysyn">new-name</span> が指定されたときには，その新たな名前で利用することを示しています．
 なお，選択しなかった束縛は利用できなくなります．
 
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="7">#:prefix <span class="mysyn">prefix</span></h4>
-<p></p>
+<p class="short"></p>
 &rtri;
 このオプションは，
 モジュール内の束縛名の前に <span class="mysyn">prefix</span> を付けて利用することを示しています．
@@ -424,12 +432,13 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln" id="8">#:rename <span class="mysyn">renamer</span></h4>
-<p></p>
+<p class="short"></p>
 &rtri;
  <span class="mysyn">renamer</span> はシンボルを受け取ってシンボルを返す手続きです．
 このオプションは，
 モジュール内の束縛名（シンボル）に対して <span class="mysyn">renamer</span> を適用し，
 その結果として得られるシンボル（名前）を元々の束縛名の代わりに利用することを示しています．
+
 <p></p>
 &rtri;
 例えば，あるスクリプトの冒頭に次のような断片があったとしましょう．
@@ -445,13 +454,19 @@ sym-proc は，シンボル（sym）を受け取って，
    #:rename sym-proc
    </div>
 というオブションは，(ice-9 textual-pots) モジュールのすべての束縛名に対して，sym-proc を適用したあとの名前を利用すること，つまり，元々の束縛名の前後に text: と _hoge を付加した名前を利用することを示しています．
+
 <p></p>
 &rtri;
 （補足） #:prefix オプションと #:renamer オプションを同時に指定したときには #:prefix オプションは無視されるようです．
 でも，両方を同時に指定することはないでしょう．
+
+
 <p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="9">リネーマー（renamer）に関する問題点</h4>
+<p class="short"></p>
 &rtri;
-（注意）上の具体例は，動きはするのですが，
+上で示した具体例は，動きはするのですが，
 コンパイル時に「sym-procが未定義」といったエラー（warningレベル）が発生して，
 コンパイルしてくれません（VMコードがキャッシュされません）．
 そのため，Guileはコンパイルをあきらめて，
@@ -460,7 +475,7 @@ sym-proc は，シンボル（sym）を受け取って，
 エラーの原因は，use-modules のマクロ展開時に sym-proc の define 形式の評価が行われていないためです．
 <p></p>
 use-modules をマクロ展開するときに（おそらく）sym-proc が定義されているか否かを検査しているのだと思います．
-マクロ展開時には sym-proc の define 形式が評価（コンパイル）されていないので，sym-proc を発見できずにエラーが発生しているのだと思います．
+マクロ展開時には sym-proc の define 形式が評価（コンパイル＆ロード）されていないので，sym-proc を発見できずにエラーが発生しているのだと思います．
 本音としては，マクロ展開後のコンパイル時に検査して欲しいところです．use-modules は，
 厳密に言えば，
 マクロではなくて，Guileシステムの基盤プログラム（C言語のプログラム）として実装されています．
@@ -485,8 +500,8 @@ sym-proc の定義はあきらめて，sym-proc の本体であるラムダ式�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="9">Eval-When（いつ評価するか？）</h4>
-<p></p>
+<h4 class="hdln" id="10">Eval-When（いつ評価するか？）</h4>
+<p class="short"></p>
 &rtri;
 リネーマーの問題についてあれこれと調べているうちに解決策が分かりました．
 先に示した断片を次のように変更します．
@@ -501,9 +516,9 @@ sym-proc の定義はあきらめて，sym-proc の本体であるラムダ式�
 eval-when は，
 第2引数として指定された式や構文形式をいつ評価するかを指定するための構文形式です．
 第1引数で「いつ」を指定します．
-上記の (expand load eval) は，マクロ展開時と，
-コンパイル後のプログラムをロード（実行）するときと，
-直接解釈実行するときに評価することを指定しています．
+上記の (expand load eval) は，マクロ展開時（expand）と，
+コンパイル後のプログラムをロード（load）するときと，
+直接解釈実行（eval）するときに評価することを指定しています．
 上記のように変更すると，無事，コンパイルされます．
 ちなみに，ロード（実行）時に評価するのは当たり前だと思いますが，
 load を指定しておかないとロード時に評価してくれなくなります．
@@ -511,8 +526,8 @@ load を指定しておかないとロード時に評価してくれなくなり
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="10">具体例</h4>
-<p></p>
+<h4 class="hdln" id="11">具体例</h4>
+<p class="short"></p>
 &rtri;
 具体例を示します．
 以下は先に示したスクリプトを，
@@ -593,12 +608,12 @@ add-infix の中のラムダ式が定める手続きは，
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="11">個別に引き抜く</h3>
+<h3 class="section" id="12">個別に引き抜く</h3>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="12">公開されている束縛を引き抜く</h4>
-<p></p>
+<h4 class="hdln" id="13">公開されている束縛を引き抜く</h4>
+<p class="short"></p>
 &rtri;
 次の形式を使うことによって，use-modules を使うことなく，
 モジュール内の束縛を個別的に利用することができます．
@@ -633,8 +648,8 @@ guile&gt;
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="13">非公開の束縛を引き抜く</h4>
-<p></p>
+<h4 class="hdln" id="14">非公開の束縛を引き抜く</h4>
+<p class="short"></p>
 &rtri;
 次の形式を使うことによって，
 モジュール内の非公開の束縛を個別的に利用することができます．
@@ -682,8 +697,8 @@ https://www.gnu.org/software/guile/manual/html_node/Using-Guile-Modules.html
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="14">具体例</h4>
-<p></p>
+<h4 class="hdln" id="15">具体例</h4>
+<p class="short"></p>
 &rtri;
 これまでに示したスクリプトを，use-modules を利用しないものに書き換えてみます．
 紫色が変更したところです．

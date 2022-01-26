@@ -52,20 +52,24 @@ Guile基礎／モジュールシステムの概要
 
 
 <!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<p></p>
+<p class="short"></p>
 <div id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.26</span>：モジュールファイルの拡張子の説明を追加．
 <li class="revise">
 <span class="mydate">2022.1.23</span>：初出
 </ul>
 </div>
 
 
+<p class="short"></p>
 <!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
 <p></p>
 <h4 class="hdln">概 要</h4>
+<p class="short"></p>
 <ul>
 <li>
 モジュールの格納場所，モジュールをロードするときのおおよその手順，
@@ -75,19 +79,26 @@ Guile基礎／モジュールシステムの概要
 
 
 
+<p class="short"></p>
 <!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="contents">
 <h4 class="hdln">目 次</h4>
+<p class="short"></p>
 
 <ul class="menu">
-<li class="menu"><a class="noline" href="#0">モジュールに関する一般的な説明</a>
-<li class="menu"><a class="noline" href="#1">モジュールの所在</a>
+<li class="menu"><a class="noline" href="#general-terms">モジュールに関する一般的な説明</a>
+<li class="menu"><a class="noline" href="#0">モジュールの所在</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#2">グローバル変数 %load-path</a>
-   <li class="menu"><a class="noline" href="#3">グローバル変数 %load-compiled-path</a>
-   <li class="menu"><a class="noline" href="#4">モジュールのロード</a>
+   <li class="menu"><a class="noline" href="#load-path">グローバル変数 %load-path</a>
+   <li class="menu"><a class="noline" href="#load-compiled-path">グローバル変数 %load-compiled-path</a>
+   <li class="menu"><a class="noline" href="#1">モジュールのロード</a>
    </ul>
-<li class="menu"><a class="noline" href="#module-name">モジュール名</a>
+<li class="menu"><a class="noline" href="#module-name">モジュール名とモジュールファイル</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#2">モジュール名とは</a>
+   <li class="menu"><a class="noline" href="#3">モジュール名の一般的な形式</a>
+   <li class="menu"><a class="noline" href="#4">モジュールファイルの拡張子</a>
+   </ul>
 </ul>
 
 
@@ -95,9 +106,11 @@ Guile基礎／モジュールシステムの概要
 
 
 
+<p class="short"></p>
 <!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="references">
 <h4 class="hdln">参考資料</h4>
+<p class="short"></p>
 <ul>
 <li>
 Guile
@@ -148,7 +161,7 @@ Guile
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="0">モジュールに関する一般的な説明</h3>
+<h3 class="section" id="general-terms">モジュールに関する一般的な説明</h3>
 <p></p>
 <div class="abstract">
 <ul>
@@ -163,7 +176,7 @@ https://www.gnu.org/software/guile/manual/html_node/General-Information-about-Mo
 </ul>
 </div>
 
-<p></p>
+<p class="short"></p>
 Guileのモジュールは，名前の付いた手続きや変数やマクロの集まりです．
 もっと正確に言うと，<em>モジュール</em>（module）は，
 シンボル（名前）のSchemeオブジェクトへの束縛の集合です．
@@ -179,10 +192,9 @@ Guileのモジュールは，名前の付いた手続きや変数やマクロの
 
 <p></p>
 あるモジュールの公開された束縛は，
-そのモジュールが定めたパブリックインターフェースを通して利用したり，
-カスタムインタフェース（利用者側で独自に調整したインターフェース）
-を通して利用できます．カスタムインターフェースでは，
-束縛の一部を選択したり，
+そのモジュールが定めたパブリックインターフェースを通して利用することができます．さらに，モジュールを利用する際に，
+パブリックインターフェースを独自に調整することによって，<em>カスタムインタフェース</em>を定義することもできます．
+カスタムインターフェースでは，束縛の一部を選択したり，
 束縛の名前を変更したりできます．
 
 <p></p>
@@ -193,6 +205,10 @@ Guileのモジュールは，名前の付いた手続きや変数やマクロの
 などのような一意的な名前（<em>モジュール名</em>）を持ちます．
 モジュール名は1つ以上のシンボルのリストとして表現され，そのリストは，
 ファイルシステムにおけるモジュールファイルの相対パスを示しています．
+相対パスの起点は，<a class="noline" href="#load-path">%load-path</a>
+や
+<a class="noline" href="#load-compiled-path">%load-compiled-path</a>
+に登録されたディレクトリです．
 
 <p></p>
 あるモジュールが他のプログラムから利用されるとき，Guileは，
@@ -203,14 +219,14 @@ Guileのモジュールは，名前の付いた手続きや変数やマクロの
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="1">モジュールの所在</h3>
+<h3 class="section" id="0">モジュールの所在</h3>
+
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="2">グローバル変数 %load-path</h4>
-<p></p>
+<h4 class="hdln" id="load-path">グローバル変数 %load-path</h4>
+<p class-"short"></p>
 &rtri;
-Guileは，あらゆるモジュール（ソースコード）のファイルを，
-グローバル変数 <em>%load-path</em> に登録されたディレクトリを検索してロードします．
+Guileは，あらゆるモジュール（ソースコード）を，<em>%load-path</em> に登録されたディレクトリを検索してロードします．
 このグローバル変数の値はディレクトリのリストです．
 例えば，筆者の環境では次のようなリストになっています．
 <pre class="shell">
@@ -222,6 +238,7 @@ guile&gt; <span class="mycmd">%load-path</span>
 guile&gt; 
 </pre>
 
+<p></p>
 %load-path
 の値は，
    <div class="dstyle">
@@ -242,8 +259,8 @@ guile&gt;
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="3">グローバル変数 %load-compiled-path</h4>
-<p></p>
+<h4 class="hdln" id="load-compiled-path">グローバル変数 %load-compiled-path</h4>
+<p class="short"></p>
 &rtri;
 Guileは，モジュールのソースコードをVMコードにコンパイルします．
 そのVMコードは，
@@ -258,6 +275,7 @@ guile&gt; <span class="mycmd">%load-compiled-path</span>
 guile&gt; 
 </pre>
 
+<p></p>
 %load-compiled-path
 の初期値は，
    <ul>
@@ -274,11 +292,10 @@ guile&gt;
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="4">モジュールのロード</h4>
-<p></p>
+<h4 class="hdln" id="1">モジュールのロード</h4>
+<p class="short"></p>
 &rtri;
 Guileは，モジュールをおおよそ次の手順に沿ってロードします．
-<p></p>
    <ol>
    <li>
    モジュール名（下記参照）が示すモジュールのソースコードのファイルと，キャッシュされているVMコードのファイルを探します．
@@ -302,9 +319,12 @@ Guileは，モジュールをおおよそ次の手順に沿ってロードしま
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="module-name">モジュール名</h3>
+<h3 class="section" id="module-name">モジュール名とモジュールファイル</h3>
 
 <p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">モジュール名とは</h4>
+<p class="short"></p>
 &rtri;
 モジュール名は，
    <div class="dstyle">
@@ -340,6 +360,9 @@ VMコードファイルの起点は
 これらは自動的に付加されます．
 
 <p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">モジュール名の一般的な形式</h4>
+<p class="short"></p>
 &rtri;
 一般に，Guileのモジュール名は，次のような形式のリストです．
    <div class="dstyle">
@@ -369,6 +392,29 @@ VMコードファイルの起点は
    %loda-compiled-path
    に登録されているディレクトリです．
    </ul>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">モジュールファイルの拡張子</h4>
+<p class="short"></p>
+&rtri;
+Guileは，モジュールのソースコードのファイルを検索するとき，
+モジュール名が表現する相対パスに，<em> %load-extensions</em> に登録された拡張子を付けて検索します．<em> %load-extensions</em> は，ソースコードファイルの拡張子のリストを値とするグローバル変数です．
+例えば，筆者の環境では以下に示すようなリストです．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+guile&gt; <span class="mycmd">%load-extensions</span>
+\DIL;1 = (".scm" "")
+guile&gt; 
+</pre>
+このグローバル変数に新たな拡張子（例えば，".mod"など）を登録すれば，
+その拡張子でも検索を行うのだと思います．
+
+<p></p>
+ソースコードファイルの拡張子は設定可能になっていますが，
+VMコードファイルの拡張子は <em>.go</em> で固定されています．
+
 
 </section>
 
