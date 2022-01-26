@@ -141,6 +141,10 @@ Guile, Scheme
    <a class="noline" href="
    https://www.gnu.org/software/guile/manual/html_node/Eval-When.html#Eval-When
    ">［6.8.8 Eval-When］
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Environment-Variables.html#Environment-Variables
+   ">［4.2.2 Environment Variables］
    </a>
    <li class="menu"> 
    <a class="noline" href="
@@ -372,7 +376,7 @@ use-module.html
 そうしないとGuileは自作モジュールを発見できません．
 例えば，(hello) モジュールのロードパスは
 <div class="dstyle">
-<nobr>/home/user/mymods</nobr>
+/home/user/mymods
 </div>
 にしましたが，
 これは
@@ -554,7 +558,7 @@ getcwd はカレントディレクトリを取得するための手続きです�
 &rtri;
 guileコマンドの <em> -L </em> スイッチは，一般に，次の形式で使用します．
    <div class="dstyle">
-   guile <em>-L <span class="mysyn">dir</span></span></em> <span class="mysyn">arg</span>  ... 
+   guile <em>-L <span class="mysyn">dir</span></em> <span class="mysyn">arg</span>  ... 
    </div>
 ここで，<span class="mysyn">dir</span> は
 <a class="noline" href="overview.html#load-path">%load-path</a>
