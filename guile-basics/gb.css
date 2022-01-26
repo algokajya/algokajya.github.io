@@ -1,6 +1,6 @@
 
 body {
-    line-height: 150%;
+    line-height: 145%;
     width: 90%; 
     padding-left: 5%;
 }
@@ -41,7 +41,7 @@ body {
     width: 95%; 
     /*padding-left: 2%; */
     /* padding-right: 5%; */
-    padding-bottom: 10px;
+    /* padding-bottom: 10px; */
     font-size: 95%;
 }
 
@@ -161,20 +161,24 @@ h4.item {
 }
 */
 
-/*
-p {
+p.short {
     margin: 1em 0;
 }
-*/
 
+p {
+    margin: 1.5em 0;
+}
+
+/*
 ul {
     margin-left: -5px;
     margin-top: 5px; 
     margin-bottom: 0px; 
 }
+*/
 
 ul li {
-    padding-bottom: 5px;
+    padding-bottom: 1%;
 }
 
 ul.menu {
@@ -207,14 +211,16 @@ ul.item li {
     margin-top: 1%;
 }
 
+/*
 ol {
-    margin-left: 10px;
-    margin-top: 1%; 
-    /* margin-bottom: 1%;  */
+     margin-left: 10px;
+     margin-top: 1%;  
+     margin-bottom: 1%;  
 }
+*/
 
 ol li {
-    margin-bottom: 1%;
+    margin-bottom: 1%; 
 }
 
 ol.pnum {
@@ -274,7 +280,7 @@ pre.shell {
 pre.grammar { 
     line-height: 130%;
 /*    background-color: #f8f8e0; */
-    background-color: #f0f0f0;
+    background-color: #fafafa;
     font-family: monospace;
     padding-top: 5px; 
     padding-bottom: 5px; 
@@ -293,8 +299,8 @@ div.dstyle {
     padding-bottom: 5px; 
     padding-left: 5px; 
     */
-    margin-top: 0.5em; 
-    margin-bottom: 0.5em;
+    margin-top: 0.2em; 
+    margin-bottom: 0.2em;
     margin-left: 5%;
 }
 
@@ -347,8 +353,15 @@ table.symbol td {
     border: none;
 }
 
+table.symbol td:nth-child(1) {
+    white-space:nowrap;
+}
+
+
 table.item {
     /* width: 100%;   */
+    margin-top: 1em;
+    margin-bottom: 1em;
     border-collapse: collapse; 
     border: none;
     /* background-color:  #f0f0f0; */
@@ -359,6 +372,7 @@ table.item td {
     padding-left:  5px;
     padding-right: 2px;
     border: none;
+    padding-bottom: 1%;
 }
 
 table.equation {
