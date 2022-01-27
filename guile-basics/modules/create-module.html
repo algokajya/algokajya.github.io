@@ -80,7 +80,7 @@ Guile基礎／モジュールの作成と利用
 <a class="noline" href="overview.html#load-path">%load-path</a>
 に登録しなければなりません．でも，その登録方法も簡単です．
 <li>
-さらに，<a class="noline" href="file:///home/algo/notebook/github-page/guile-basics/modules/use-module.html">モジュールの利用</a>のところで説明した，個別的な引き抜きを利用することによって，
+さらに，<a class="noline" href="use-module.html">モジュールの利用</a>のところで説明した，個別的な引き抜きを利用することによって，
 モジュールのテスト用のコードも含めて1つのファイルにまとめることができます．
 </ul>
 </div>
@@ -106,11 +106,11 @@ Guile基礎／モジュールの作成と利用
    <li class="menu"><a class="noline" href="#6">guileコマンドの -L スイッチを利用する方法</a>
    <li class="menu"><a class="noline" href="#7">環境変数 GUILE_LOAD_PATH を利用する方法</a>
    </ul>
-<li class="menu"><a class="noline" href="#8">自作モジュールのテスト</a>
+<li class="menu"><a class="noline" href="#testing-module">自作モジュールのテスト</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#9">スクリプト化とテストコードの埋め込み</a>
-   <li class="menu"><a class="noline" href="#10">スクリプトでもあり，モジュールでもある</a>
-   <li class="menu"><a class="noline" href="#11">スクリプト化の一般的な形式</a>
+   <li class="menu"><a class="noline" href="#8">スクリプト化とテストコードの埋め込み</a>
+   <li class="menu"><a class="noline" href="#9">スクリプトでもあり，モジュールでもある</a>
+   <li class="menu"><a class="noline" href="#10">スクリプト化の一般的な形式</a>
    </ul>
 </ul>
 
@@ -808,7 +808,7 @@ guile&gt;
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="8">自作モジュールのテスト</h3>
+<h3 class="section" id="testing-module">自作モジュールのテスト</h3>
 <p class="short"></p>
 &rtri;
 モジュールは，テスト用のコードも含めて，1つのファイルにまとめることができます．
@@ -816,7 +816,7 @@ guile&gt;
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="9">スクリプト化とテストコードの埋め込み</h4>
+<h4 class="hdln" id="8">スクリプト化とテストコードの埋め込み</h4>
 <p class="short"></p>
 &rtri;
 以下のプログラムは，
@@ -862,7 +862,7 @@ exec guile -e '(@@ (hello) main)' -s "$0" "$@"
 以下に実行結果を示します．
 <pre class="shell">
 &#36; <span class="mycmd">pwd</span>
-/home/algo/mymods
+/home/user/mymods
 &#36; <span class="mycmd">./hello.scm</span>
 test for make-hello:*** Hello,maker!!! ***
 test for hello-somebody:
@@ -876,7 +876,7 @@ test for hello-everybody:
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="10">スクリプトでもあり，モジュールでもある</h4>
+<h4 class="hdln" id="9">スクリプトでもあり，モジュールでもある</h4>
 <p class="short"></p>
 &rtri;
 上のように変更したとしてもモジュールとして機能します．
@@ -899,7 +899,7 @@ main手続きの部分も無視されます．
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="11">スクリプト化の一般的な形式</h4>
+<h4 class="hdln" id="10">スクリプト化の一般的な形式</h4>
 <p class="short"></p>
 &rtri;
 モジュールのソースコードをスクリプトにするためには，一般に，
@@ -913,42 +913,9 @@ exec guile -e '(@@ <span class="mysyn">module name</span> <span class="mysyn">pr
 
 <p></p>
 &rtri;
-なお，上記の追加部分は，<span class="mysyn">proc</span> が非公開であることを仮定しています．もし公開されている手続きを実行したいのであれば，@@ を @ にします．引き抜きに関しては <a class="noline" href="file:///home/algo/notebook/github-page/guile-basics/modules/use-module.html">モジュールの利用</a> を参照して下さい．
+なお，上記の追加部分は，<span class="mysyn">proc</span> が非公開であることを仮定しています．もし公開されている手続きを実行したいのであれば，@@ を @ にします．引き抜きに関しては <a class="noline" href="use-module.html">モジュールの利用</a> を参照して下さい．
 
 </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
