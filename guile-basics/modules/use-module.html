@@ -57,6 +57,8 @@ Guile基礎／モジュールの利用
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.1.28</span>：インターフェース仕様の誤りを訂正．
+<li class="revise">
 <span class="mydate">2022.1.23</span>：初出
 </ul>
 </div>
@@ -112,19 +114,19 @@ use-modules はモジュールをロードし，
 <li class="menu"><a class="noline" href="#3">カスタムインターフェース</a>
    <ul class="menu">
    <li class="menu"><a class="noline" href="#4">概要</a>
-   <li class="menu"><a class="noline" href="#5">インターフェース仕様の一般的な形式</a>
-   <li class="menu"><a class="noline" href="#6">#:select <span class="mysyn">select</span></a>
-   <li class="menu"><a class="noline" href="#7">#:prefix <span class="mysyn">prefix</span></a>
-   <li class="menu"><a class="noline" href="#8">#:rename <span class="mysyn">renamer</span></a>
-   <li class="menu"><a class="noline" href="#9">リネーマー（renamer）に関する問題点</a>
+   <li class="menu"><a class="noline" href="#interface-specification">インターフェース仕様の一般的な形式</a>
+   <li class="menu"><a class="noline" href="#5">#:select <span class="mysyn">select</span></a>
+   <li class="menu"><a class="noline" href="#6">#:prefix <span class="mysyn">prefix</span></a>
+   <li class="menu"><a class="noline" href="#7">#:rename <span class="mysyn">renamer</span></a>
+   <li class="menu"><a class="noline" href="#8">リネーマー（renamer）に関する問題点</a>
    <li class="menu"><a class="noline" href="#evel-when">Eval-When（いつ評価するか？）</a>
-   <li class="menu"><a class="noline" href="#10">具体例</a>
+   <li class="menu"><a class="noline" href="#9">具体例</a>
    </ul>
 <li class="menu"><a class="noline" href="#@-@@-form">個別に引き抜く</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#11">公開されている束縛を引き抜く</a>
-   <li class="menu"><a class="noline" href="#12">非公開の束縛を引き抜く</a>
-   <li class="menu"><a class="noline" href="#13">具体例</a>
+   <li class="menu"><a class="noline" href="#10">公開されている束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#11">非公開の束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#12">具体例</a>
    </ul>
 </ul>
 
@@ -346,18 +348,19 @@ use-modules の引数に<span class="mysyn">iSpec</span>を指定することに
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="5">インターフェース仕様の一般的な形式</h4>
+<h4 class="hdln" id="interface-specification">インターフェース仕様の一般的な形式</h4>
 <p class="short"></p>
 &rtri;
 インターフェース仕様の文法を示します．
 下記の角括弧 [ ... ] は，括弧内の構文要素が省略可能であることを示しています．
 <pre class="grammar">
-<span class="mysyn">iSepc</span>       ::= '(' <span class="mysyn">module name</span> ['#:select' <span class="mysyn">selection</span>]
+<span class="mysyn">iSepc</span>       ::= <span class="mysyn">module name</span>
+               |  '(' <span class="mysyn">module name</span> ['#:select' <span class="mysyn">selection</span>]
                                     ['#:prefix' <span class="mysyn">prefix</span>]
                                     ['#:renamer' <span class="mysyn">renamer</span>] ')'
 <span class="mysyn">module name</span> ::= '(' <span class="mysyn">symbol</span> ... ')'                    ;; モジュール名
-<span class="mysyn">selection</span>   ::= '(' <span class="mysyn">selSpec</span> ... ')'                   ;; <span class="mysyn">selSpec</span> のリスト
-<span class="mysyn">selSpec</span>     ::= <span class="mysyn">orig-name</span>  
+<span class="mysyn">selection</span>   ::= '(' <span class="mysyn">sel-spec</span> ... ')'                   ;; <span class="mysyn">sel-spec</span> のリスト
+<span class="mysyn">sel-spec</span>    ::= <span class="mysyn">orig-name</span>  
                |  '(' <span class="mysyn">orig-name</span> ' . ' <span class="mysyn">new-name</span> ')'    ;; <span class="mysyn">orig-name</span> と <span class="mysyn">new-name</span> のペア
 <span class="mysyn">orig-name</span>   ::= <span class="mysyn">symbol</span>
 <span class="mysyn">new-name</span>    ::= <span class="mysyn">symbol</span>
@@ -368,9 +371,8 @@ use-modules の引数に<span class="mysyn">iSpec</span>を指定することに
 
 <p></p>
 &rtri;
-<span class="mysyn">selSpec</span> は<em>選択スペック</em>（selection-spec）と呼びます．
-<span class="mysyn">prefix</span> と <span class="mysyn">renamer</span> は，
-そのまま，<em>プリフィックス</em> および <em>リネーマー</em> と呼びます．
+<span class="mysyn">sels-spec</span> は<em>選択スペック</em>（selection-spec）と呼びます．<span class="mysyn">prefix</span> と <span class="mysyn">renamer</span> は，
+そのまま <em>プリフィックス</em> および <em>リネーマー</em> と呼びます．
 
 <p></p>
 &rtri;
@@ -411,7 +413,7 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="6">#:select <span class="mysyn">select</span></h4>
+<h4 class="hdln" id="5">#:select <span class="mysyn">select</span></h4>
 <p class="short"></p>
 &rtri;
 上記の文法が示すように，<span class="mysyn">select</span> は，
@@ -429,7 +431,7 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="7">#:prefix <span class="mysyn">prefix</span></h4>
+<h4 class="hdln" id="6">#:prefix <span class="mysyn">prefix</span></h4>
 <p class="short"></p>
 &rtri;
 このオプションは，
@@ -437,7 +439,7 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="8">#:rename <span class="mysyn">renamer</span></h4>
+<h4 class="hdln" id="7">#:rename <span class="mysyn">renamer</span></h4>
 <p class="short"></p>
 &rtri;
  <span class="mysyn">renamer</span> はシンボルを受け取ってシンボルを返す手続きです．
@@ -469,7 +471,7 @@ sym-proc は，シンボル（sym）を受け取って，
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="9">リネーマー（renamer）に関する問題点</h4>
+<h4 class="hdln" id="8">リネーマー（renamer）に関する問題点</h4>
 <p class="short"></p>
 &rtri;
 上で示した具体例は，動きはするのですが，
@@ -532,7 +534,7 @@ load を指定しておかないとロード時に評価してくれなくなり
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="10">具体例</h4>
+<h4 class="hdln" id="9">具体例</h4>
 <p class="short"></p>
 &rtri;
 具体例を示します．
@@ -618,7 +620,7 @@ add-infix の中のラムダ式が定める手続きは，
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="11">公開されている束縛を引き抜く</h4>
+<h4 class="hdln" id="10">公開されている束縛を引き抜く</h4>
 <p class="short"></p>
 &rtri;
 次の形式を使うことによって，use-modules を使うことなく，
@@ -654,7 +656,7 @@ guile&gt;
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="12">非公開の束縛を引き抜く</h4>
+<h4 class="hdln" id="11">非公開の束縛を引き抜く</h4>
 <p class="short"></p>
 &rtri;
 次の形式を使うことによって，
@@ -703,7 +705,7 @@ https://www.gnu.org/software/guile/manual/html_node/Using-Guile-Modules.html
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="13">具体例</h4>
+<h4 class="hdln" id="12">具体例</h4>
 <p class="short"></p>
 &rtri;
 これまでに示したスクリプトを，use-modules を利用しないものに書き換えてみます．
