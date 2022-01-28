@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／モジュール雑話</title>
+   <link rel="stylesheet" type="text/css" href="../gb.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="create-module.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／モジュール雑話
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.mm.dd</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p class="short"></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+モジュールを勉強している間に気づいたことや思ったことを雑然と記録しています．
+主な内容は現象の記録です．
+モジュールについて勉強している間に，色々な実験を行ったので，
+仕組みや理由が分からなくても，現象として記録しておこうと思います．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">現象記録：2行目の掟，再び</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">現象</a>
+   <li class="menu"><a class="noline" href="#2">原因</a>
+   </ul>
+<li class="menu"><a class="noline" href="#3">現象記録：外部ファイルのロードとdefine-moduleの関係性</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#4">現象 その１</a>
+   <li class="menu"><a class="noline" href="#5">現象 その２</a>
+   <li class="menu"><a class="noline" href="#6">現象 その３</a>
+   <li class="menu"><a class="noline" href="#7">現象 その４</a>
+   </ul>
+<li class="menu"><a class="noline" href="#8">現象記録：use-modulesとdefine-moduleの実行順序</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#9">現象 その１</a>
+   <li class="menu"><a class="noline" href="#10">現象 その２</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Modules.html#Modules
+   ">［6.18 Modules］</a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Load-Paths.html
+   ">［6.16.8 Load Paths］
+   </a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Eval-When.html#Eval-When
+   ">［6.8.8 Eval-When］
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Environment-Variables.html#Environment-Variables
+   ">［4.2.2 Environment Variables］
+   </a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Scripting-Examples.html
+   ">［4.3.4 Scripting Examples］
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">現象記録：2行目の掟，再び</h3>
+<p><p>
+&rtri;
+以下は現象記録です．現象の要因は（一応）判明しています．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">現象</h4>
+<p class="short"></p>
+&rtri;
+<a class="noline" href="create-module.html#testing-module">自作モジュールのテスト</a>のところで作成したスクリプトを，次のように変更したとします．
+変更したのは先頭の3行（紫色の部分）です．
+シェルを経由して実行する代わりに，guileに直接実行させています．
+<pre class="list">
+<span class="myvar">#!/usr/bin/guile \
+-e '(@@ (hello) main)' -s 
+!#</span>
+
+;; hello-ms.scm
+
+(define-module (hello)
+  #:export (hello-everybody hello-somebody))
+
+(define (hello-everybody names)
+  (for-each hello-somebody names))
+
+(define (hello-somebody name)
+  (display (make-hello name))
+  (newline))
+
+(define (make-hello name)
+  (string-append "*** Hello," name "!!! ***"))
+
+;; テスト用手続き
+(define (main args) 
+  (format (current-output-port) 
+          "test for make-hello:~A\n"
+          (make-hello "maker"))
+  (display "test for hello-somebody:\n") 
+  (hello-somebody "somebody")
+  (display "test for hello-everybody:\n") 
+  (hello-everybody '("Alice" "Bob" "Carol" "David")))
+</pre>
+残念ながら，このスクリプトはうまく動きません．
+<pre class="shell">
+&#36; <span class="mycmd">./hello-ms.scm </span>
+ERROR: In procedure read:
+In procedure scm_i_lreadparen: #&lt;unknown port&gt;:1:5: end of file
+</pre>
+ちなみに，ターミナル上で上記の2行分と同じコマンドを実行するとうまく動きます．
+<pre class="shell">
+&#36; <span class="mycmd">guile -e '(@@ (hello) main)' -s hello-ms.scm</span> 
+test for make-hello:*** Hello,maker!!! ***
+test for hello-somebody:
+*** Hello,somebody!!! ***
+test for hello-everybody:
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,David!!! ***
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">原因</h4>
+<p class="short"></p>
+&rtri;
+うまく動かない原因は，<a class="noline" href="
+../../guile-intro/script.html#ep-rules
+">メタスイッチの2行目の掟</a>のためです．
+2行目の掟によれば，2行目の中の空白は，たとえクォートの中だったとしても，
+引数の区切りとして機能します．従って，上記の2行目にある 
+   <div class="dstyle">
+   '(@@ (hello) main)'
+   </div>
+は，1つの引数としてではなく，
+   <div class="dstyle">
+   '(@@ &nbsp; と &nbsp; (hello) &nbsp; と &nbsp; main)'
+   </div>
+という3つの引数として処理されてしまいます．
+結局，上記のシェバン行と2行目は，
+以下の実行例に示すようなコマンドを実行していることになります．
+<pre class="shell">
+&#36; <span class="mycmd">guile -e "'(@@" '(hello)' "main)'" -s hello-ms.scm</span>
+ERROR: In procedure read:
+In procedure scm_i_lreadparen: #&lt;unknown port&gt;:1:5: end of file
+</pre>
+全く同じエラーメッセージが表示されていることが分かるでしょう．
+
+<p></p>
+では，どうしたらよいか．
+もっとも真面目な解決策はシェルを経由して実行することです（つまり，元に戻すことです）．シェルを経由すれば2行目の掟なんか無視できます．
+もう一つの方法は，2行目の中の空白を以下のようにエスケープすることです．
+<pre class="list">
+#!/usr/bin/guile \
+-e <span class="myvar">(@@\ (hello)\ main)</span> -s 
+!#
+
+;; hello-ms.scm
+   
+      ...... （以下同様） ......
+
+</pre>
+ただし，クォートは外します．2行目はguileによって処理されるのですが，
+クォートを付けているとエラーが発生します（guileが2行目をどう処理しているのかについて，厳密な詳細は分かりません）．
+以下は変更後の実行結果です．
+<pre class="shell">
+&#36; <span class="mycmd">./hello-ms.scm</span>
+test for make-hello:*** Hello,maker!!! ***
+test for hello-somebody:
+*** Hello,somebody!!! ***
+test for hello-everybody:
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,David!!! ***
+</pre>
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="3">現象記録：外部ファイルのロードとdefine-moduleの関係性</h3>
+<p><p>
+&rtri;
+以下は現象記録です．詳しい仕組みや理由は分かっていません．
+
+<p></p>
+&rtri;
+あるモジュールの手続きを<a class="noline" href="use-module.html#@-@@-form">引き抜き方式</a>で実行しようとするとき，
+外部ファイルで定義した束縛はロードするタイミングによって，
+使えなかったり使えたりします．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">現象 その１</h4>
+<p class="short"></p>
+&rtri;
+以下では，次の2つのプログラムを使って実験します，
+<pre class="list">
+#!/usr/bin/env sh
+exec guile -l sub.scm -e '(@@ (mymod) main)' -s "$0" "$@"
+!#
+
+;; mymod.scm
+
+(define-module (mymod)
+  #:export (hello-somebody))
+
+(define (hello-somebody name)
+  (display (string-append "Hello," name "!"))
+  (newline))
+
+;; テスト用手続き
+(define (main args) 
+ (display "test for hello-somebody:\n") 
+ (hello-somebody "somebody")
+ (display "test for hello-somebody with add-prefix:\n") 
+ (hello-somebody (<span class="myvar">add-prefix</span> "somebody"))
+)
+</pre>
+<pre class="list">
+;; sub.scm
+
+(define (add-prefix str)
+  (string-append "prefix:" str))
+</pre>
+mymod.scm は，mymod モジュールの main 手続きを実行しようとしていて，
+その main 手続きの中で add-prefix 手続き（紫色）を使っています．
+ただし，add-prefix は sub.scm の中で定義されています．
+そこで，-l スイッチを使って sub.scm をロードしています．
+
+<p></p>
+&rtri;
+残念ながら，これはうまく動きません．
+論理的な観点から言えば，動いて欲しいところです．
+なぜなら，-l スイッチで sub.scm をロードした時点で add-prefix の束縛が確立していると思えるからです．でも，動きません．以下は実行結果です．
+<pre class="shell">
+&#36; <span class="mycmd">./mymod.scm</span>
+test for hello-somebody:
+Hello,somebody!
+test for hello-somebody with add-prefix:
+Backtrace:
+      ...... バックトレースのメッセージ ......
+<span class="myred">Unbound variable: add-prefix</span>
+</pre>
+main 手続きの途中までは実行できていて，add-preix を呼び出す時点で「add-prefixは未束縛」といったエラーが発生しています．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="5">現象 その２</h4>
+<p class="short"></p>
+&rtri;
+そこで，-l スイッチでロードするのは諦めて，load 手続きを使ってロードしてみます．ただし，sub.scm をguileに発見させるために %load-path にカレントディレクトリを追加します．変更後の mymod.scm は次のようになります．
+紫色は変更箇所を示しています．
+<pre class="list">
+#!/usr/bin/env sh
+<span class="myvar">exec guile -e '(@@ (mymod) main)' -s "$0" "$@"</span>
+!#
+
+;; mymod.scm
+<span class="myvar">
+(add-to-load-path (getcwd))
+(load "sub.scm")</span>
+
+(define-module (mymod)
+  #:export (hello-somebody))
+
+      ...... （以下同じ） ......
+
+</pre>
+残念ながら，これも動きません．先ほどとまったく同じ結果になります．
+実行結果は省略します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="6">現象 その３</h4>
+<p class="short"></p>
+&rtri;
+次に，laod 手続きを
+<a class="noline" href="use-module.html#evel-when">eval-when</a>
+してみます．
+変更後の mymod.scm は次のようになります．
+紫色は変更箇所を示しています．
+ちなみに，add-to-load-path は，それ自身の中で
+<a class="noline" href="use-module.html#evel-when">eval-when</a>
+しています．
+<pre class="list">
+#!/usr/bin/env sh
+exec guile -e '(@@ (mymod) main)' -s "$0" "$@"
+!#
+
+;; mymod.scm
+(add-to-load-path (getcwd))
+<span class="myvar">(eval-when (expand load eval)  
+           (load "sub.scm"))</span>
+
+(define-module (mymod)
+  #:export (hello-somebody))
+
+      ...... （以下同じ） ......
+
+</pre>
+残念ながら，これも動きません．先ほどとまったく同じ結果になります．
+実行結果は省略します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="7">現象 その４</h4>
+<p class="short"></p>
+&rtri;
+そこで，load 手続きを define-module のあとに実行してみます．
+変更後の mymod.scm は次の通りです．
+<pre class="list">
+#!/usr/bin/env sh
+exec guile -e '(@@ (mymod) main)' -s "$0" "$@"
+!#
+
+;; mymod.scm
+
+(define-module (mymod)
+  #:export (hello-somebody)
+  )
+<span class="myvar">
+(add-to-load-path (getcwd))
+(load "sub.scm")
+</span>
+      ...... （以下同じ） ......
+
+</pre>
+これはうまく動きます．
+<pre class="shell">
+&#36; <span class="mycmd">./mymod.scm</span>
+test for hello-somebody:
+Hello,somebody!
+test for hello-somebody with add-prefix:
+Hello,prefix:somebody!
+</pre>
+
+<p></p>
+&rtri;
+ロードのタイミングによって外部の束縛が使えたり使えなかったりするのは，
+ちょっと不思議な感じがします．コンパイルの仕組みを詳しく理解しない限り，
+以上の状況を理解することはできないように思います．
+
+</section>
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="8">現象記録：use-modulesとdefine-moduleの実行順序</h3>
+<p><p>
+&rtri;
+以下は現象記録です．詳しい仕組みや理由は分かっていません．
+
+<p></p>
+&rtri;
+前節の load 手続きと define-module の同じ関係性が，use-modules と define-moduleの間にも成り立ちます．
+つまり，use-modules を define-module の前に実行してもモジュール内の束縛はうまくロードされないようです．<span class="myred">use-modules は define-module のあとに実行しなければなりません</span>．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="9">現象 その１</h4>
+<p class="short"></p>
+&rtri;
+前に示した次のプログラムを使って実験します．
+ただし，load 手続きの変わりに use-modules を使用します．
+さらに，submod.scm のほうもモジュール化しています（ファイル名も変更しています）．以下の紫色は，前に示したプログラムに対する主な変更点を示しています．
+<pre class="list">
+#!/usr/bin/env sh
+exec guile -e '(@@ (mymod) main)' -s "$0" "$@"
+!#
+
+;; mymod.scm
+
+<span class="myvar">(add-to-load-path (getcwd))
+(use-modules (submod))</span>
+
+(define-module (mymod)
+  #:export (hello-somebody)
+  )
+
+(define (hello-somebody name)
+  (display (string-append "Hello," name "!"))
+  (newline))
+
+;; テスト用手続き
+(define (main args) 
+ (display "test for hello-somebody:\n") 
+ (hello-somebody "somebody")
+ (display "test for hello-somebody with add-prefix:\n") 
+ (hello-somebody (add-prefix "somebody"))
+)
+</pre>
+<pre class="list">
+;; <span class="myvar">submod.scm</span>
+
+<span class="myvar">(define-module (submod)
+  #:export (add-prefix))</span>
+
+(define (add-prefix str)
+  (string-append "prefix:" str))
+</pre>
+残念ながら，これは動きません．
+<pre class="shell">
+&#36; <span class="mycmd">./mymod.scm</span> 
+test for hello-somebody:
+Hello,somebody!
+test for hello-somebody with add-prefix:
+Backtrace:
+      ...... バックトレースのメッセージ ......
+<span class="myred">Unbound variable: add-prefix</span>
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="10">現象 その２</h4>
+<p class="short"></p>
+&rtri;
+次に，use-modules を define-module のうしろに実行します．
+変更後のプログラムは次の通りです．紫色は変更箇所を示しています．
+<pre class="list">
+#!/usr/bin/env sh
+exec guile -e '(@@ (mymod) main)' -s "$0" "$@"
+!#
+
+;; mymod.scm
+
+(define-module (mymod)
+  #:export (hello-somebody)
+  )
+
+<span class="myvar">(add-to-load-path (getcwd))
+(use-modules (submod))</span>
+
+      ...... （以下同じ） ......
+
+</pre>
+これはうまく動きます．
+<pre class="shell">
+&#36; <span class="mycmd">./mymod.scm</span> 
+test for hello-somebody:
+Hello,somebody!
+test for hello-somebody with add-prefix:
+Hello,prefix:somebody!
+</pre>
+
+</section>
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>

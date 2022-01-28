@@ -117,14 +117,14 @@ use-modules はモジュールをロードし，
    <li class="menu"><a class="noline" href="#7">#:prefix <span class="mysyn">prefix</span></a>
    <li class="menu"><a class="noline" href="#8">#:rename <span class="mysyn">renamer</span></a>
    <li class="menu"><a class="noline" href="#9">リネーマー（renamer）に関する問題点</a>
-   <li class="menu"><a class="noline" href="#10">Eval-When（いつ評価するか？）</a>
-   <li class="menu"><a class="noline" href="#11">具体例</a>
+   <li class="menu"><a class="noline" href="#evel-when">Eval-When（いつ評価するか？）</a>
+   <li class="menu"><a class="noline" href="#10">具体例</a>
    </ul>
-<li class="menu"><a class="noline" href="#12">個別に引き抜く</a>
+<li class="menu"><a class="noline" href="#@-@@-form">個別に引き抜く</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#13">公開されている束縛を引き抜く</a>
-   <li class="menu"><a class="noline" href="#14">非公開の束縛を引き抜く</a>
-   <li class="menu"><a class="noline" href="#15">具体例</a>
+   <li class="menu"><a class="noline" href="#11">公開されている束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#12">非公開の束縛を引き抜く</a>
+   <li class="menu"><a class="noline" href="#13">具体例</a>
    </ul>
 </ul>
 
@@ -337,7 +337,10 @@ average: 300  variance: 20000
 カスタムインターフェースは，
 モジュール名にオプションを付加することによって構築します．
 モジュール名そのもの，および，オプションが付加されたモジュール名を総称して，<em>インターフェース仕様</em>（interface specification）と呼びます．
-この言葉はちょっと長いので，以後，<em><span class="mysyn">iSpec</span></em> と略すことにします．
+この言葉はちょっと長いので，以後，<em><span class="mysyn">iSpec</span></em> と略すことにします．use-modules の一般的な形式は次のようになります．
+   <div class="ddstyle">
+   (use-modules <span class="mysyn">iSpec</span> ... )
+   </div>
 use-modules の引数に<span class="mysyn">iSpec</span>を指定することによってカスタムインターフェースを構成することになり，
 そのインターフェースを通してモジュールを利用することになります．
 
@@ -373,29 +376,32 @@ use-modules の引数に<span class="mysyn">iSpec</span>を指定することに
 &rtri;
 各構文要素の意味は後述するとして，(ice-9 textual-ports) モジュールを題材に，
 イメージを喚起するするための具体例を示します．
+以下の紫色の部分が <span class="mysyn">iSpec</span> です．
 <ul>
 <li> 
 <pre class="list">
-((ice-9 textual-ports) #:select (get-char put-char)) 
+(use-modules <span class="myvar">((ice-9 textual-ports) #:select (get-char put-char))</span>)
 </pre>
 上記の<span class="mysyn">iSpec</span>は，(ice-9 textual-ports) モジュールから get-char 手続きとput-char 手続きだけを選択しています．そのため，他の手続き（例えば，get-line など）は使えません．
 
 <li> 
 <pre class="list">
-((ice-9 textual-ports) #:select ((get-char . give-me-char) put-char)) 
+(use-modules <span class="myvar">((ice-9 textual-ports) 
+               #:select ((get-char . give-me-char) put-char))</span>) 
 </pre>
 これは，(ice-9 textual-ports) モジュールから get-char 手続きと put-char 手続きだけを選択するとともに，get-char の名前を give-me-char に変えて使用することを示しています．
 
 <li> 
 <pre class="list">
-((ice-9 textual-ports) #:prefix hoge:) 
+(use-modules <span class="myvar">((ice-9 textual-ports) #:prefix hoge:)</span>) 
 </pre>
 これは，(ice-9 textual-ports) が提供するすべての束縛名に hoge: というプリフィックスを付けて利用することを示しています．例えば，get-char は hoge:get-char という名前で利用することになります．
 
 <li> 
 <pre class="list">
-((ice-9 textual-ports) #:select ((get-char . give-me-char) put-char)
-                       #:prefix text:))
+(use-modules <span class="myvar">((ice-9 textual-ports) 
+               #:select ((get-char . give-me-char) put-char)
+               #:prefix text:)</span>)
 </pre>
 これは，(ice-9 textual-ports) モジュールから get-char 手続きと put-char 手続きだけを選択し，get-char の名前を give-me-char に変更し，
 give-me-char と put-char に text: というプリフィックスを付けて利用することを示しています．
@@ -500,7 +506,7 @@ sym-proc の定義はあきらめて，sym-proc の本体であるラムダ式�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="10">Eval-When（いつ評価するか？）</h4>
+<h4 class="hdln" id="evel-when">Eval-When（いつ評価するか？）</h4>
 <p class="short"></p>
 &rtri;
 リネーマーの問題についてあれこれと調べているうちに解決策が分かりました．
@@ -526,7 +532,7 @@ load を指定しておかないとロード時に評価してくれなくなり
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="11">具体例</h4>
+<h4 class="hdln" id="10">具体例</h4>
 <p class="short"></p>
 &rtri;
 具体例を示します．
@@ -608,11 +614,11 @@ add-infix の中のラムダ式が定める手続きは，
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="12">個別に引き抜く</h3>
+<h3 class="section" id="@-@@-form">個別に引き抜く</h3>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="13">公開されている束縛を引き抜く</h4>
+<h4 class="hdln" id="11">公開されている束縛を引き抜く</h4>
 <p class="short"></p>
 &rtri;
 次の形式を使うことによって，use-modules を使うことなく，
@@ -648,7 +654,7 @@ guile&gt;
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="14">非公開の束縛を引き抜く</h4>
+<h4 class="hdln" id="12">非公開の束縛を引き抜く</h4>
 <p class="short"></p>
 &rtri;
 次の形式を使うことによって，
@@ -697,7 +703,7 @@ https://www.gnu.org/software/guile/manual/html_node/Using-Guile-Modules.html
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="15">具体例</h4>
+<h4 class="hdln" id="13">具体例</h4>
 <p class="short"></p>
 &rtri;
 これまでに示したスクリプトを，use-modules を利用しないものに書き換えてみます．
