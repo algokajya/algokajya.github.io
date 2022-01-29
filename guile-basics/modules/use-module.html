@@ -117,7 +117,7 @@ use-modules はモジュールをロードし，
    <li class="menu"><a class="noline" href="#interface-specification">インターフェース仕様の一般的な形式</a>
    <li class="menu"><a class="noline" href="#5">#:select <span class="mysyn">select</span></a>
    <li class="menu"><a class="noline" href="#6">#:prefix <span class="mysyn">prefix</span></a>
-   <li class="menu"><a class="noline" href="#7">#:rename <span class="mysyn">renamer</span></a>
+   <li class="menu"><a class="noline" href="#7">#:renamer <span class="mysyn">renamer</span></a>
    <li class="menu"><a class="noline" href="#8">リネーマー（renamer）に関する問題点</a>
    <li class="menu"><a class="noline" href="#evel-when">Eval-When（いつ評価するか？）</a>
    <li class="menu"><a class="noline" href="#9">具体例</a>
@@ -439,7 +439,7 @@ give-me-char と put-char に text: というプリフィックスを付けて�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="7">#:rename <span class="mysyn">renamer</span></h4>
+<h4 class="hdln" id="7">#:renamer <span class="mysyn">renamer</span></h4>
 <p class="short"></p>
 &rtri;
  <span class="mysyn">renamer</span> はシンボルを受け取ってシンボルを返す手続きです．
@@ -459,7 +459,7 @@ sym-proc は，シンボル（sym）を受け取って，
 その前後に text: と _hoge を付加したシンボルを返す手続きです．
 例えば，get-char というシンボルを受け取ったら text:get-cahr_hoge というシンボルを返します．そのため，上記の
    <div class="dstyle">
-   #:rename sym-proc
+   #:renamer sym-proc
    </div>
 というオブションは，(ice-9 textual-pots) モジュールのすべての束縛名に対して，sym-proc を適用したあとの名前を利用すること，つまり，元々の束縛名の前後に text: と _hoge を付加した名前を利用することを示しています．
 
@@ -478,18 +478,17 @@ sym-proc は，シンボル（sym）を受け取って，
 コンパイル時に「sym-procが未定義」といったエラー（warningレベル）が発生して，
 コンパイルしてくれません（VMコードがキャッシュされません）．
 そのため，Guileはコンパイルをあきらめて，
-ソースコードを直接，解釈実行します．
+ソースコードを直接，解釈実行します（注：これも初めて知りましたが，WRNINGレベルだと解釈実行するのだろうと思います）．
 <p></p>
 エラーの原因は，use-modules のマクロ展開時に sym-proc の define 形式の評価が行われていないためです．
 <p></p>
-use-modules をマクロ展開するときに（おそらく）sym-proc が定義されているか否かを検査しているのだと思います．
+use-modules をマクロ展開するときに，
+おそらく，モジュール内のすべての束縛名に対して sym-proc を適用しようとしているのだと思います．しかしながら，
 マクロ展開時には sym-proc の define 形式が評価（コンパイル＆ロード）されていないので，sym-proc を発見できずにエラーが発生しているのだと思います．
-本音としては，マクロ展開後のコンパイル時に検査して欲しいところです．use-modules は，
-厳密に言えば，
-マクロではなくて，Guileシステムの基盤プログラム（C言語のプログラム）として実装されています．
-そういったことも関係しているのかも知れません．
+本音としては，マクロ展開後のコンパイル時に適用して欲しいところですが，
+筆者には想像できない困難があるのかも知れません．
 <p></p>
-以上はあくまで筆者の推測です．でも，大きくはずれてはいないと思います．
+以上は筆者の推測です．でも，大きくはずれてはいないと思います．
 例えば，次のような現象を観測することができます．
 <ul>
 <li>

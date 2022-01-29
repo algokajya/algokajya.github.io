@@ -57,6 +57,8 @@ Guile基礎／モジュールの作成と利用
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.1.29</span>：「define-module のオプション」を追加．
+<li class="revise">
 <span class="mydate">2022.1.26</span>：初出
 </ul>
 </div>
@@ -111,6 +113,15 @@ Guile基礎／モジュールの作成と利用
    <li class="menu"><a class="noline" href="#8">スクリプト化とテストコードの埋め込み</a>
    <li class="menu"><a class="noline" href="#9">スクリプトでもあり，モジュールでもある</a>
    <li class="menu"><a class="noline" href="#10">スクリプト化の一般的な形式</a>
+   </ul>
+<li class="menu"><a class="noline" href="#define-module-options">define-module のオプション</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#11">#:use-module</a>
+   <li class="menu"><a class="noline" href="#12">#:autoload</a>
+   <li class="menu"><a class="noline" href="#13">#:export</a>
+   <li class="menu"><a class="noline" href="#14">#:re-export</a>
+   <li class="menu"><a class="noline" href="#15">#:replace</a>
+   <li class="menu"><a class="noline" href="#16">その他</a>
    </ul>
 </ul>
 
@@ -288,6 +299,7 @@ define-module
 ここで，<span class="mysyn">module name</span> はモジュール名を表し，
 <span class="mysyn">name</span> は公開したい名前を表しています．
 なお，#:export のうしろは <span class="mysyn">name</span> （公開したい名前）のリストです．このリストのことを<em>エクスポートリスト</em>（export list）と呼びます．
+注意すべきことは，<span class="myred">エクポートリストに登録しなかった束縛は，他のプログラムからは利用できない</span>ことです（注：<a class="noline" href="use-module.html#@-@@-form">引き抜き方式</a>を使えば利用できます）．筆者はしばしば登録し忘れて混乱することがあります．
 
 <p></p>
 &rtri;
@@ -916,6 +928,326 @@ exec guile -e '(@@ <span class="mysyn">module name</span> <span class="mysyn">pr
 なお，上記の追加部分は，<span class="mysyn">proc</span> が非公開であることを仮定しています．もし公開されている手続きを実行したいのであれば，@@ を @ にします．引き抜きに関しては <a class="noline" href="use-module.html">モジュールの利用</a> を参照して下さい．
 
 </section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="define-module-options">define-module のオプション</h3>
+<p class="short"></p>
+&rtri;
+define-module の一般的な形式は次の通りです．
+   <div class="ddstyle">
+   <em>(define-module <span class="mysyn">module name</span> <span class="mysyn">option</span> ... )</em>
+   </div>
+ここで，<span class="mysyn">module name</span> はモジュール名で，
+そのうしろは<em>オプション</em>（<span class="mysyn">option</span>）の列です．<span class="mysyn">option</span> は，次の形式をしています．
+   <div class="ddstyle">
+   <em><span class="mysyn">keyword</span> <span class="mysyn">value</span></em>
+   </div>
+ここで，<span class="mysyn">keyword</span> は #:export などのキーワードで，<span class="mysyn">value</span> はそのキーワードに対する値です．define-module は色々なオプションが指定できます．以下，主なオプションを説明します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="11">#:use-module</h4>
+<p class="short"></p>
+&rtri;
+#:use-module オプションは次の形式で使用します．
+   <div class="ddstyle">
+   <em>#:use-module <span class="mysyn">iSpec</span></em>
+   </div>
+ここで，<span class="mysyn">iSpec</span> は
+<a class="noline" href="use-module.html#interface-specification">インターフェース仕様</a> です．これは，
+   <div class="ddstyle">
+   (use-modules <span class="mysyn">iSpec</span>)
+   </div>
+と等価です．つまり，他のモジュールをロードするためのオプションです．
+
+<p></p>
+&rtri;
+前に示した (hello) モジュールを使った具体例を示します．
+まず (hello) モジュールの中の meke-hello 手続きを取り出して，
+以下のような新たなモジュールを作ります．
+そのロードパスは /home/user/mymods にして，
+モジュール名は (submod) にします．
+<pre class="list">
+
+;; submod.scm
+
+(define-module (submod) 
+  #:export (make-hello))
+
+(define (make-hello name)
+  (string-append "*** Hello," name "!!! ***"))
+</pre>
+<p></p>
+次に (hello) モジュールから make-hello 手続きを削除して，
+その代わりに (submod) モジュールをロードします．(submod) モジュールをロードする方法は2つあります．
+1つの方法は use-modules 形式を使う方法です，
+つまり，(hello) モジュールの define-module のあとに，
+以下のものを追加します．
+   <div class="ddstyle">
+   (use-modules (submod))
+   </div>
+もう1つの方法は #:use-module オプションを使う方法です．
+今回の具体例では，こちらの方法を使用します．(hello) モジュールは以下のようになります．紫色の部分は，
+前に示した (hello) モジュールからの変更箇所を示しています．make-hello 手続きは，削除する代わりにコメントアウトしています．
+<pre class="list">
+;; hello.scm
+
+(define-module (hello)
+  <span class="myvar">#:use-module (submod)</span>
+  #:export (hello-everybody hello-somebody))
+
+(define (hello-everybody names)
+  (for-each hello-somebody names))
+
+(define (hello-somebody name)
+  (display (make-hello name))
+  (newline))
+
+<span class="myvar">;; (define (make-hello name)
+;;   (string-append "*** Hello," name "!!! ***"))</span>
+</pre>
+
+<p></p>
+以下は，(hello) モジュールをテストするためのプログラムと実行例です．
+<pre class="list">
+#!/usr/bin/guile \
+-L /home/user/mymods -e main -s
+!#
+
+;; use-hello.scm
+
+(use-modules (hello))
+
+(define (main args)
+  (let ((names (cdr args)))
+    (hello-everybody names)))
+</pre>
+<pre class="shell">
+&#36; <myc,d>./use-hello.scm Alice Bob Carol David</span>
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,David!!! ***
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="12">#:autoload</h4>
+<p class="short"></p>
+&rtri;
+#:autoload オプションは次の形式で使用します．
+   <div class="ddstyle">
+   <em>#:autoload <span class="mysyn">module name</span> <span class="mysyn">name list</span></em>
+   </div>
+ここで，<span class="mysyn">module name</span> はモジュール名で，<span class="mysyn">name list</span> は <span class="mysyn">module name</span> が示すモジュール内の束縛名のリストです．
+以下，混乱を避けるために，<span class="mysyn">module name</span> モジュールのことを<em>サブモジュール</em>と呼び，<span class="mysyn">module name</span> モジュールを利用するモジュールのことを<em>メインモジュール</em>と呼ぶことにします．
+
+<p></p>
+このオプションを指定すると，
+   <ul>
+   <li>
+   <span class="mysyn">name list</span> に指定した束縛名だけを利用可能とし，
+   <li>
+   <span class="mysyn">name list</span> に指定した束縛名がアクセスされたときに初めてサブモジュールをロードします．
+   </ul>
+例えば，先ほどの #:use-module オプションの代わりに次のように指定できます．
+<pre class="list">
+;; hello.scm
+
+(define-module (hello)
+  <span class="myvar">#:autoload (submod) (make-hello)</span>
+  #:export (hello-everybody hello-somebody))
+
+      ...... （以下同じ） ......
+
+</pre>
+
+
+<p></p>
+#:autoload オプションは，
+機能的には #:use-module オプションと同じですが，
+束縛名がアクセスされるまでサブモジュールのロードを延期する点が異なります．
+この延期機能は次のような場合に有効と思われます．
+   <ul>
+   <li>
+   サブモジュールが巨大だった場合，#:use-module や use-modules 形式を使用したときに比べて，メインモジュールの起動が速くなります．
+   <li>
+   <span class="mysyn">name list</span> に指定した束縛名が特殊な条件下でのみ利用される場合，束縛名が利用されない限り，サブモジュールはロードされません．
+   </ul>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="13">#:export</h4>
+<p class="short"></p>
+&rtri;
+#:export オプションの一般的な形式は次の通りです．
+   <div class="ddstyle">
+   <em>#:export (<span class="mysyn">name-spec</span>$_1$ ... <span class="mysyn">name-spec</span>$_n$)</em>
+   </div>
+ここで，<span class="mysyn">name-spec</span>$_i$ は
+   <div class="ddstyle">
+   <em><span class="mysyn">name</span></em> または <em>(<span class="mysyn">orig-name</span> . <span class="mysyn">new-name</span>)</em> 
+   </div>
+のいずれかです．ただし，<span class="mysyn">name</span> と <span class="mysyn">orig-name</span> はモジュール内の束縛名で，<span class="mysyn">new-name</span> は <span class="mysyn">orig-name</span> の代わりに利用可能な新たな名前です．
+前にも説明したように，#:export オプション（エクスポートリスト）は，
+公開したい名前を指定するためのものです．<span class="mysyn">name</span> と <span class="mysyn">new-name</span> が公開されます．逆に，エクスポートリストに含めなかった束縛は，<a class="noline" href="use-module.html#@-@@-form">引き抜き方式</a>を使わない限り，
+他のプログラムでは利用できません．
+
+<p></p>
+&rtri;
+楽しいことに，1つの束縛を複数の名前で公開できます．
+長い名前の短縮名を公開したいときに役立つでしょう．
+以下の (hello) モジュールは，hello-everybody 手続きを
+<span class="myvar">hello-everybody</span>，<span class="myvar">hello</span>，<span class="myvar">hi</span>
+の3つの異なる名前で公開します．
+<pre class="list">
+;; hello.scm
+
+(define-module (hello)
+  #:use-module (submod)
+  <span class="myvar">#:export (hello-everybody 
+            (hello-everybody . hello)
+            (hello-everybody . hi)
+            hello-somebody))</span>
+
+      ...... （以下同じ） ......
+
+</pre>
+以下はテスト用のプログラムと実行結果です．
+<pre class="list">
+#!/usr/bin/guile \
+-L /home/algo/mymods -e main -s
+!#
+
+(use-modules (hello))
+
+(define (main args)
+  (let ((names (cdr args)))
+    (display "* use hello-everybody:\n")
+    (hello-everybody names)
+    (display "* use hello:\n")
+    (hello names)
+    (display "* use hi:\n")
+    (hi names)))
+</pre>
+<pre class="shell">
+&#36; <span class="mycmd">./use-hello.scm Alice Bob</span>
+* using hello-everybody:
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+* using hello:
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+* using hi:
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="14">#:re-export</h4>
+<p class="short"></p>
+&rtri;
+#:re-export オプションの一般的な形式は次の通りです．
+   <div class="ddstyle">
+   <em>#:re-export (<span class="mysyn">name-spec</span>$_1$ ... <span class="mysyn">name-spec</span>$_n$)</em>
+   </div>
+ここで，<span class="mysyn">name-spec</span>$_i$ は #:export オプションのものと同じです．
+
+<p></p>
+&rtri;
+#:re-expoprt オプションは，コアモジュールや他のモジュールからロードした束縛を，
+モジュール内の束縛であるかのように見せかけて又貸しするためのものです．
+又貸しは次のような場合に有効と思われます．
+<p></p>
+&bull;
+旧バージョンとの互換性を維持する場合：例えば，Guileの (srfi srfi-16) モジュールは次のように定義されています．
+<pre class="list">
+(define-module (srfi srfi-16)
+  #:re-export (case-lambda))
+</pre>
+実質的なコードは何もありません．
+旧バージョンでモジュールとして提供されていた case-lambda がコアモジュールに組み込まれたために，このようなことになったのだと思います．しかしながら，(srfi srfi-16) モジュールを積極的に利用しているアプリケーションがあるかも知れないので，そのような場合をサポートするためにこのモジュール（の定義）を残しているのだと思います．
+
+<p></p>
+&bull;
+モジュールのインターフェースとして定義された手続き等がコアモジュールや他のモジュールのものと機能的に一致していて，新たに開発する必要がない場合：例えば，Guileの (srfi srf-1) モジュールは，リストを処理するための色々な手続きを提供しているのですが，srfi-1の仕様書は car，cdr，cons などのコアモジュールが提供する手続きもインターフェースの一部として定義しています．そのため，Guile の (srfi srfi-1) モジュールは次のような又貸しを行っています（又貸し部分のみ掲載）．
+ちなみに，:re-export はシャープ記号（#）がありません（#はなくてもよいのでしょう）．
+<pre class="list">
+;; srfi-1.scm
+
+  :re-export (cons list cons* make-list pair? null?
+              car cdr caar cadr cdar cddr
+              caaar caadr cadar caddr cdaar cdadr cddar cdddr
+              caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr
+              cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr
+              list-ref last-pair length append append! reverse reverse!
+              filter filter! memq memv assq assv set-car! set-cdr!
+              iota)
+</pre>
+
+</section>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="15">#:replace</h4>
+<p class="short"></p>
+&rtri;
+#:replace オプションの一般的な形式は次の通りです．
+   <div class="ddstyle">
+   <em>#:replace (<span class="mysyn">name-spec</span>$_1$ ... <span class="mysyn">name-spec</span>$_n$)</em>
+   </div>
+ここで，<span class="mysyn">name-spec</span>$_i$ は #:export オプションのものと同じです．
+
+<p></p>
+&rtri;
+正確に理解できていないのですが，このオプションは，
+コアモジュールが提供する束縛を変更するときに利用するようです．
+つまり，<span class="mysyn">name-spec</span>$_i$ で指定した名前を公開するとともに，
+コアモジュールが定める名前と重複したときには，
+その名前の束縛をモジュール側の束縛に置き換える，
+といった機能を発揮するようです．
+例えば，(srfi srfi-1) モジュールは，
+コアモジュールが提供している map や for-each を置き換えるべく，
+次のように宣言しています（replaceの部分のみ掲載）．
+<pre class="list">
+  :replace (map for-each map-in-order list-copy list-index member
+            delete delete! assoc)
+</pre>
+なお，上記の :re-export と同様に，:replace はシャープ記号（#）がありません．
+
+<p></p>
+&rtri;
+ちなみに，束縛の置き換えがコアモジュールに限定されることなのかが，<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Creating-Guile-Modules.html
+">マニュアル</a>を読んだだけでは，残念ながら筆者には分かりません．
+ちょっとした実験をしてみると，
+コアモジュールの束縛は確かに置き換えられるのですが，
+独自に定義した束縛を置き換えることはできませんでした．
+さらに，<a class="noline" href="
+https://lists.gnu.org/archive/html/guile-devel/2020-01/msg00080.html
+">GNU Guile 3.0.0 のリリースアナウンスメント</a>の中に #:re-export-and-replace といった類似のオプションに関する説明文があるのですが，その説明文の中では「replace core bindings」と明言しています．
+なので，置き換えはコアモジュール限定ではないかと推測しています．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="16">その他</h4>
+<p class="short"></p>
+&rtri;
+これまでに説明したオプション以外に，
+#:re-export-and-replace，
+#:version，
+#:duplicattes，
+#:pure
+といったものがあります．これらの説明は省略します．
 
 
 
