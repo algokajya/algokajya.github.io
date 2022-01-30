@@ -472,18 +472,20 @@ REPLを起動するときに hello.scm と fib.scm がまだコンパイルさ�
 <li>
 <em>--</em> （注；ハイフン2つ）は，REPLに対してコマンドライン引数を渡すためのコマンドラインオプションです．一般的な形式は次の通りです．
    <div class="ddstyle">
-   guile -- <span class="mysyn">arg</span> ...
+   guile -- <span class="mysyn">arg</span> <span class="mysyn">arg</span> ...
    </div>
+ここで，<span class="mysyn">arg</span> はコマンドライン引数です．
+<li>
 コマンドライン引数は，以下の <em>command-line</em> 手続きによって取得します．
    <div class="ddstyle">
    (command-line)
    </div>
 command-line 手続きは無引数で，以下のようなリストを返します．
    <div class="ddstyle">
-   ("/usr/bin/guile" "<span class="mysyn">arg</span>" ...) 
+   ("/usr/bin/guile" "<span class="mysyn">arg</span>" "<span class="mysyn">arg</span>" ...) 
    </div>
 ここで，"/usr/bin/guile" はguileコマンドのファイル名です（環境によって異なるかも知れません）．
-また，"<span class="mysyn">arg</span>" ... はコマンドライン引数の値です．
+また，"<span class="mysyn">arg</span>" "<span class="mysyn">arg</span>" ... はコマンドライン引数の値です．
 この形式が示すように，コマンドライン引数の値は文字列として与えられます．
 
 <li>
@@ -498,7 +500,7 @@ guile&gt;
 </pre>
 コマンドライン引数として，例えば，数値を指定したとしても，
 それらの数値はREPLに対して文字列として与えられます．
-以下のこれを確認するための実行例です．
+以下では，これを確認してみます．
 <pre class="shell">
 $ <span class="mycmd">guile -- 11 22 33 44</span> &crarr;
 GNU Guile 3.0.5
@@ -513,10 +515,10 @@ guile&gt;
 ただし，-- からうしろはすべてREPLへのコマンドライン引数になってしまうので，
 -- オプションはコマンドの最後に指定します．試しに，-- オプションのあとに -l オプションを指定した実行例を示します．
 <pre class="shell">
-$ guile -- Alice Bob Carol David -l hello.scm 
+$ <span class="mycmd">guile -- Alice Bob Carol David -l hello.scm</span> &crarr;
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
-guile&gt; (command-line)
+guile&gt; <span class="mycmd">(command-line)</span> &crarr;
 $1 = ("/usr/bin/guile" "Alice" "Bob" "Carol" "David" "-l" "hello.scm")
 guile&gt; 
 </pre>
@@ -538,14 +540,14 @@ guile&gt; <span class="mycmd">(hello-everybody (cdr (command-line)))</span> &cra
 この実行例では，REPLを起動したあと，
 まず command-line 手続きを単独で実行して，
 コマンドライン引数の値を確認しています．
-次に command-line 手続きが返す値（リスト）を利用して hello-everybody 手続きを実行しています．なお，command-line 手続き返すリストの先頭はguileコマンドのファイル名であることに注意して下さい．上では cdr を使ってそのファイル名を除外しています．
+次に command-line 手続きが返す値（リスト）を利用して hello-everybody 手続きを実行しています．なお，command-line 手続きが返すリストの先頭はguileコマンドのファイル名であることに注意して下さい．上では cdr を使ってそのファイル名を除外しています．
 </ul>
 
 <p></p>
 <span class="hdln" id="option-others">その他のオプション</span>
 <ul>
 <li>
-<em>-q</em> オプションは，REPLの起動時に初期設定ファイル（~/.guile）の実行を抑止します．筆者の場合，(ice-9 readline) モジュールの activate-readline 手続きを実行することと，プロンプトを guile&gt; にすることしか設定していないので，このオプションを利用する機会がどのくらいあるのかは不明です．
+<em>-q</em> オプションは，REPLの起動時に初期設定ファイル（~/.guile）の実行を抑止します．筆者の場合，(ice-9 readline) モジュールの activate-readline 手続きを実行することと，プロンプトを guile&gt; にすることしか設定していないので，このオプションを利用する機会がどのくらいあるのかは不明です．詳細は省略します．
 
 <li>
 独自のモジュールをREPLの中でロードしたいとき，
@@ -555,8 +557,7 @@ guile&gt; <span class="mycmd">(hello-everybody (cdr (command-line)))</span> &cra
 ただし，add-to-load-path を利用する方法や環境変数を利用する方法もあります．
 <p></p>
 カレントディレクトリ以外のディレクトリからプログラムファイルをロードしたいときにも，-L オプション（や add-to-load-path）が利用できます．
-ただし，REPLの中でファイルをロードするには，load ではなく load-from-path 手続きを使用します．
-
+ただし，REPLの中でファイルをロードするには，load ではなく load-from-path 手続きを使用します．詳細は省略します．
 </ul>
 
 </section>
