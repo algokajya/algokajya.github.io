@@ -29,8 +29,8 @@
 <div id="title">
 <div class="titlename">
 Guile入門／REPLによるプログラムの実行
-<!--
 </div>
+<!--
 <div class="date"><span class="date0"></span></div>
 -->
 </div>
@@ -41,6 +41,8 @@ Guile入門／REPLによるプログラムの実行
 <section id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.30</span>：「コマンドラインオプション」を追加．
 <li class="revise"> 
 <span class="mydate">2022.1.6</span>：変更履歴の形式を変更<br>
 <li class="revise">
@@ -83,6 +85,16 @@ REPLを使って式やプログラムを実行する方法を解説します．
    <li class="menu"><a class="noline" href="#error-cancel">デバッグモードの解消</a>
    </ul>
 <li class="menu"><a class="noline" href="#bound">セッションが終わるまで，その束縛，生きてます</a>
+<li class="menu">
+<a class="noline" href="#command-line-options">コマンドラインオプション</a>
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="#option-l">-l オプション</a>
+   <li class="menu">
+   <a class="noline" href="#option--">-- オプション</a>
+   <li class="menu">
+   <a class="noline" href="#option-others">その他のオプション</a>
+   </ul>
 </ul>
 <li>
 参考資料
@@ -394,7 +406,163 @@ guile [1]>
 </section>
 
 
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="command-line-options">
+<h3 class="section">コマンドラインオプション</h3>
+<ul>
+<li>
+REPLを使ってプログラムを実行する際に知っておくと便利なコマンドラインオプションを説明します．
+</ul>
+
+<p></p>
+<span class="hdln" id="option-l">-l オプション</span>
+<ul>
+<li>
+<em>-l</em> は，REPLを起動する時点でプログラムファイルをロードするコマンドラインオプションで，一般的な形式は次の通りです．
+   <div class="ddstyle">
+   guile -l <span class="mysyn">file</span>  -l <span class="mysyn">file</span> ...
+   </div>
+ここで，<span class="mysyn">file</span>はロードしたいプログラムファイルの名前です．
+-lオプション1つにつきファイルは1つしか指定できませんが，
+上に示したように -l オプションは幾つでも指定できます．
+<li>
+具体例：以下の2つのファイルを -l オプションでロードして，
+各ファイルで定義された手続きを実行してみます．
+<pre class="list">
+;; hello.scm
+
+(define (hello-everybody args)
+  (for-each hello-somebody args))
+
+(define (hello-somebody name)
+  (display (string-append "*** Hello," name "!!! ***"))
+  (newline))
+</pre>
+<pre class="list">
+;; fib.scm
+
+(define (fib n) 
+  (if (= n 0) 0
+      (let loop ((k 1) (curr 1) (prev 0))
+        (if (= k n) curr
+            (loop (1+ k) (+ curr prev) curr)))))
+</pre>
+<pre class="shell">
+$ <span class="mycmd">guile -l hello.scm -l fib.scm</span> &crarr;
+GNU Guile 3.0.5
+      ...... コンパイルメッセージや起動メッセージ ......
+guile&gt; <span class="mycmd">(hello-everybody '("Alice" "Bob" "Carol" "David"))</span> &crarr;
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,David!!! ***
+guile&gt; <span class="mycmd">(fib 10)</span> &crarr;
+$1 = 55
+guile&gt; 
+</pre>
+REPLを起動するときに hello.scm と fib.scm がまだコンパイルされていなければ，それらをコンパイルしてからロードします．そのときには，コンパイルメッセージが表示されたあとに起動メッセージが表示されます．
+
+<li>
+-l オプションでファイルをロードするときにはシェルの補完機能（注：ファイル名の補完機能）が使えるので，load 手続きによってロードするよりも楽かも知れません．
+</ul>
+
+<p></p>
+<span class="hdln" id="option--">-- オプション</span>
+<ul>
+<li>
+<em>--</em> （注；ハイフン2つ）は，REPLに対してコマンドライン引数を渡すためのコマンドラインオプションです．一般的な形式は次の通りです．
+   <div class="ddstyle">
+   guile -- <span class="mysyn">arg</span> ...
+   </div>
+コマンドライン引数は，以下の <em>command-line</em> 手続きによって取得します．
+   <div class="ddstyle">
+   (command-line)
+   </div>
+command-line 手続きは無引数で，以下のようなリストを返します．
+   <div class="ddstyle">
+   ("/usr/bin/guile" "<span class="mysyn">arg</span>" ...) 
+   </div>
+ここで，"/usr/bin/guile" はguileコマンドのファイル名です（環境によって異なるかも知れません）．
+また，"<span class="mysyn">arg</span>" ... はコマンドライン引数の値です．
+この形式が示すように，コマンドライン引数の値は文字列として与えられます．
+
+<li>
+具体例：まず，command-line 手続きによってコマンドライン引数が取得できることを確認します．
+<pre class="shell">
+$ <span class="mycmd">guile -- Alice Bob Carol David</span> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(command-line)</span> &crarr;
+$1 = ("/usr/bin/guile" "Alice" "Bob" "Carol" "David")
+guile&gt; 
+</pre>
+コマンドライン引数として，例えば，数値を指定したとしても，
+それらの数値はREPLに対して文字列として与えられます．
+以下のこれを確認するための実行例です．
+<pre class="shell">
+$ <span class="mycmd">guile -- 11 22 33 44</span> &crarr;
+GNU Guile 3.0.5
+guile&gt; <span class="mycmd">(command-line)</span> &crarr; 
+$1 = ("/usr/bin/guile" "11" "22" "33" "44")
+guile&gt; 
+</pre>
+
+<li>
+具体例：
+-- オプションは他のコマンドラインオプションと一緒に指定できます．
+ただし，-- からうしろはすべてREPLへのコマンドライン引数になってしまうので，
+-- オプションはコマンドの最後に指定します．試しに，-- オプションのあとに -l オプションを指定した実行例を示します．
+<pre class="shell">
+$ guile -- Alice Bob Carol David -l hello.scm 
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; (command-line)
+$1 = ("/usr/bin/guile" "Alice" "Bob" "Carol" "David" "-l" "hello.scm")
+guile&gt; 
+</pre>
+この実行例から，-l や hello.scm もコマンドライン引数になってしまっていることが分かります．
+<p></p>
+改めて，-- と -l を逆にしてREPLを起動して，-- で指定した引数を利用して hello.scm の中の hello-everybody 手続きを実行してみます．
+<pre class="shell">
+$ <span class="mycmd">guile -l hello.scm -- Alice Bob Carol David</span> &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(command-line)</span> &crarr; 
+$1 = ("/usr/bin/guile" "Alice" "Bob" "Carol" "David")
+guile&gt; <span class="mycmd">(hello-everybody (cdr (command-line)))</span> &crarr;
+*** Hello,Alice!!! ***
+*** Hello,Bob!!! ***
+*** Hello,Carol!!! ***
+*** Hello,David!!! ***
+</pre>
+この実行例では，REPLを起動したあと，
+まず command-line 手続きを単独で実行して，
+コマンドライン引数の値を確認しています．
+次に command-line 手続きが返す値（リスト）を利用して hello-everybody 手続きを実行しています．なお，command-line 手続き返すリストの先頭はguileコマンドのファイル名であることに注意して下さい．上では cdr を使ってそのファイル名を除外しています．
+</ul>
+
+<p></p>
+<span class="hdln" id="option-others">その他のオプション</span>
+<ul>
+<li>
+<em>-q</em> オプションは，REPLの起動時に初期設定ファイル（~/.guile）の実行を抑止します．筆者の場合，(ice-9 readline) モジュールの activate-readline 手続きを実行することと，プロンプトを guile&gt; にすることしか設定していないので，このオプションを利用する機会がどのくらいあるのかは不明です．
+
+<li>
+独自のモジュールをREPLの中でロードしたいとき，
+-l オプションでモジュールファイルをロードして use-modules によってモジュール内の束縛名を取得するという方法と，
+ロードパスを指定して use-modules によってロードする方法があります．
+ロードパスを指定するときには，<em>-L</em> オプションを使って指定できます．
+ただし，add-to-load-path を利用する方法や環境変数を利用する方法もあります．
+<p></p>
+カレントディレクトリ以外のディレクトリからプログラムファイルをロードしたいときにも，-L オプション（や add-to-load-path）が利用できます．
+ただし，REPLの中でファイルをロードするには，load ではなく load-from-path 手続きを使用します．
+
+</ul>
+
+</section>
+
 <div id="thatsall">（おしまい）</div>
+
 </div> <!-- END of main division -->
 </body>
 </html>
