@@ -1,11 +1,9 @@
 
-
 body {
     line-height: 150%;
     width: 90%; 
-    padding-left: 30px;
+    padding-left: 5%;
 }
-
 
 #header {
     width: 100%;  
@@ -33,8 +31,8 @@ body {
     font-size: 140%;
     font-weight: bold;
     width: 85%;
+    color: #000080;
 }
-
 
 .date { 
     display: inline-block; 
@@ -77,6 +75,31 @@ body {
     margin-top: 20px;
     margin-bottom: 20px;
     padding-top: 5px;
+}
+
+div.dstyle {
+    /*
+    padding-top: 5px; 
+    padding-bottom: 5px; 
+    padding-left: 5px; 
+    */
+    margin-top: 0.3em; 
+    margin-bottom: 0.3em;
+    margin-left: 5%;
+}
+
+div.ddstyle {
+    margin-top: 0.3em; 
+    margin-bottom: 0.3em;
+    margin-left: 10%;
+}
+
+span.dstyle {
+    margin-left: 5%;
+}
+
+span.ddstyle {
+    margin-left: 10%;
 }
 
 ul.revise {
