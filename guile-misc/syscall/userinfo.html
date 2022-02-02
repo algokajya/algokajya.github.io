@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／ユーザー・グループ情報の取得</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- 
+   <span class="nolink">[Next]</span> 
+   <a class="noline" href="xxxxx.html">[Prev]</a>
+-->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／ユーザー・グループ情報の取得
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.mm.dd</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<p class="sshort"></p>
+<li>
+このノートは，
+ユーザーやグループの情報を取得するための手続きについて勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ユーザー情報の取得</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">パスワードエントリーの取得</a>
+   <li class="menu"><a class="noline" href="#2">ユーザー情報の抽出</a>
+   <li class="menu"><a class="noline" href="#3">現行プロセスのユーザー</a>
+   <li class="menu"><a class="noline" href="#4">具体例</a>
+   </ul>
+<li class="menu"><a class="noline" href="#5">パスワードファイルのストリーム処理</a>
+<li class="menu"><a class="noline" href="#6">グループ情報の取得とストリーム処理</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul class="menu">
+<li class="menu"> 
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）</a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/User-Information.html
+   ">[7.2.4 User Information]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getpwnam.html
+   ">
+   [getpwnam, getpwnam_r - search user database for a name]
+   </a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getpwuid.html
+   ">
+   [getpwuid, getpwuid_r - search user database for a user ID]
+   </a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getpwent.html
+   ">[endpwent, getpwent, setpwent - user database functions]</a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getlogin.html
+   ">[getlogin, getlogin_r - get login name]</a><br>
+
+
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getgrnam.html
+   ">[getgrnam, getgrnam_r - search group database for a name]</a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getgrgid.html
+   ">[getgrgid, getgrgid_r - get group database entry for a group ID]</a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/getgrent.html
+   ">[endgrent, getgrent, setgrent - group database entry functions]</a>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/getpwuid.3.en.html
+   ">[GETPWNAM(3)]</a>   
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/getpwent.3.en.html
+   ">[GETPWENT(3)]</a>   
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/getpw.3.en.html
+   ">[GETPW(3)]</a>   
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/getlogin.3.en.html
+   ">[GETLOGIN(3)]</a><br>
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/getgrnam.3.en.html
+   ">[GETGRNAM(3)]</a>   
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/getgrent.3.en.html
+   ">[GETGRENT(3)]</a>
+   </ul>
+<li class="menu"> 
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">ユーザー情報の取得</h3>
+<p class="short"></p>
+ユーザー情報は，
+   <ul>
+   <li>
+   パスワードファイル（/etc/passwd）からユーザーのエントリを取得して，
+   <p class="sshort"></p>
+   <li>
+   そのエントリーの成分を抽出する
+   </ul>
+という手順で取得します．
+
+<p class="short"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">パスワードエントリーの取得</h4>
+<p class="short"></p>
+&rtri;パスワードファイル（/etc/passwd）に登録された各ユーザーのエントリー（以下，<em>パスワードエントリー</em>）は，以下のいずれかの手続きを使って取得します．
+いずれの手続きも，
+引数で指定されたユーザーのパスワードエントリーを取り出して，
+エントリー内の各情報を成分とするベクタを返します．
+
+<p class="short"></p>
+<span class="myvar">(getpwnam <span class="mysyn">name</span>)</span>
+<div class="dstyle">
+   ユーザー名 <span class="mysyn">name</span> のパスワードエントリーを返します．<span class="mysyn">name</span> はユーザー名を表す文字列です．
+</div>
+
+<span class="myvar">(getpwuid <span class="mysyn">uid</span>)</span>
+<div class="dstyle">
+   ユーザーID <span class="mysyn">uid</span> のパスワードエントリーを返す．<span class="mysyn">uid</span> はユーザーIDを表す整数です．
+</div>
+
+<span class="myvar">(getpw <span class="mysyn">user</span>)</span>
+<div class="dstyle">
+   ユーザー <span class="mysyn">user</span> のパスワードエントリーを返す．<span class="mysyn">user</span> は <span class="mysyn">name</span> か <span class="mysyn">uid</span> のいずれかです．
+</div>
+
+<p></p>
+&rtri;実行例
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(getpwnam "algo")</span>
+&#36;1 = #("algo" "x" 1000 1000 "AlgoKajya,,," "/home/algo" "/bin/bash")
+guile&gt; <span class="mycmd">(getpwuid 1000)</span>
+&#36;2 = #("algo" "x" 1000 1000 "AlgoKajya,,," "/home/algo" "/bin/bash")
+guile&gt; <span class="mycmd">(getpw "algo")</span>
+&#36;3 = #("algo" "x" 1000 1000 "AlgoKajya,,," "/home/algo" "/bin/bash")
+guile&gt; <span class="mycmd">(getpw 1000)</span>
+&#36;4 = #("algo" "x" 1000 1000 "AlgoKajya,,," "/home/algo" "/bin/bash")
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;(記録) getpw 手続きはコアシステム（C言語のプログラム）の一部として実装されています．getpwname 手続きと getpwuid 手続きは次のように定義されています．
+<div class="dstyle">
+   (define (getpwnam name) (getpw name))<br>
+   (define (getpwuid uid) (getpw uid))
+</div>
+getpw 手続きの名付け元となっている（と思われる）ライブラリコールの getpw 関数は，バッファーオーバーフローの危険性があるため廃止されているようです（<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/getpw.3.en.html
+">[GETPW(3)]</a>のBUGSを参照）．
+一方，Guileのソースコード（posix.c）を見ると，上記の getpw 手続きは，
+ライブラリコールの getpwnam 関数と getpwuid 関数を使って実装されているので，
+問題なく使用できると思います．
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">ユーザー情報の抽出</h4>
+<p class="short"></p>
+&rtri;上記の手続きによって得たパスワードエントリーはベクタなので，vector-ref を使ってユーザー情報を抽出することができます．一方，パスワードエントリーから各情報を抽出するための手続きが用意されています．
+以下の <span class="mysyn">pw</span> は上記の手続きによって取得したパスワードエントリー（のベクタ）を表します．
+
+<p class="short"></p>
+<span class="myvar">(passwd:name <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+   パスワードエントリー <span class="mysyn">pw</span> 内のユーザー名（第1成分）を返します．
+</div>
+
+<span class="myvar">(passwd:passwd <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+   パスワードエントリー <span class="mysyn">pw</span> 内のパスワード（第2成分）を返します．
+</div>
+
+<span class="myvar">(passwd:uid <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+   パスワードエントリー <span class="mysyn">pw</span> 内のユーザーID（第3成分）を返します．
+</div>
+
+<span class="myvar">(passwd:gid <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+   パスワードエントリー <span class="mysyn">pw</span> 内のグループID（第4成分）を返します．
+</div>
+
+<span class="myvar">(passwd:gecos <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+   パスワードエントリー <span class="mysyn">pw</span> 内のコメント欄（第5成分）を返します．
+</div>
+
+<span class="myvar">(passwd:dir <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+   パスワードエントリー <span class="mysyn">pw</span> 内のホームディレクトリ（第6成分）を返します．
+</div>
+
+<span class="myvar">(passwd:shell <span class="mysyn">pw</span>)</span>
+<div class="dstyle">
+パスワードエントリー <span class="mysyn">pw</span> 内のログインシェル（第7成分）を返します．
+</div>
+
+
+<p></p>
+&rtri;以下の実行例では，(getpwnam "algo") の値（&#36;1）から各情報を抽出しています．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(getpwnam "algo")</span>
+&#36;1 = #("algo" "x" 1000 1000 "AlgoKajya,,," "/home/algo" "/bin/bash")
+guile&gt; <span class="mycmd">(passwd:name &#36;1)</span>
+&#36;2 = "algo"
+guile&gt; <span class="mycmd">(passwd:passwd &#36;1)</span>
+&#36;3 = "x"
+guile&gt; <span class="mycmd">(passwd:uid &#36;1)</span>
+&#36;4 = 1000
+guile&gt; <span class="mycmd">(passwd:gid &#36;1)</span>
+&#36;5 = 1000
+guile&gt; <span class="mycmd">(passwd:gecos &#36;1)</span>
+&#36;6 = "AlgoKajya,,,"
+guile&gt; <span class="mycmd">(passwd:dir &#36;1)</span>
+&#36;7 = "/home/algo"
+guile&gt; <span class="mycmd">(passwd:shell &#36;1)</span>
+&#36;8 = "/bin/bash"
+guile&gt; 
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">現行プロセスのユーザー</h4>
+<p class="short"></p>
+&rtri;現行プロセスのユーザーIDやユーザー名を返す手続きとして，
+次のものがあります．
+
+<p class="short"></p>
+<span class="myvar">(getuid)</span>
+<div class="dstyle">
+   現行プロセスの実ユーザーIDを返します．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(getlogin)</span>
+<div class="dstyle">
+現行プロセスの制御端末にログインしているユーザー名（文字列）を返します．
+</div>
+<p class="short"></p>
+ここで，<em>現行プロセス</em>とは，getuid や getlogin を実行したREPLやスクリプトを動かしているプロセスのことです．<em>実ユーザーID</em>とは，現行プロセス（REPLやスクリプト）を起動したユーザーIDのことです．
+
+<p></p>
+&rtri;以下の実行例は，
+一般ユーザー（algo；uidは1000）がREPLを起動して，getuid と getlogin を実行した結果を示しています．
+<pre class="shell">
+&#36; <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(getuid)</span>
+&#36;1 = 1000
+guile&gt; <span class="mycmd">(getlogin)</span>
+&#36;2 = "algo"
+guile&gt; 
+</pre>
+以下の実行例は，sudoコマンドによってREPLを起動して，
+そのREPLの中で getuid とgetlogin を実行した結果を示しています．getuid の結果は，REPLを起動したユーザーがrootであることを示しています．一方，ログインユーザーは一般ユーザー（algo）です．
+<pre class="shell">
+&#36; <span class="mycmd">sudo guile</span>
+[sudo] algo のパスワード:********************* &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+scheme@(guile-user)&gt; <span class="mycmd">(getuid)</span>
+&#36;1 = 0
+scheme@(guile-user)&gt; <span class="mycmd">(getlogin)</span>
+&#36;2 = "algo"
+scheme@(guile-user)&gt; 
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">具体例</h4>
+<p class="short"></p>
+&rtri;Guile の load 手続きは，ホームディレクトリを表すティルダ（~）が使えません．
+そこで，ティルダが使えるような自前のload手続きを作ってみます．
+以下の myload 手続きは，filename の先頭の文字がティルダ（~）だったとき，
+それを mylaod を実行した実ユーザーのホームディレクトリ（homedir）に変更して load 手続きを適用します．ホームディレクトリ（homedir）を求めるために，
+上で述べた手続きを利用しています．
+<pre class="list">
+;; myload.scm
+
+(define (myload filename)
+  (if (char=? (string-ref filename 0) #\~)
+      (let* ((homedir (passwd:dir (getpwuid (getuid))))
+             (fname (string-append homedir (substring filename 1))))
+        (display ";;; load ") (display fname) (newline)
+        (load fname))
+      (load filename)))
+</pre>
+ホームディレクトリ上の tmp ディレクトリに次のプログラムを保存しておいて，myload を使ってこのプログラムをロードしてみます．
+<pre class="list">
+;; /home/algo/tmp/here.scm
+
+(display "** Here is /home/algo/tmp.") 
+(newline)
+</pre>
+<pre class="shell">
+&#36; <span class="mycmd">guile -l myload.scm</span>
+GNU Guile 3.0.5
+      ...... コンパイルメッセージ＆起動メッセージ ......
+guile&gt; <span class="mycmd">(myload "~/tmp/here.scm")</span>
+;;; load /home/algo/tmp/here.scm
+** Here is /home/algo/tmp.
+guile&gt; 
+</pre>
+
+<p><p>
+&rtri;(記録) 上の手続きを ~/.guile に登録して，REPLの起動時にロードしても，
+残念ながらうまく動きません．その原因は，~/.guile をロードする時点では load 
+手続きの定義がロードされていないためです．~/.guile に登録するときには，
+上記の load を primitive-load に変更するとうまく動きます．
+ちなみに，primitive-load はコアシステム（C言語プログラム）の一部として実装されていますが，load はマクロとして実装されています．
+さらに，primitive-load はシステム標準の reader を使ってロードしますが，load は reader を指定できます．
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="5">パスワードファイルのストリーム処理</h3>
+<p class="short"></p>
+
+<p class="short"></p>
+&rtri;以下に示す手続きによって，
+パスワードファイル（/etc/passwd）からパスワードエントリーを次々と取得できます．なお，タイトルにある「ストリーム処理」は「次々と取得する処理」のことを表しています．
+
+<p class="short"></p>
+<span class="myvar">(getpw)</span>
+<div class="dstyle">
+(getpw) を実行するたびに，
+パスワードファイル（/etc/passwd）からパスワードエントリーを次々と取得して，
+その情報からなるベクタを返します．
+パスワードファイル（/etc/passwd）の終端まで到達したら #f を返します．なお，
+パスワードファイル（/etc/passwd）がクローズしているときには，
+オープンして，先頭のパスワードエントリーを返します．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(setpw)</span> または <span class="myvar">(setpw #f)</span>
+<div class="dstyle">
+これはパスワードファイルをクローズして，ストリーム処理を終了させます．
+なお，パスワードファイルがクローズしているときにこれを実行しても，
+何も起こらないようです（マニュアルや仕様書を見ても，残念ながら，
+この点に関する説明は発見できません）．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(setpw <span class="mysyn">true</span>)</span>
+<div class="dstyle">
+これはストリーム処理をリセットします．
+つまり，(getpw) が先頭のパスワードエントリーから次々と取得できるようにします．
+<span class="mysyn">true</span> は #f 以外の任意のオブジェクトです．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(getpwent)</span>
+<span class="myvar">(settpwent)</span>
+<span class="myvar">(endpwent)</span>
+<div class="dstyle">
+それぞれ，次のように定義されています．
+   <div class="dstyle">
+   (define (getpwent) (getpw)) <br>
+   (define (setpwent) (setpw #t)) <br>
+   (define (endpwent) (setpw))
+   </div>
+これらは，<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/getpwent.html
+">POSIXの仕様</a>に合わせて用意しているのだと思います．
+ちなみに，getpw や setpw はPOSIXの仕様書にはありません．
+</div>
+
+<p></p>
+&rtri;実行例：以下の実行例では，(getpw) を3回，(setpw #t) を1回（リセット），(getpw) を3回，(setpw) を1回（クローズ），(getpw) を3回の順に実行しています．
+パスワードファイルがクローズしているとき，(getpw)  自身がオープンしてストリーム処理を初期設定するため，ストリーム処理をリセットする (setpw #t) とパスワードファイルをクローズする (setpw) がまったく同じ処理をしているように見えます．
+<pre class="shell">
+&#36; guile
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;1 = #("root" "x" 0 0 "root" "/root" "/bin/bash")
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;2 = #("daemon" "x" 1 1 "daemon" "/usr/sbin" "/usr/sbin/nologin")
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;3 = #("bin" "x" 2 2 "bin" "/bin" "/usr/sbin/nologin")
+guile&gt; <span class="mycmd">(setpw #t)</span>
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;4 = #("root" "x" 0 0 "root" "/root" "/bin/bash")
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;5 = #("daemon" "x" 1 1 "daemon" "/usr/sbin" "/usr/sbin/nologin")
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;6 = #("bin" "x" 2 2 "bin" "/bin" "/usr/sbin/nologin")
+guile&gt; <span class="mycmd">(setpw)</span>
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;7 = #("root" "x" 0 0 "root" "/root" "/bin/bash")
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;8 = #("daemon" "x" 1 1 "daemon" "/usr/sbin" "/usr/sbin/nologin")
+guile&gt; <span class="mycmd">(getpw)</span>
+&#36;9 = #("bin" "x" 2 2 "bin" "/bin" "/usr/sbin/nologin")
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;(getpw) はパスワードファイルを自前でオープンします．
+さらに，ストリーム処理を行っているプロセスが終了すると同時に（たぶん間違いなく）パスワードファイルはクローズされると思います．
+そのため，setpw 手続きは実行する必要がないように感じます．
+しかし，ストリーム処理を何回も実行したり，手続きとして実装するときには，
+ストリーム処理のリセット（初期設定）とクローズ（終了）を真面目に実行すべきだろうと思います．少なくとも，ストリーム処理を開始するときにリセットだけは実行したほうがよいでしょう．そうしないと，それまでに実行していたストリーム処理の途中から再開することになるかも知れません．
+
+<p></p>
+&rtri;(記録) ライブラリーコールの getpw 関数は，
+バッファーオーバーフローの危険性があるため廃止されているようです（<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/getpw.3.en.html
+">[GETPW(3)]</a>のBUGSを参照）．
+一方，Guileのソースコード（posix.c）を見ると，上記の getpw 手続きは，
+ライブラリコールの getpwent 関数を使って実装されているので，
+問題なく使用できると思います．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="6">グループ情報の取得とストリーム処理</h3>
+
+<p class="short"></p>
+&rtri;グループファイル（/etc/group）についてもパスワードファイルと類似の手続きが用意されています．それぞれの手続きの処理内容はパスワードファイルの場合とまったく同じなので，詳細は省略します．
+なお，以下の<em>グループエントリー</em>は，
+グループファイル（/etc/group）に登録されているエントリーのことです．
+
+
+<p class="short"></p>
+<span class="myvar">(getgrnam <span class="mysyn">gname</span>)</span>
+<div class="dstyle">
+   グループ名 <span class="mysyn">gname</span> のグループエントリー（のベクタ）を返します．<span class="mysyn">gname</span> はグループ名を表す文字列です．
+</div>
+
+<span class="myvar">(getgruid <span class="mysyn">gid</span>)</span>
+<div class="dstyle">
+   グループID <span class="mysyn">gid</span> のグループエントリー（のベクタ）を返します．<span class="mysyn">gid</span> はグループIDを表す整数です．
+</div>
+
+<span class="myvar">(getgr <span class="mysyn">group</span>)</span>
+<div class="dstyle">
+   グループ <span class="mysyn">group</span> のグループエントリー（のベクタ）を返します．<span class="mysyn">group</span> は <span class="mysyn">gname</span> か <span class="mysyn">gid</span> のいずれかです．
+</div>
+
+
+<p class="short"></p>
+<span class="myvar">(group:name <span class="mysyn">gr</span>)</span>
+<div class="dstyle">
+   グループエントリー <span class="mysyn">gr</span> 内のグループ名（第1成分）を返します．
+</div>
+
+<span class="myvar">(group:group <span class="mysyn">gr</span>)</span>
+<div class="dstyle">
+   グループエントリー <span class="mysyn">gr</span> 内のグループパスワード（第2成分）を返します．
+</div>
+
+<span class="myvar">(group:uid <span class="mysyn">gr</span>)</span>
+<div class="dstyle">
+   グループエントリー <span class="mysyn">gr</span> 内のグループID（第3成分）を返します．
+</div>
+
+<span class="myvar">(group:gid <span class="mysyn">gr</span>)</span>
+<div class="dstyle">
+   グループエントリー <span class="mysyn">gr</span> 内のユーザーリスト（第4成分）を返します．ここで，ユーザーリストは，このグループを補助グループとするユーザー名のリストです．
+</div>
+
+
+<p></p>
+<span class="myvar">(getgid)</span>
+<div class="dstyle">
+   現行プロセスの実グループIDを返します．
+</div>
+
+
+<p></p>
+<span class="myvar">(getgr)</span>
+<div class="dstyle">
+(getgr) を実行するたびに，
+グループファイル（/etc/group）からグループエントリーを次々と取得して，
+その情報からなるベクタを返します．
+グループファイル（/etc/group）の終端まで到達したら #f を返します．なお，
+グループファイル（/etc/group）がクローズしているときには，
+オープンして，先頭のグループエントリーを返します．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(setgr)</span> または <span class="myvar">(setgr #f)</span>
+<div class="dstyle">
+これはグループファイルをクローズして，ストリーム処理を終了させます．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(setgr <span class="mysyn">true</span>)</span>
+<div class="dstyle">
+これはストリーム処理をリセットします．
+つまり，(getgr) が先頭のグループエントリーから次々と取得できるようにします．
+<span class="mysyn">true</span> は #f 以外の任意のオブジェクトです．
+</div>
+
+<p class="short"></p>
+<span class="myvar">(getgrent)</span>
+<span class="myvar">(settgrent)</span>
+<span class="myvar">(endgrent)</span>
+<div class="dstyle">
+それぞれ，次のように定義されています．
+   <div class="dstyle">
+   (define (getgrent) (getgr)) <br>
+   (define (setgrent) (setgr #t)) <br>
+   (define (endgrent) (setgr))
+   </div>
+
+</section>
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

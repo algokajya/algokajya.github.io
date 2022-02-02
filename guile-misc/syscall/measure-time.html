@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／実行時間の計測</title>
+   <link rel="stylesheet" type="text/css" href="../gm.css">
+   <!-- %%% MathJax %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+<body id="page-top">
+
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Prev]</span>
+<!-- <a class="noline" href="xxxxxx.html">[Next]</a> -->
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／実行時間の計測
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.18</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<ul class="item">
+<li>
+このノートは，
+実行時間を計測する方法（手続き等）について勉強した内容を記録しています．
+</uL>
+</div>
+
+
+<!-- %%% 目　次 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#variables-for-time">時間計測に関わる変数</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#unit-per-second">internal-time-units-per-second</a>
+   </ul>
+<li class="menu"><a class="noline" href="#procedures-based-on-times-function">時間計測のための手続き（１）</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#times">(times)</a>
+   <li class="menu"><a class="noline" href="#tms:clock">(tms:clock <span class="mysyn">tms</span>)</a>
+   <li class="menu"><a class="noline" href="#tms:utime">(tms:utime <span class="mysyn">tms</span>)</a>
+   <li class="menu"><a class="noline" href="#tms:stime">(tms:stime <span class="mysyn">tms</span>)</a>
+   <li class="menu"><a class="noline" href="#tms:cutime">(tms:cutime <span class="mysyn">tms</span>)</a>
+   <li class="menu"><a class="noline" href="#tms:cstime">(tms:cstime <span class="mysyn">tms</span>)</a>
+   <li class="menu"><a class="noline" href="#times:supplement">補足</a>
+   </ul>
+<li class="menu"><a class="noline" href="#procedures-based-on-clock_gettime-function">時間計測のための手続き（２）</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#get-internal-real-time">(get-internal-real-time)</a>
+   <li class="menu"><a class="noline" href="#get-internal-run-time">(get-internal-run-time)</a>
+   </ul>
+<li class="menu"><a class="noline" href="#some-example">プログラム例</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#time-utilities">ユーティリティ</a>
+   <li class="menu"><a class="noline" href="#time:practice-a">具体例（CPU時間だけを計測）</a>
+   <li class="menu"><a class="noline" href="#time:practice-b">具体例（実時間とCPU時間を同時に計測）</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+<!-- %%% 参考資料 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul class="menu">
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf">
+   GNU Guile Reference Manual（Edition 3.0.5, revision 1）［7.2.5 Time］
+   </a>
+   </ul>
+
+<li>
+Debian Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="https://manpages.debian.org/">
+   Debian Manpages
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/times.2.en.html">
+   times関数
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">
+   clock_gettime関数
+   </a>
+</ul>
+
+<li>
+POSIX
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/mindex.html">
+   The Open Group Base Specifications Issue 7, 2018 edition <br>
+   IEEE Std 1003.1-2017(Revision of IEEE Std 1003.1-2008).
+   </a>
+   <li class="menu">
+   <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/times.html">
+   times関数
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_gettime.html">
+   clock_gettime関数
+   </a>
+</ul>
+
+<li>
+The GNU C Library Reference Manual
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="https://www.gnu.org/software/libc/manual/html_node/index.html">
+   The GNU C Library Reference Manual, for version 2.34. 
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.gnu.org/software/libc/manual/html_node/Processor-Time.html">
+   times関数
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.gnu.org/software/libc/manual/html_node/Getting-the-Time.html">
+   clock_gettime関数
+   </a>
+   </ul>
+
+<li class="menu"> 
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="variables-for-time">時間計測に関わる変数</h3>
+
+<!-- ============================================= -->
+<h4 class="hdln" id="unit-per-second">internal-time-units-per-second</h4>
+<ul class="item">
+<li>
+これは，各手続きが使用している<em>時間単位</em>の1秒当たりの回数（exactな整数値）に束縛された大域変数です．
+以下の実行例が示すように，その値は $10^9$ です．
+従って，
+<strong>各手続きはナノ秒単位で時間を計測している</strong>ことになります．
+<pre class="shell">
+$ <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ..... 起動メッセージ ......
+guile> <span class="mycmd">internal-time-units-per-second</span>
+$1 = 1000000000
+guile> 
+</pre>
+</ul>
+</section>
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="procedures-based-on-times-function">時間計測のための手続き（１）</h3>
+
+<!-- ============================================= -->
+<h4 class="hdln" id="times">(times)</h4>
+<ul class="item">
+<li>
+この手続きは，
+この手続きを呼び出したプロセスに関する実時間やCPU時間を格納したベクタを返します．
+<pre class="shell">
+guile> <span class="mycmd">(times)</span>
+$2 = #(17313891580000000 50000000 10000000 0 0)
+guile> 
+</pre>
+上記のベクタは，
+REPLを動かしているプロセスに関する各種時間を格納しています．
+ベクタの各成分の意味は下記の手続きの説明を参照して下さい．
+以下，このベクタを便宜的に<em>時間ベクタ</em>と呼ぶことにします．
+<p></p>
+Guile 3.0.7のソースコード（stime.c）を見ると，
+この手続きはglibcの<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/times.2.en.html">times関数</a>を使って実装されています．
+筆者の環境では，times関数は10ミリ秒単位で時間を計測しています（詳細は後述）．
+そのため，この手続きは<strong>10ミリ秒単位で計測した時間をナノ秒に変換</strong>して（つまり，$10^7$倍して）返しています．
+これはGuileの時間単位（internal-time-units-per-secondが示す時間単位）に合わせるためです．上記の返り値を見ると10ミリ秒単位で計測していること（つまり，
+実際の計測値を$10^7$倍していること）が分かります．
+</ul>
+
+<h4 class="hdln" id="tms:clock">(tms:clock <span class="mysyn">tms</span>)</h4>
+<ul class="item">
+<li>
+この手続きは，時間ベクタ
+<span class="mysyn">tms</span>
+の第0成分を返します．その第0成分は，
+適当な基準時刻からの<em>経過時間</em>（<em>実時間</em>）です．
+<pre class="shell">
+guile> <span class="mycmd">(tms:clock $2)</span>
+$3 = 17313891580000000
+guile> 
+</pre>
+上記の実行例は，
+上で実行した times 手続きの返り値（<span>$2</span>）を利用しています．
+従って，この結果（<span>$3</span>）は，
+REPLを動かしているプロセスの経過時間です．
+なお，「適応な基準時刻」については<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/times.2.en.html">times関数のオンラインマニュアル</a>を参照して下さい．
+</ul>
+
+<h4 class="hdln" id="tms:utime">(tms:utime <span class="mysyn">tms</span>)</h4>
+<ul class="item">
+<li>
+この手続きは，時間ベクタ
+<span class="mysyn">tms</span>
+の第1成分を返します．POSIXの仕様書によれば，その第1成分は次の通りです．
+   <blockquote>
+   the CPU time charged for the execution
+   of user instructions of the calling process
+   </blockquote>
+いわゆる<em>ユーザーCPU時間</em>です．
+<pre class="shell">
+guile> <span class="mycmd">(tms:utime $2)</span>
+$4 = 50000000
+guile> 
+</pre>
+上記の実行例は，
+上で実行した times 手続きの返り値（<span>$2</span>）を利用しています．
+従って，この結果（<span>$4</span>）は，
+REPLを動かしているプロセスのユーザーCPU時間です．
+</ul>
+
+
+
+<h4 class="hdln" id="tms:stime">(tms:stime <span class="mysyn">tms</span>)</h4>
+<ul class="item">
+<li>
+この手続きは，時間ベクタ
+<span class="mysyn">tms</span>
+の第2成分を返します．POSIXの仕様書によれば，その第2成分は次の通りです．
+   <blockquote>
+   the CPU time charged for execution
+   by the system on behalf of the calling process
+   </blockquote>
+いわゆる<em>システムCPU時間</em>です．
+<pre class="shell">
+guile> <span class="mycmd">(tms:stime $2)</span>
+$5 = 10000000
+guile> 
+</pre>
+この結果（<span>$5</span>）は，
+REPLを動かしているプロセスのシステムCPU時間です．
+</ul>
+
+
+<h4 class="hdln" id="tms:cutime">(tms:cutime <span class="mysyn">tms</span>)</h4>
+<ul class="item">
+<li>
+この手続きは，時間ベクタ
+<span class="mysyn">tms</span>
+の第3成分を返します．POSIXの仕様書によれば，その第3成分は次の通りです．
+   <blockquote>
+   the sum of the tms utime and tms cutime times of the child processes
+   </blockquote>
+これは，現行プロセスの子や孫のプロセスのユーザーCPU時間の総和です．
+現行プロセスのユーザーCPU時間は含みません．
+なお，cutimeを再帰的に定義していることに注意して下さい．
+<pre class="shell">
+guile> <span class="mycmd">(tms:cutime $2)</span>
+$6 = 0
+guile> 
+</pre>
+この結果（<span>$6</span>）は，
+REPLを動かしているプロセスの子や孫のプロセスのユーザーCPU時間の総和です．
+子や孫のプロセスを生成していないので，その値は0（ナノ秒）になっています．
+</ul>
+
+
+<h4 class="hdln" id="tms:cstime">(tms:cstime <span class="mysyn">tms</span>)</h4>
+<ul class="item">
+<li>
+この手続きは，時間ベクタ
+<span class="mysyn">tms</span>
+の第4成分を返します．POSIXの仕様書によれば，その第4成分は次の通りです．
+   <blockquote>
+   the sum of the tms stime and tms cstime times of the child processes
+   </blockquote>
+これは，現行プロセスの子や孫のプロセスのシステムCPU時間の総和です．
+現行プロセスのシステムCPU時間は含みません．
+なお，cstimeを再帰的に定義していることに注意して下さい．
+<pre class="shell">
+guile> <span class="mycmd">(tms:cstime $2)</span>
+$7 = 0
+guile> 
+</pre>
+この結果（<span>$7</span>）は，
+REPLを動かしているプロセスの子や孫のプロセスのシステムCPU時間の総和です．
+子や孫のプロセスを生成していないので，その値は0（ナノ秒）になっています．
+</ul>
+
+<h4 class="hdln" id="times:supplement">補足</h4>
+<ul>
+<li>
+上記のベクタの第0成分は，<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/times.2.en.html">times関数</a>の返り値（経過時間）で，第1成分〜第4成分はtms構造体の各メンバの値です．
+<li>
+現行プロセスのCPU時間（tms:utimeやtms:stime）は，
+子や孫のプロセスのCPU時間を含みません．
+この点を確かめてみます．
+<pre class="shell">
+$ <span class="mycmd">guile</span>
+      ... 起動メッセージ ......
+guile> <span class="mycmd">(system "guile -c '(let loop ((n 20000000)) (when (&gt; n 0) (loop (1- n))))'")</span>
+$1 = 0
+guile> <span class="mycmd">(times)</span>
+$2 = #(17207182320000000 50000000 10000000 2390000000 30000000)
+guile> <span class="mycmd">(tms:utime $2)</span>
+$3 = 50000000
+guile> <span class="mycmd">(tms:stime $2)</span>
+$4 = 10000000
+guile> <span class="mycmd">(tms:cutime $2)</span>
+$5 = 2390000000
+guile> <span class="mycmd">(tms:cstime $2)</span>
+$6 = 30000000
+guile> 
+</pre>
+この実行例は，system 手続きを使って子プロセスを生成し，
+その子プロセスの上で次のコマンドを実行しています．
+   <div class="dstyle">
+   guile -c '(let loop ((n 20000000)) (when (&gt; n 0) (loop (1- n))))'
+   </div>
+これは，let以降のループプログラムをguileコマンドに実行させています．
+<p></p>
+上記の実行結果を見ると，
+現行プロセス（REPLを動かしているプロセス）のCPU時間（utimeとstime）が，
+子プロセスのCPU時間（cutimeとcstime）を含んでいないことが分かります．
+
+<li>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/times.html
+">POSIXの仕様書</a>
+や
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/times.2.en.html
+">オンラインマニュアル</a>
+によれば，times 関数が求める各種時間 は clock tick の回数を表しているそうです．<em>clock tick</em> とは，カーネルによるタイマー割り込みのことだそうです．
+参考のために，
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_97
+">POSIXの定義</a>を掲載します．
+   <blockquote>
+   An interval of time;
+   an implementation-defined number of these occur each second.
+   Clock ticks are one of the units that may be used to express
+   a value found in type clock_t.
+   </blockquote>
+<p></p>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/times.2.en.html
+">オンラインマニュアル</a>によれば，1秒当たりの clock tick の回数は
+   <div class="dstyle">
+   sysconf(_SC_CLK_TCK) 
+   </div>
+によって求めることができるそうです．
+そこで，以下のプログラムを使って，
+筆者の環境（Debian 11）でこの回数を求めてみました．
+<pre class="list">
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;time.h&gt;
+// clock-tick.c
+
+int main(void){
+   printf("_SC_CLK_TCK = %ld\n", sysconf(_SC_CLK_TCK));
+   return 0;
+}
+</pre>
+<pre class="shell">
+$ <span class="mycmd">gcc clock-tick.c</span>
+$ <span class="mycmd">./a.out</span>
+_SC_CLK_TCK = 100
+</pre>
+この結果から，1秒当たりの clock tick の回数は100回です．
+これより，times 関数は各種時間を10ミリ秒単位で求めていることになります．
+Guile側の times 手続きは，その時間をナノ秒単位に変換して（つまり，$10^7$倍して）返しています．これは，Guileの時間単位（internal-time-units-per-secondが示す時間単位）に合わせるためです．
+</ul>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="procedures-based-on-clock_gettime-function">時間計測のための手続き（２）</h3>
+
+<!-- ============================================= -->
+<h4 class="hdln" id="get-internal-real-time">(get-internal-real-time)</h4>
+<ul class="item">
+<li>
+REPL または Guile スクリプトが実行を開始した時刻からの経過時間（実時間）を，internal-time-units-per-second が示す時間単位（筆者の環境ではナノ秒単位）に変換して返します．
+<pre class="shell">
+$ <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile> <span class="mycmd">(get-internal-real-time)</span>
+$1 = 11645165765
+guile> 
+</pre>
+<p></p>
+Guile 3.0.7のソースコード（stime.c）を見ると，
+この手続きは，glibc の
+<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">clock_gettime</a>
+関数を使って次のように実現されています．
+   <div class="dstyle">
+   clock_gettime (CLOCK_REALTIME, &amp;ts);
+   </div>
+CLOCK_REALTIME は経過時間を計測することを指示するglibcのマクロです．&amp;ts は timespec 構造体へのポインタです．これらの詳細は
+<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">オンラインマニュアル</a>
+か
+<a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_gettime.html
+">POSIXの仕様書</a>
+を参照して下さい．
+</ul>
+
+<!-- ============================================= -->
+<h4 class="hdln" id="get-internal-run-time">(get-internal-run-time)</h4>
+<ul class="item">
+<li>
+REPLまたはGuileスクリプトが実行を開始した時刻からのCPU 時間（ユーザとシステムの両方を含む）を，internal-time-units-per-second が示す時間単位（筆者の環境ではナノ秒単位）に変換して返します．ただし，子プロセスのCPU時間は含みません．
+<pre class="shell">
+guile> (system "guile -c '(let loop ((n 20000000)) (when (> n 0) (loop (1- n))))'")
+$2 = 0
+guile> <span class="mycmd">(get-internal-run-time)</span>
+$3 = 155646450
+guile> <span class="mycmd">(tms:cutime (times))</span>
+$4 = 2440000000
+guile> 
+</pre>
+この実行例では，子プロセスを生成して，
+子プロセスのCPU時間が親プロセス（REPLのプロセス）のCPU時間に含まれていないことを確認しています．
+
+<p></p>
+Guile 3.0.7のソースコード（stime.c）を見ると，
+この手続きは，glibc の
+<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">clock_gettime</a>
+関数を使って次のように実現されています．
+   <div class="dstyle">
+   clock_gettime (CLOCK_PROCESS_CPUTIME_ID, &ts);
+   </div>
+CLOCK_PROCESS_CPUTIME_ID はCPU時間を計測することを指示するglibcのマクロです．&amp;ts は timespec 構造体へのポインタです．これらの詳細は
+<a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">オンラインマニュアル</a>
+か
+<a class="noline" href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_gettime.html
+">POSIXの仕様書</a>
+を参照して下さい．
+</ul>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="some-example">プログラム例</h3>
+
+<!-- ============================================= -->
+<h4 class="hdln" id="time-utilities">ユーティリティ</h4>
+<ul class="item">
+<li>
+まず，時間計測のためのユーティリティを作成します．
+なお，時間計測は
+get-internal-real-time
+と
+get-internal-run-time
+を利用します．
+<pre class="list">
+;; time-utils.scm
+
+(define-module (time-utils)
+  #:export (
+            internal-time-unit->second
+            internal-time-unit->milisecond
+            measure-real-time
+            measure-real-time-second
+            measure-real-time-milisecond
+            measure-run-time
+            measure-run-time-second
+            measure-run-time-milisecond
+            )
+)
+</pre>
+<pre class="list">
+;; 内部時間単位を秒単位に変換する．
+(define (internal-time-unit->second t)
+  (exact->inexact (/ t internal-time-units-per-second)))
+
+;; 内部時間単位をミリ秒単位に変換する．
+(define (internal-time-unit->milisecond t)
+  (exact->inexact (* (/ t internal-time-units-per-second) 1000)))
+</pre>
+<pre class="list">
+;; サンク thunk の実時間を返す．
+(define (measure-real-time thunk)
+  (define start-time #f) 
+  (define end-time #f)
+  (set! start-time (get-internal-real-time))
+  (thunk)
+  (set! end-time (get-internal-real-time))
+  (- end-time start-time))
+
+(define (measure-real-time-second thunk)
+  (internal-time-unit->second (measure-real-time thunk)))
+
+(define (measure-real-time-milisecond thunk)
+  (internal-time-unit->milisecond (measure-real-time thunk)))
+</pre>
+<pre class="list">
+;; サンク thunk のCPU時間を返す．
+(define (measure-run-time thunk)
+  (define start-time #f) 
+  (define end-time #f)
+  (set! start-time (get-internal-run-time))
+  (thunk)
+  (set! end-time (get-internal-run-time))
+  (- end-time start-time))
+
+(define (measure-run-time-second thunk)
+  (internal-time-unit->second (measure-run-time thunk)))
+
+(define (measure-run-time-milisecond thunk)
+  (internal-time-unit->milisecond (measure-run-time thunk)))
+</pre>
+<pre class="list">
+;; サンク thunk の実時間とCPU時間を返す．
+(define (measure-time thunk)
+  (define start-real-time #f) 
+  (define end-real-time #f)
+  (define start-run-time #f) 
+  (define end-run-time #f)
+  (set! start-real-time (get-internal-real-time))
+  (set! start-run-time (get-internal-run-time))
+  (thunk)
+  (set! end-run-time (get-internal-run-time))
+  (set! end-real-time (get-internal-real-time))
+  (vector 
+   (- end-real-time start-real-time)
+   (- end-run-time start-run-time)))
+
+(define (measure-time-second thunk)
+  (let ((tm (measure-time thunk)))
+    (vector 
+     (internal-time-unit->second (vector-ref tm 0))
+     (internal-time-unit->second (vector-ref tm 1)))))
+
+(define (measure-time-milisecond thunk)
+  (let ((tm (measure-time thunk)))
+    (vector 
+     (internal-time-unit->milisecond (vector-ref tm 0))
+     (internal-time-unit->milisecond (vector-ref tm 1)))))
+</pre>
+</ul>
+
+<!-- ============================================= -->
+<h4 class="hdln" id="time:practice-a">具体例（CPU時間だけを計測）</h4>
+<ul class="item">
+<li>
+下記のプログラムを使って，
+フィボナッチ数を再帰的に求めるときのCPU時間を計測してみることにします．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+
+;; fib.scm
+
+(add-to-load-path (getcwd))
+(use-modules (time-utils))
+
+(define (main args)
+  (let loop ((n 31))
+    (when (&lt;= n 40)
+      (let ((tm (measure-run-time-second (lambda () (fib n)))))
+        (format (current-output-port) "fib(~A) run time: ~Asec\n"
+                n 
+                (measure-run-time-second (lambda () (fib n)))))
+      (loop (1+ n)))))
+
+(define (fib n)
+  (if (&lt;= n 1) 
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+</pre>
+<pre class="shell">
+$ <span class="mycmd">./fib.scm</span>
+fib(31) run time: 0.036721221sec
+fib(32) run time: 0.059259689sec
+fib(33) run time: 0.095719044sec
+fib(34) run time: 0.155226124sec
+fib(35) run time: 0.251870521sec
+fib(36) run time: 0.4119074sec
+fib(37) run time: 0.657884752sec
+fib(38) run time: 1.066331158sec
+fib(39) run time: 1.73796392sec
+fib(40) run time: 2.789079806sec
+</pre>
+</ul>
+
+</section>
+
+
+<!-- ============================================= -->
+<h4 class="hdln" id="time:practice-b">具体例（実時間とCPU時間を同時に計測）</h4>
+<ul class="item">
+<li>
+今度は，実時間とCPU時間の両方を同時に計測してみることにします．
+<p></p>
+前に示した measure-time 手続きは，
+実時間を計測する際に
+get-internal-run-time
+手続き（2回分）の時間も含めています．
+その時間はとても小さく，
+実時間の計測に際してほとんど無視できると期待されます．
+でも，気になるので，
+下記のプログラムでは，get-internal-run-time（2回分）の実時間を計測しています．
+<p></p>
+さらに，実時間とCPU時間の差異を明確にするために，
+計測対象のサンクに<br>
+&emsp;&emsp;(sleep 1) &emsp;&emsp;（1秒間休止する）<br>
+を追加しています．これによって，実時間がCPU時間よりも約1秒長くなるはずです．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+
+;; fib-time.scm
+
+(add-to-load-path (getcwd))
+(use-modules (time-utils))
+
+(define (main args)
+
+  ;; get-internal-run-time（2回分）の実時間を計測する．
+  (let ((start #f)
+        (end #f))
+    (set! start (get-internal-real-time))
+    (get-internal-run-time)
+    (get-internal-run-time)
+    (set! end (get-internal-real-time))
+    (format (current-output-port)
+            "The charge of get-internal-run-tim: ~Asec\n" 
+            (internal-time-unit->second (- end start))))
+ 
+  ;; フィボナッチ数を計算する際の実時間とCPU時間を計測する． 
+  (let loop ((n 31))
+    (when (&lt;= n 40)
+      (let ((tm (measure-time-second (lambda () (sleep 1) (fib n)))))
+        (format (current-output-port) 
+                "fib(~A) real time: ~Asec  run time: ~Asec\n"
+                n (vector-ref tm 0) (vector-ref tm 1)))
+      (loop (1+ n)))))
+
+(define (fib n)
+  (if (&lt;= n 1) 
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+</pre>
+<pre class="shell">
+$ <span class="mycmd">./fib-time.scm</span>
+The charge of get-internal-run-tim: 4.776e-6sec
+fib(31) real time: 1.086667835sec  run time: 0.081440635sec
+fib(32) real time: 1.114826173sec  run time: 0.108369419sec
+fib(33) real time: 1.163550528sec  run time: 0.156801333sec
+fib(34) real time: 1.24215678sec  run time: 0.232377753sec
+fib(35) real time: 1.363600118sec  run time: 0.350791737sec
+fib(36) real time: 1.565089412sec  run time: 0.54537997sec
+fib(37) real time: 1.89996989sec  run time: 0.874181012sec
+fib(38) real time: 2.435494681sec  run time: 1.395762839sec
+fib(39) real time: 2.902076039sec  run time: 1.900760767sec
+fib(40) real time: 4.070046108sec  run time: 3.067266115sec
+</pre>
+実行結果を見ると，
+get-internal-run-time（2回分）の実時間は $4.776 \times 10^{-6}$ 秒なので（注：何回計測しても同じような値です），
+ミリ秒単位で実時間を計測する限りそのその影響は無視できると言えます．
+また，(sleep 1) によって，
+期待通りに実時間がCPU時間よりも約1秒長くなっています．
+
+</ul>
+
+
+
+<div id="thatsall">(おしまい)</div>
+
+</div> <!-- END of main division -->
+</body>
+</html>
+
