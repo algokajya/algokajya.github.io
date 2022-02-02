@@ -5,92 +5,97 @@
 <url>
   <loc>https://algokajya.github.io/</loc>
   <priority>1.0</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-misc/index.html</loc>
   <priority>0.8</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-basics/index.html</loc>
   <priority>0.8</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-intro/index.html</loc>
   <priority>0.8</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-intro/ref.html</loc>
   <priority>0.8</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/index.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
-  <loc>https://algokajya.github.io/guile-misc/regex.html</loc>
+  <loc>https://algokajya.github.io/guile-misc/regex/regex.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
-  <loc>https://algokajya.github.io/guile-misc/regex-proc.html</loc>
+  <loc>https://algokajya.github.io/guile-misc/regex/regex-proc.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
-  <loc>https://algokajya.github.io/guile-misc/regex-example.html</loc>
+  <loc>https://algokajya.github.io/guile-misc/regex/regex-example.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
-  <loc>https://algokajya.github.io/guile-misc/time.html</loc>
+  <loc>https://algokajya.github.io/guile-misc/syscall/userinfo.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
+</url>
+<url>
+  <loc>https://algokajya.github.io/guile-misc/syscall/measure-time.html</loc>
+  <priority>0.7</priority>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-basics/modules/overview.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-basics/modules/use-module.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-basics/modules/create-module.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-basics/modules/misc-module.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-intro/setup.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-intro/repl.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-intro/cmd.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 <url>
   <loc>https://algokajya.github.io/guile-intro/script.html</loc>
   <priority>0.7</priority>
-  <lastmod>2022-01-28T13:47:47+09:00</lastmod>
+  <lastmod>2022-02-03T07:12:01+09:00</lastmod>
 </url>
 
 </urlset>
