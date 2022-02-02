@@ -4,7 +4,7 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1">
    <title>AlgoKajya Guile色々</title>
-   <link rel="stylesheet" type="text/css" href="gm.css">
+   <link rel="stylesheet" type="text/css" href="../guile.css">
    <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
    <style>
       .date0:before{ content: "2020.12.28"; }
@@ -48,23 +48,43 @@ Schemeの処理系の一つであるGuileについて学習した色々な事柄
 
 <!-- ============================================= -->
 <h4 class="hdln">目 次</h4>
+<p class="sshort"></p>
 <ul class="menu">
 <li>
-正規表現
+正規表現<br>
+   <div class="abstract">
+   HTMLファイルをちょっとだけ処理するようなプログラムを作ろうと思って，POSIXの拡張正規表現について勉強してみました．
+いまは疑似タグの変換や目次の生成などに利用しています．
+   </div>
    <ul class="menu">
    <li class="menu">
-   <a class="noline" href="regex.html">POSIX拡張正規表現</a>
+   <a class="noline" href="regex/regex.html">POSIX拡張正規表現</a>
    <li class="menu">
-   <a class="noline" href="regex-proc.html">正規表現のための手続き</a>
+   <a class="noline" href="regex/regex-proc.html">正規表現のための手続き</a>
    <li class="menu">
-   <a class="noline" href="regex-example.html">正規表現のプログラム例</a>
+   <a class="noline" href="regex/regex-example.html">正規表現のプログラム例</a>
    </ul>
+<p class="sshort"></p>
 <li>
-諸々
+POSIXシステムコール
+   <div class="abstract">
+   筆者にとって，
+   シェルスクリプトは心理的な負荷がとても高い技術です．
+   特殊な構文や文字列処理の難しさに適応できそうもありません．
+   学生時代に技術系の研究室に入れなかったことや，
+   卒業後に技術系の仕事に就かなかったことが根本的な敗因です．
+   要するに，技術に対する適応能力が低いということです．
+   仕方がないので，シェルスクリプトは潔くあきらめて，
+   その代わりにSchemeを使おうと思っています．SchemeはS式しかないので楽です．
+   それから，システムコールやライブラリコールの勉強をきっかけにLinuxについてもっと理解を深めたいと思っています．
+   </div>
    <ul class="menu">
    <li class="menu">
-   <a class="noline" href="time.html">実行時間の計測</a>
-   </ul>   
+   <a class="noline" href="syscall/userinfo.html">ユーザー・グループ情報</a>
+   <li class="menu">
+   <a class="noline" href="syscall/measure-time.html">実行時間の計測</a>
+   </ul>
+<p class="sshort"></p>
 <li>
 参考資料
    <ul class="menu">
