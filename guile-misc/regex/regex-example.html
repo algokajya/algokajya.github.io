@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／正規表現のプログラム例</title>
+   <link rel="stylesheet" type="text/css" href="../gm.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="header">
+<a class="noline" href="regex-proc.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／正規表現のプログラム例
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.1.19</span>：h3,h4タグの空白列の正規表現を
+<span class="myrx">[ ]+</span>
+から
+<span class="myrx">[[:space:]]+</span>
+に変更．わずかな誤りを訂正．
+<li class="revise">
+<span class="mydate">2022.1.15</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，HTMLテキストを題材に，
+正規表現を使ったプログラムの具体例を示します．
+前半は，正規表現を扱う手続きの利用方法に関する雛形として，
+開始タグやタグ名を抽出するプログラムを示します．
+後半は，目次を生成するための基礎データを作成するプログラムを示します．
+<li>
+このノートの「正規表現」とは <a class="noline" href="regex.html">POSIX拡張正規表現</a> のことを言います．
+<li>
+正規表現の幾つかの機能はロケールに依存して変化します（参考：<a class="noline" href="regex.html#on-locale">ロケールについて</a>）．
+以下の説明は筆者の環境（Debian 11）のロケール（ja_JP.UTF-8）に基づいています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#extract-open-tags">開始タグの抽出</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#fa-for-open-tags">開始タグの有限オートマトン</a>
+   <li class="menu"><a class="noline" href="#preliminaries-for-regexp">準備（記法や用語）</a>
+   <li class="menu"><a class="noline" href="#design-policy-of-regexp">正規表現の設計方針</a>
+   <li class="menu"><a class="noline" href="#regular-expression-for-open-tags">開始タグの正規表現</a>
+   <li class="menu"><a class="noline" href="#program-for-extracting-tags">プログラム</a>
+   </ul>
+<li class="menu"><a class="noline" href="#extract-open-tag-names">開始タグの名前の抽出</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#regexp-for-extracting-tag-name">正規表現</a>
+   <li class="menu"><a class="noline" href="#program-for-tag-name">プログラム</a>
+   </ul>
+<li class="menu"><a class="noline" href="#extract-menu-items">目次項目の抽出</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#menu-items:abstract">概 要</a>
+   <li class="menu"><a class="noline" href="#regexp-of-h34-tags">開始タグと終了タグの正規表現</a>
+   <li class="menu"><a class="noline" href="#dfa-for-title">タイトルの有限オートマトン</a>
+   <li class="menu"><a class="noline" href="#regexp-of-title">タイトルの正規表現</a>
+   <li class="menu"><a class="noline" href="#regexp-of-menu-item">目次項目の正規表現（まとめ）</a>
+   <li class="menu"><a class="noline" href="#program-for-extracting-menu-item">プログラム</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+<li class="menu">
+<a class="noline" href="https://www.gnu.org/software/guile/manual/">
+GNU Guile Reference Manual（最新版）
+</a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+">
+GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li>
+Regular Expression 
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html
+">
+POSIX.1正規表現（The Open Group Base Specifications Issue 7, 2018 edition IEEE Std 1003.1-2017: Regular Expression）
+   </a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://manpages.debian.org/testing/manpages/regex.7.en.html
+">POSIX.2正規表現（Linux Programmer&apos;s Manual: man -s7 regex &crarr; ）
+   </a>
+   <li class="menu">
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Regular-Expressions.html#Regular-Expressions
+">The GNU C Library Reference Manual, for version 2.34：Regular Expression Matching</a>
+   <li class="menu"> 
+   <a class="noline" href="
+https://manpages.debian.org/testing/manpages-dev/regex.3.en.html
+">POSIX regex functions（Linux Programmer&apos;s Manual: man -s3 regex &crarr;）
+   </a>
+   </ul>
+<li class="menu"> 
+（注意）このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html">奥村晴彦先生のMathJaxのページ</a>（筆者はこの説明の通りに設定しています）
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="extract-open-tags">開始タグの抽出</h3>
+<p></p>
+<ul>
+<li>
+HTMLファイル内の開始タグのリストを作成するプログラムを示します．<br>
+これは
+regexp-substitute/global
+を用いることによって簡単に実現できます．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="fa-for-open-tags">開始タグの有限オートマトン</h4>
+<ul>
+<li>
+下図は開始タグ（を表す文字列）を認識する（決定性の）有限オートマトンです．
+以下，<em>DFA</em>と略します．
+
+<figure style="width:60%">
+<img src="dfa-tag.gif" height="170" alt="開始タグのDFA">
+<figcaption>図1：開始タグのDFA</figcaption>
+</figure>
+
+このDFAは次のような考え方に基づいて設計しています．
+   <ul>
+   <li>
+   開始タグは左三角括弧（&lt;）から始まって，タグ名を表す英字列が続く
+   （状態0から状態2への遷移）．
+   <li>
+   タグ名のあと，右三角括弧（>）で直ちに閉じて終わるか（状態2から状態5への遷移），または，class属性などを指定したあとに右三角括弧で閉じて終わる（状態2から状態3,4を経由して状態5へと至る遷移）．
+   <li>
+   属性値を表す文字列形式（" ... "）以外の途中の部分は，
+   少なくとも右三角括弧を記述することはできない（状態3のループ）．
+   <li>
+   しかし，属性値を表す文字列形式（" ... "）の中には（ダブルクォートを除いて）あらゆる文字を記述できる（状態3と状態4の間の遷移）．例えば，三角括弧を記述してもよい．
+</ul>
+以下，このDFAをもとに正規表現を設計します．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="preliminaries-for-regexp">準備（記法や用語）</h4>
+<ul>
+<li> 
+以後の説明を簡約するためのちょっとした記法や用語を用意します．
+<li>
+文字の全体集合を $\Sigma$ で表し，文字列の全体集合を $\Sigma^*$ で表します
+（参考：<a class="noline" href="regex.html#math-symbols">文字列に関する数学的記法</a>）．
+<li>
+以後，<em>状態</em>と言ったときには，上記のDFAの状態のことを指します．
+状態は 0 以上 5 以下の整数であることにも注意して下さい．
+<li>
+状態 $p$ から状態 $q$ へ1回遷移することを
+<em>$p \to q$</em>
+で表します．
+<br>
+状態 $p$ から状態 $q$ へ0回以上遷移することを
+<em>$p \to^* q$</em>
+で表します．
+<li>
+DFAの<em>計算過程</em>とは，
+状態の列
+$p_0, p_1, \ldots, p_n$
+のことで，各 $i=0,1,\ldots,n-1$ に対して
+$p_i \leadsto p_{i+1}$
+が成り立つときを言います．ここで，
+$\leadsto$
+は
+$\to$
+かまたは
+$\to^*$
+です．
+以下では，このような計算過程を
+   <div class="dstyle">
+   <em>$p_0 \leadsto p_1 \leadsto \cdots \leadsto p_n$</em>
+   &emsp;&emsp;
+   （注： $\leadsto$ は $\to$ かまたは $\to^*$）
+   </div>
+で表します．
+<li>
+例えば，
+状態$0$からスタートして，状態$1$，状態$2$と進んで，
+状態$2$のループを0回以上回るような計算過程は，
+   <div class="dstyle">
+   $0 \to 1 \to 2 \to^* 2$
+   </div>
+と表されます．
+また，
+   <div class="dstyle">
+   $2 \to 3 \to^* 3 \to 5$
+   </div>
+という計算過程は，状態2からスタートして状態3へと進み，
+状態3と状態4だけから構成される部分的なオートマトンを任意に遷移したあと状態5へと至ることを示しています．なお，この計算過程は状態$4$を明記していませんが，
+$3 \to^* 3$
+という計算過程は，状態$3$と状態4の間の遷移を含んでいる可能性があります．
+<li>
+計算過程
+$p_0 \leadsto p_1 \leadsto \cdots \leadsto p_n$
+によって文字列 $x \in \Sigma^*$ が処理できることを
+   <div class="dstyle">
+   <em>$x:p_0 \leadsto p_1 \leadsto \cdots \leadsto p_n$</em>
+   &emsp;&emsp;
+   （注： $\leadsto$ は $\to$ かまたは $\to^*$）
+   </div>
+で表します．
+<li>
+例えば，
+   <div class="dstyle">
+   "&lt;abc"$ : 0 \to 1 \to 2 \to^* 2$
+   </div>
+は，文字列
+"&lt;abc"
+が計算過程
+$0 \to 1 \to 2 \to^* 2$
+によって処理できることを示しています．また，
+   <div class="dstyle">
+   " class=\"xyz\"&gt;"$: 2 \to 3 \to^* 3 \to 5$
+   </div>
+は，文字列
+" class=\"xyz\"&gt;"（注：先頭の文字は空白）
+が計算過程
+$2 \to 3 \to^* 3 \to 5$
+によって処理できることを示しています．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="design-policy-of-regexp">正規表現の設計方針</h4>
+<ul>
+<li>
+DFAによって認識される文字列の集合 $L$ は
+   <div class="dstyle">
+   $L = \{ x \in \Sigma^* \mid x:0 \to^* 5 \}$ 
+   </div>
+と定義されます．
+<li>
+初期状態$0$から受理状態$5$までの計算過程（$0 \to^* 5$）は，
+タグ名を処理する計算過程（$0 \to^* 2$）
+と残りの部分列を処理する計算過程（$2 \to ^* 5$）に分解することができます．
+正確に言うと，計算過程 $0 \to^* 5$ は
+   <ul>
+   <li>
+   $0 \to^* 2$ （注：タグ名を処理する）と
+   <li>
+   $2 \to 5$ または $2 \to 3 \to^* 5$（注：残りの部分列を処理する）
+   </ul>
+の2つに分解されます．ここで，
+「$2 \to 5$ または $2 \to 3 \to^* 5$」は，
+状態$2$のループを使わずに状態$2$から状態$5$へと至る計算過程を表しています．
+従って，このように分解したとき，
+計算過程 $0 \to^* 2$ はタグ名を処理する計算過程になります．
+<li>
+以上の計算過程の分解に沿って，集合 $L$ も次のように分解できます．
+   <div class="dstyle">
+   $L = L_1 \cdot (L_2 \cup L_3)$ <br>
+   ただし：
+   <ul>
+   <li>
+   $L_1 = \{ x \in \Sigma^* \mid x:0 \to^* 2 \}$
+   <li>
+   $L_2 = \{ c \in \Sigma \mid c:2 \to 5 \}$
+   <li>
+   $L_3 = \{ x \in \Sigma^* \mid x:2 \to 3 \to^* 5 \}$
+   </ul>
+   </div>
+ここで，
+$\cdot$
+は（文字列集合の間の）連結演算を表し，
+$\cup$
+は和集合演算を表します（参考：<a class="noline" href="regex.html#math-symbols">文字列に関する数学的記法</a>）．
+
+<li>
+さらに，
+計算過程
+$2 \to 3 \to^* 5$
+は
+$2 \to 3 \to^* 3 \to 5$
+と分解できます．もっと詳しく言うと，
+   <ul>
+   <li> $2 \to 3$ と
+   <li> $3 \to^* 3$ と
+   <li> $3 \to 5$
+   </ul>
+の3つに分解できます．この分解に沿って，
+$L_3$
+も次のように分解できます．
+   <div class="dstyle">
+   $L_3 = L_{31} \cdot L_{32} \cdot L_{33}$<br>
+   ただし：
+      <ul>
+      <li> $L_{31} = \{ c \in \Sigma \mid c:2 \to 3 \}$ 
+      <li> $L_{32} = \{ x \in \Sigma^* \mid x:3 \to^* 3 \}$
+      <li> $L_{33} = \{ c \in \Sigma \mid c:3 \to 5 \}$
+      </ul>
+   </div>
+<li>
+以上から，$L$ は
+   <div class="dstyle">
+   $L = L_1 \cdot (L_2 \cup (L_{31} \cdot L_{32} \cdot L_{33}))$
+   </div>
+と分解されます．
+以下では，
+$L_1$，$L_2$，$L_{31}$，$L_{32}$，$L_{33}$
+の正規表現を求めて，
+それらを上記の分解に沿ってまとめることによって開始タグの正規表現を求めます．
+</ul>
+
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="regular-expression-for-open-tags">開始タグの正規表現</h4>
+<ul>
+<li>
+$L_1$の正規表現は，上記のDFAの通りに設計するならば
+   <div class="ddstyle">
+   <span class="myrx">&lt;[a-zA-Z][a-zA-Z]*</span>
+   </div>
+となります．一方，
+<span class="myrx">[a-zA-Z][a-zA-Z]*</span>
+は
+<span class="myrx">[a-zA-Z]+</span>
+と（文字列集合の同等性の意味で）等価なので，
+$L_1$ の正規表現 $\alpha_1$ は
+   <div class="dstyle">
+   $\alpha_1$ $=$ <span class="myrx">&lt;[a-zA-Z]+</span>
+   </div>
+となります．
+
+<li>
+$L_2$ の正規表現 $\alpha_2$，
+$L_{31}$ の正規表現 $\alpha_{31}$，
+$L_{33}$ の正規表現 $\alpha_{33}$
+は，それぞれ
+   <div class="dstyle">
+   $\alpha_2$ $=$ <span class="myrx">&gt;</span><br>
+   $\alpha_{31}$ $=$ <span class="myrx">[^a-zA-Z>]</span><br>
+   $\alpha_{33}$ $=$ <span class="myrx">&gt;</span>
+   </div>
+です．
+
+<li>
+$L_{32}$ の正規表現を求めるためには，
+もう少し計算過程に対する分析（分解）が必要です．
+計算過程 $3 \to^* 3$ は，
+状態$3$からスタートして状態$3$に戻って来る1回分の計算過程を0回以上繰り返しています．すなわち，
+   <ul>
+   <li> $3 \to 3$ または $3 \to 4 \to^* 4 \to 3$ 
+   </ul>
+を0回以上繰り返しています．
+ここで，
+$3 \to 3$
+は状態$3$のループを1回分だけ回る計算過程を表していて，
+$3 \to 4 \to^* 4 \to 3$
+は状態$3$から状態$4$へ遷移して，
+状態$4$のループを0回以上回ったあと，
+状態$4$から状態$3$へ戻って来る計算過程を表しています．
+厳密に言うと，
+$4 \to^* 4$（という記法）
+は状態$4$のループ以外の計算過程（状態$3$へ遷移して状態$4$に戻ってくる計算過程）
+も含むことを許してしまいます．
+でも，ここでは
+$4 \to^* 4$
+は状態$4$のループだけを使った計算過程を表していると解釈して下さい．
+以上から，$L_{32}$ は次のように分解できます．
+   <div class="dstyle">
+   $L_{32} = (L_{321} \cup L_{322})^*$ <br>
+   ただし：
+   <ul>
+   <li> $L_{321} = \{ c \in \Sigma \mid c:3 \to 3 \}$
+   <li> $L_{322} = \{ x \in \Sigma^* \mid x:3 \to 4 \to^* 4 \to 3 \}$<br>
+      （注：$4 \to^* 4$ は状態$4$のループを0回以上遷移する計算過程を表す）
+   </ul>
+   </div>
+$L_{321}$ の正規表現は <span class="myrx">[^&gt;"]</span> で，
+$L_{322}$ の正規表現は <span class="myrx">"[^"]*"</span> です．
+従って，$L_{32}$の正規表現 $\alpha_{32}$ は
+   <div class="dstyle">
+   $\alpha_{32}$ $=$ <span class="myrx">([^&gt;"]|"[^"]*")*</span>
+   </div>
+となります．
+<li>
+<h4 class="item">まとめ</h4> 
+以上より，$L$ の正規表現 $\alpha$ は次のようになります．
+   <div class="dstyle">
+   $\alpha =$ $\alpha_1$<span class="myrx">(</span>$\alpha_2$<span class="myrx">|</span>$\alpha_{31}\alpha_{32}\alpha_{33}$<span class="myrx">)</span>
+   $=$ <span class="myrx">&lt;[a-zA-Z]+(&gt;|[^a-zA-Z>]([^&gt;"]|"[^"]*")*&gt;)</span>
+   </div>
+これで十分なのですが，
+$L_2 \cup L_3$（タグ名を除く残りの部分列）
+の正規表現は（文字列集合の同等性の意味で）次のように変形できます．
+      <div class="ddstyle">
+      <span class="myrx">(&gt;|[^a-zA-Z>]([^>"]|"[^"]*")*&gt;)</span><br> 
+      &emsp;&emsp;$=$
+      <span class="myrx">(</span>$\varepsilon$<span class="myrx">|[^a-zA-Z>]([^>"]|"[^"]*")*)&gt;</span> 
+      &emsp;&emsp;（注：$\varepsilon$は空文字列を表す）<br>
+      &emsp;&emsp;$=$
+      <span class="myrx">([^a-zA-Z>]([^>"]|"[^"]*")*)?&gt;</span> 
+      </div>
+上記の1番目の等式は，
+選択演算（<span class="myrx">|</span>）の両側にある右三角括弧（<span class="myrx">&gt;</span>）を括り出しています．さらに，空文字列 $\varepsilon$ は拡張正規表現ではないので，
+2番目の等式は空文字列を含む拡張正規表現に書き換えています．
+<p></p>
+こちらのほうが，
+（タグ名のあと）残りの部分列を処理して右三角括弧で終わるといった直観に合っています．よって，$L$ の正規表現 $\alpha$（最終版）は
+   <div class="dstyle">
+   $\alpha$ $=$ <span class="myrx">&lt;[a-zA-Z]+([^a-zA-Z>]([^>"]|"[^"]*")*)?&gt;</span>
+   </div>
+となります．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="program-for-extracting-tags">プログラム</h4>
+<ul>
+<li> 
+以下の
+extract-tags
+は，
+HTMLのテキストデータ（text）を受け取って，
+それに含まれる開始タグのリストを返します．
+<pre class="list">
+(define tag-regexp "&lt;[a-zA-Z]+([^&gt;a-zA-Z]([^&gt;\"]|\"[^\"]*\")*)?&gt;")
+(define tag-rx (make-regexp tag-regexp))
+(define (extract-tags text)
+  (let ((tags '()))
+    (define (put-tag match) 
+      (set! tags (cons (match:substring match) tags))) 
+    (regexp-substitute/global #f tag-rx text put-tag 'post)
+    (reverse tags)))
+</pre>
+<li>
+extract-tags手続き内の
+   <div class="ddstyle">
+   (regexp-substitute/global #f tag-rx text put-tag &#39;post)
+   </div>   
+という式は，
+   <ul>
+   <li> HTMLテキスト（text）の先頭から正規表現（tag-rx）をマッチさせて，
+   <li> マッチが成功する（つまり，開始タグを発見する）たびに put-tag を実行する
+   </ul>
+といった処理を繰り返します．
+繰り返しは &#39;post 引数によって末尾再帰的に行われます．
+<li>
+put-tag は，
+マッチ構造（match）からマッチした部分列（開始タグ）を取り出して，
+開始タグのリスト（tags）に追加します．
+<li>
+extract-tags
+をテストするために作ったスクリプトと実行結果（一部）を示します．
+
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+;; tag-list.scm 
+
+(use-modules (ice-9 textual-ports)
+             (ice-9 regex))
+
+(define (main args)
+  (let* ((file (cadr args))
+         (text (call-with-input-file file
+                 (lambda (port) (get-string-all port))))
+        (tags (extract-tags text)))
+    (show-tags tags)))
+
+(define tag-regexp "&lt;[a-zA-Z]+([^&gt;a-zA-Z]([^&gt;\"]|\"[^\"]*\")*)?&gt;")
+(define tag-rx (make-regexp tag-regexp))
+(define (extract-tags text)
+  (let ((tags '()))
+    (define (put-tag match) 
+      (set! tags (cons (match:substring match) tags))) 
+    (regexp-substitute/global #f tag-rx text put-tag 'post)
+    (reverse tags)))
+
+(define (show-tags tags)
+  (let loop ((tags tags))
+    (when (not (null? tags))
+      (display (car tags)) (newline)
+      (loop (cdr tags)))))
+</pre>
+main手続きは，HTMLファイルの名前（file）を受け取って，
+テキストデータ（text）を一気に読み込んで，
+それに
+extract-tags
+を適用して開始タグのリスト（tags）を作ります．
+最後にそのリストの内容を表示（show-tags）して終わります．
+
+<pre class="shell">
+$ <span class="mycmd">./tag-list.scm sample.html</span> 
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;title&gt;
+&lt;link rel="stylesheet" type="text/css" href="../gm.css"&gt;
+&lt;body&gt;
+&lt;div id="&lt;&lt;&lt;header&gt;&gt;&gt;"&gt;
+&lt;span class="&gt;&gt;&gt;nolink&lt;&lt;&lt;"&gt;
+&lt;span class="nolink" &lt;!-- no right angle bracket here --&gt;
+&lt;span class="nolink"&gt;
+      ...... （以下略） ......
+</pre>
+<a class="noline" href="
+https://github.com/algokajya/algokajya.github.io/blob/main/guile-misc/sample.html
+">
+sample.html
+</a>
+はテスト用に作成したHTMLファイルです．
+上記のdivタグとspanタグの属性値に（わざと）三角括弧を入れています．
+さらに，2番目のspanタグは右三角括弧で閉じるのを忘れていて，
+そのためにspanに続くコメントの右三角括弧までを開始タグとして処理しています．
+</ul>
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="extract-open-tag-names">開始タグの名前の抽出</h3>
+<p></p>
+<ul>
+<li>
+タグ名と開始タグのペアからなるリストを作成するプログラムを示します．
+これは部分式のマッチング情報を利用することによって簡単に実現できます．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="regexp-for-extracting-tag-name">正規表現</h4>
+<ul>
+<li>
+まず，前節で示した開始タグの正規表現を以下のように変更します．
+   <div class="ddstyle">
+   <span class="myrx">&lt;([a-zA-Z]+)([^a-zA-Z>]([^>"]|"[^"]*")*)?&gt;</span>
+   </div>
+これは，タグ名を表す部分式（<span class="myrx">[A-Za-z]+</span>）を丸括弧で囲んだだけです．
+でも，これによって，部分式のマッチング情報を利用してタグ名を簡単に抽出できます．
+具体的には，正規表現がマッチしたときのマッチ構造（match）を使った
+   <div class="ddstyle">
+   (match:substring match 1)
+   </div>
+という式（1番目の部分式にマッチした部分列を抽出すること）
+によってタグ名を取り出すことができます．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="program-for-tag-name">プログラム</h4>
+<ul>
+<li>
+正規表現の変更とともに，
+put-tag手続きを，
+ペアを作ってリスト（tags）に登録するように変更します．
+変更後のプログラムは次のようになります．
+赤字は変更箇所を示しています．
+<pre class="list">
+(define tag-regexp "&lt;<span class="myred">([a-zA-Z]+)</span>([^&gt;a-zA-Z]([^&gt;\"]|\"[^\"]*\")*)?&gt;")
+(define tag-rx (make-regexp tag-regexp))
+(define (extract-tags text)
+  (let ((tags '()))
+    (define (put-tag match) 
+      (set! tags (cons <span class="myred">(cons (match:substring match 1) 
+                             (match:substring match))</span>
+                       tags)))
+    (regexp-substitute/global #f tag-rx text put-tag 'post)
+    (reverse tags)))
+</pre>
+以下は，変更後のテスト用スクリプトの実行例（一部）です（注：
+前節で示したテスト用スクリプトの他の部分は一切変更していません）．
+<pre class="shell">
+$ <span class="mycmd">./tag-list.scm sample.html</span> 
+(html . &lt;html lang="ja"&gt;)
+(head . &lt;head&gt;)
+(meta . &lt;meta charset="UTF-8"&gt;)
+(title . &lt;title&gt;)
+(link . &lt;link rel="stylesheet" type="text/css" href="../gm.css"&gt;)
+(body . &lt;body&gt;)
+(div . &lt;div id="&lt;&lt;&lt;header&gt;&gt;&gt;"&gt;)
+(span . &lt;span class="&gt;&gt;&gt;nolink&lt;&lt;&lt;"&gt;)
+(span . &lt;span class="nolink" &lt;!-- no right angle bracket here --&gt;)
+(span . &lt;span class="nolink"&gt;)
+      ...... （以下略） ......
+</pre>
+<a class="noline" href="
+https://github.com/algokajya/algokajya.github.io/blob/main/guile-misc/sample.html
+">
+sample.html
+</a>
+はテスト用に作成したHTMLファイルです．
+</ul>
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="extract-menu-items">目次項目の抽出</h3>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="menu-items:abstract">概 要</h4>
+<ul>
+<li>
+筆者は，
+HTMLファイル内の節や小節のタイトルを次のようなタグで記述しています．
+<div class="dstyle">
+   &lt;h3 class=" ... " id="識別子"&gt; タイトル &lt;/h3&gt; <br>
+   &lt;h4 class=" ... " id="識別子"&gt; タイトル &lt;/h4&gt; <br>
+</div>
+これらのタグをアンカータグに変換して目次を生成しています．
+<li>
+以下では，目次生成の中核的な処理を行うプログラムを示します．
+具体的には，HTMLのテキストデータから上記のタグを抽出して，
+   <ul>
+   <li> 目次内でのレベル（h3はレベル0，h4はレベル1），
+   <li> 識別子，
+   <li> タイトル
+   </ul>
+からなるリストを生成するプログラムを示します．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="regexp-of-h34-tags">開始タグと終了タグの正規表現</h4>
+<ul>
+<li>
+開始タグは，
+タグ名，
+class属性，
+id属性が空白で区切られているといったパターンなので，
+その正規表現
+$\alpha$
+は以下のようになります．
+   <div class="dstyle">
+      $\alpha$ $=$
+      <span class="myrx">&lt;(h[34])[[:space:]]+class="[^&quot;]*"[[:space:]]+id="([^&quot;]*)"&gt;</span>
+   </div>
+ただし，タグの種類（h3かh4）を抽出して区別する必要があるので，
+タグ名の正規表現（<span class="myrx">h[34]</span>）を丸括弧で囲んで部分式にしています．
+さらに，識別子を抽出するために，
+識別子の正規表現（id=のあとの<span class="myrx">[^&quot;]*</span>）
+も丸括弧で囲んで部分式にしています．
+<p></p>
+それから，空白列の正規表現を
+<span class="myrx">[ ]+</span>
+ではなく
+<span class="myrx">[[:space:]]+</span>
+にすると，改行文字もマッチするようになります．つまり，
+class属性やid属性の前後で改行していても上記の正規表現にマッチします．
+
+<li>
+終了タグの正規表現
+$\gamma$
+は
+   <div class="dstyle">
+   $\gamma$ $=$ <span class="myrx">&lt;/h[34]&gt;</span>
+   </div>
+です．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="dfa-for-title">タイトルの有限オートマトン</h4>
+<ul>
+<li>
+タイトルは色々な文字を含む可能性があるので，
+そのパターンを推測することは簡単ではありません．
+明らかなことは
+   <ul>
+   <li> タイトルは終了タグ（&lt;/h3&gt;や&lt;/h4&gt;）を含まない
+   </ul>
+ということです．
+そこで，この条件を満たす文字列のパターンをタイトルの正規表現とします．
+<li>
+図2は，上の条件を満たす文字列を認識する（決定性の）有限オートマトンです．
+これは，「終了タグ（&lt;/h3&gt;や&lt;/h4&gt;）を含む文字列」
+を認識する有限オートマトンの受理状態と非受理状態を反転させたものです．
+ただし，次の2つの条件を仮定しています．
+   <ol type="a">
+   <li>
+   "&lt;"，"&lt;/"，"&lt;/h"，"&lt;/h3"，"&lt;/h4" 
+   といった文字列の直後に左三角括弧（&lt;）が現れて，
+   新たなタグが始まることはない．別の言い方をすれば，
+   タグの中にタグが埋め込まれていることはない．
+   <li> 右三角括弧（&gt;）の直前に空白を含まない
+   </ol>
+a.は文法的に正しいHTMLテキストが必ず満たす条件です．
+b.は筆者個人のHTMLテキストを処理対象とすることを前提にしたものです．
+これら2つを仮定しないとき，有限オートマトンはもう少し複雑になって，
+その分，正規表現も複雑になります．
+
+<figure style="width:60%">
+<img src="dfa-title.gif" height="170" alt="開始タグのDFA">
+<figcaption>図2：タイトルのDFA</figcaption>
+</figure>
+
+以下，これを<em>DFA</em>と略します．
+さらに，以下の<em>状態</em>は，このDFAの状態のこととします．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="regexp-of-title">タイトルの正規表現</h4>
+<ul>
+<li>
+DFAの初期状態$0$から受理状態（$0,1,2,3,4$のいずれか）までの計算過程は，
+   <div class="dstyle">
+   $0 \to^* 0$，
+   $0 \to^* 1$，
+   $0 \to^* 2$，
+   $0 \to^* 3$，
+   $0 \to^* 4$
+   </div>
+の5つです．従って，DFAによって認識される文字列の集合 $L$ は，
+次のように分解できます．
+   <div class="dstyle">
+   $L = L_0 \cup L_1 \cup L_2 \cup L_3 \cup L_4$ <br>
+   ただし：
+   <ul>
+   <li> $L_p = \{ x \in \Sigma^* \mid x:0 \to^* p \}$
+        &emsp;$(p=0,1,2,3,4)$
+   </ul>
+   </div>
+<li>
+さらに，
+$L_1$
+の計算過程
+$0 \to^* 1$
+は
+$0 \to^* 0 \to 1$
+と分解できるので，$L_1$は次のように分解できます．
+   <div class="dstyle">
+      $L_1$ $=$ $\{ x \in \Sigma \mid x:0 \to^* 0 \} 
+                  \cdot \{ c \in \Sigma \mid c:0 \to 1 \}$
+         $=$ $L_0 \cdot \{$&lt;$\}$
+   </div>
+同様に，
+$L_2$ 
+の計算過程
+$0 \to^* 2$
+は
+$0 \to^* 0 \to 1 \to 2$
+と分解できるので，$L_2$は次のように分解できます．
+   <div class="dstyle">
+      $L_2$ $=$ $\{ x \in \Sigma \mid x:0 \to^* 0 \} 
+                  \cdot \{ x \in \Sigma^* \mid x:0 \to 1 \to 2 \}$
+         $=$ $L_0 \cdot \{$&lt;/$\}$
+   </div>
+同様に，$L_3$ と $L_4$ も次のように分解できます．
+   <div class="dstyle">
+      $L_3$ $=$ $\{ x \in \Sigma \mid x:0 \to^* 0 \} 
+                  \cdot \{ x \in \Sigma^* \mid x:0 \to 1 \to 2 \to 3 \}$
+         $=$ $L_0 \cdot \{$&lt;/h$\}$ <br>
+      $L_4$ $=$ $\{ x \in \Sigma \mid x:0 \to^* 0 \} 
+                  \cdot \{ x \in \Sigma^* \mid x:0 \to 1 \to 2 \to 3 \to 4 \}$
+         $=$ $L_0 \cdot \{$&lt;/h3$,$&lt;/h4$\}$ <br>
+   </div>
+<li>
+以上の結果と
+$L_0=L_0\cdot\{\varepsilon\}$
+であることを利用すると，
+$L$
+は次のように書き換えることができます．
+   <div class="dstyle">
+   <table class="equation">
+   <tr>
+      <td>$L$</td>
+      <td>$=$ $L_0$ $\cup$ $L_1$ $\cup$ $L_2$ $\cup$ $L_3$ $\cup$ $L_4$ </td>
+   </tr>
+   <tr>
+      <td></td>
+      <td>$=$ $L_0\cdot\{\varepsilon\}$ $\cup$
+              $L_0\cdot\{$&lt;$\}$ $\cup$
+              $L_0\cdot\{$&lt;/$\}$ $\cup$ 
+              $L_0\cdot\{$&lt;/h$\}$ $\cup$ 
+              $L_0\cdot\{$&lt;/h3$,$&lt;/h4$\}$ </td>
+   </tr>
+   <tr>
+      <td></td>
+      <td>$=$ $L_0\cdot(\{\varepsilon\} \cup \{$&lt;$\} \cup \{$&lt;/$\} \cup \{$&lt;/h$\} \cup \{$&lt;/h3$,$&lt;/h4$\})$
+    </tr>
+   <tr>
+      <td></td>
+      <td>$=$ $L_0\cdot\{\varepsilon,$&lt;$,$&lt;/$,$&lt;/h$,$&lt;/h3$,$&lt;/h4$\}$
+    </tr>
+   </table>
+   </div>
+つまり，$L_0$の正規表現が求まれば，$L$の正規表現も直ちに求まります．
+<li>
+一方，
+$L_0$
+の計算過程
+$0 \to^* 0$
+は，状態$0$からスタートして状態$0$へ戻って来る1回分の計算過程を0回以上繰り返したものです．
+さらに，状態$0$から状態$0$へ戻って来る1回分の計算過程は
+   <div class="dstyle">
+   $0 \to 0$，
+   $0 \to 1 \to 0$，
+   $0 \to 1 \to 2 \to 0$，<br>
+   $0 \to 1 \to 2 \to 3 \to 0$，
+   $0 \to 1 \to 2 \to 3 \to 4 \to 0$，
+   </div>
+の5つです．従って，$L_0$は次のように分解できます．
+   <div class="dstyle">
+   $L_0 = (L_{00} \cup L_{01} \cup L_{02} \cup L_{03} \cup L_{04})^*$ <br>
+   ただし：
+   <ul>
+   <li> $L_{00} = \{ c \in \Sigma \mid c:0 \to 0 \}$
+   <li> $L_{0p} = \{ x \in \Sigma^* \mid x:0 \to 1 \to \cdots \to p \to 0 \}$ 
+         &emsp; $(p=1,2,3,4)$
+   </ul>
+   </div>
+以上より，$L_{00}$〜$L_{04}$の正規表現を求めれば，
+$L_0$
+の正規表現が求まり，
+$L$
+の正規表現も直ちに求まります．
+
+<li>
+DFA（の状態遷移図）より，
+$L_{00}$〜$L_{04}$の正規表現$\beta_{00}$〜$\beta_{04}$は
+   <div class="dstyle">
+   $\beta_{00} =$ <span class="myrx">[^&lt;]</span> <br>
+   $\beta_{01} =$ <span class="myrx">&lt;[^/]</span> <br>
+   $\beta_{02} =$ <span class="myrx">&lt;/[^h]</span> <br>
+   $\beta_{03} =$ <span class="myrx">&lt;/h[^34]</span> <br>
+   $\beta_{04} =$ <span class="myrx">&lt;/h[34][^&gt;]</span> <br>
+   </div>
+となります．従って，
+$L_0$
+の正規表現
+$\beta_0$
+は
+   <div class="dstyle">
+   $\beta_0 =$ <span class="myrx">(</span>$\beta_{00}$<span class="myrx">|</span>$\beta_{01}$<span class="myrx">|</span>$\beta_{02}$<span class="myrx">|</span>$\beta_{03}$<span class="myrx">|</span>$\beta_{04}$<span class="myrx">)*</span>
+$=$ <span class="myrx">([^&lt;]|&lt;[^/]|&lt;/[^h]|&lt;/h[^34]|&lt;/h[34][^&gt;])*</span>
+   </div>
+となります．従って，
+$L$
+の正規表現
+$\beta$
+は
+   <div class="dstyle">
+   <table class="equation">
+   <tr>
+      <td>$\beta$</td>
+      <td>
+         $=$ $\beta_0$<span class="myrx">(</span>$\varepsilon$<span class="myrx">|&lt;|&lt;/|&lt;/h|&lt;/h[34])</span>
+         $=$ $\beta_0$<span class="myrx">(&lt;|&lt;/|&lt;/h|&lt;/h[34])?</span>
+      </td>
+   </tr>
+   <tr>
+      <td></td>
+      <td>
+         $=$ <span class="myrx">([^&lt;]|&lt;[^/]|&lt;/[^h]|&lt;/h[^34]|&lt;/h[34][^&gt;])*(&lt;|&lt;/|&lt;/h|&lt;/h[34])?</span>
+      </td>
+   </tr>
+   </table>
+   </div>
+となります．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="regexp-of-menu-item">目次項目の正規表現（まとめ）</h4>
+<ul>
+<li>
+目次項目の正規表現は，
+開始タグの正規表現 $\alpha$，
+タイトルの正規表現 $\beta$，
+終了タグの正規表現 $\gamma$
+をこの順に連結したものです．
+ただし，タイトルを抽出する必要があるので，
+$\beta$
+を丸括弧で囲んで部分式にします．
+</ul>
+
+<!-- ===head line================================== -->
+<h4 class="hdln" id="program-for-extracting-menu-item">プログラム</h4>
+<ul>
+<li>
+以下の
+ectract-items
+は，HTMLテキストデータ（text）に対して
+   <ul>
+   <li> 目次内でのレベル（h3はレベル0，h4はレベル1），
+   <li> 識別子，
+   <li> タイトル
+   </ul>
+のリスト（のリスト）を返します．
+このプログラムの基本的な構成は，
+正規表現と抽出する部分列が異なることを除けば，
+開始タグの抽出（extract-tags）とまったく同じと言えます．
+<pre class="list">
+(define alpha "&lt;(h[34])[[:space:]]+class=\"[^\"]*\"[[:space:]]+id=\"([^\"]*)\"&gt;")
+(define beta "(([^&lt;]|&lt;[^/]|&lt;/[^h]|&lt;/h[^34]|&lt;/h[34][^&gt;])*(&lt;|&lt;/|&lt;/h|&lt;/h[34])?)")
+(define gamma "&lt;/h[34]&gt;")
+(define item-regexp (string-append alpha beta gamma))
+(define item-rx (make-regexp item-regexp))
+(define (extract-items text)
+  (let ((items '()))
+    (define (put-item match) 
+      (set! items 
+            (cons (list (if (equal? (match:substring match 1) "h3") 0 1)
+                        (match:substring match 2)
+                        (match:substring match 3))
+                  items)))
+    (regexp-substitute/global #f item-rx text put-item 'post)
+    (reverse items)))
+</pre>
+<li>
+テスト用のスクリプトを以下に示します．
+こちらも，処理内容は開始タグの抽出のときとほとんど同じです．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+;; menu-items.scm 
+
+(use-modules (ice-9 textual-ports)
+             (ice-9 regex))
+
+(define (main args)
+  (let* ((file (cadr args))
+         (text (call-with-input-file file
+                 (lambda (port) (get-string-all port))))
+         (items (extract-items text)))
+    (show-items items)))
+
+(define alpha "&lt;(h[34])[ ]+class=\"[^\&quot;]*\"[ ]+id=\"([^\&quot;]*)\"&gt;")
+(define beta "(([^&lt;]|&lt;[^/]|&lt;/[^h]|&lt;/h[^34]|&lt;/h[34][^&gt;])*(&lt;|&lt;/|&lt;/h|&lt;/h[34])?)")
+(define gamma "&lt;/h[34]&gt;")
+(define item-regexp (string-append alpha beta gamma))
+(define item-rx (make-regexp item-regexp))
+(define (extract-items text)
+  (let ((items '()))
+    (define (put-item match) 
+      (set! items 
+            (cons (list (if (equal? (match:substring match 1) "h3") 0 1)
+                        (match:substring match 2)
+                        (match:substring match 3))
+                  items))) 
+    (regexp-substitute/global #f item-rx text put-item 'post)
+    (reverse items)))
+
+(define (show-items items)
+  (let loop ((items items))
+    (when (not (null? items))
+      (display (car items)) (newline)
+      (loop (cdr items)))))
+</pre>
+<li>
+以下は，このノートのHTMLファイルを処理対象とした実行例です．
+<pre class="shell">
+$ <span class="mycmd">./menu-items.scm regex-example.html</span>
+(0 extract-open-tags 開始タグの抽出)
+(1 fa-for-open-tags 開始タグの有限オートマトン)
+(1 preliminaries-for-regexp 準備（記法や用語）)
+(1 design-policy-of-regexp 正規表現の設計方針)
+(1 regular-expression-for-open-tags 開始タグの正規表現)
+(1 program-for-extracting-tags プログラム)
+(0 extract-open-tag-names 開始タグの名前の抽出)
+(1 regexp-for-extracting-tag-name 正規表現)
+(1 program-for-tag-name プログラム)
+(0 extract-menu-items 目次項目の抽出)
+(1 menu-items:abstract 概 要)
+(1 regexp-of-h34-tags 開始タグと終了タグの正規表現)
+(1 dfa-for-title タイトルの有限オートマトン)
+(1 regexp-of-title タイトルの正規表現)
+(1 regexp-of-menu-item 目次項目の正規表現（まとめ）)
+(1 program-for-extracting-menu-item プログラム)
+</pre>
+
+</ul>
+</section>
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
