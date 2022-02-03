@@ -71,7 +71,6 @@ Guile色々／ユーザー・グループ情報の取得
 <h4 class="hdln">概 要</h4>
 <p class="short"></p>
 <ul>
-<p class="sshort"></p>
 <li>
 このノートは，
 ユーザーやグループの情報を取得するための手続きについて勉強したことを記録しています．
@@ -441,7 +440,7 @@ guile&gt;
 ちなみに，primitive-load はコアシステム（C言語プログラム）の一部として実装されていますが，load はマクロとして実装されています．
 さらに，primitive-load はシステム標準の reader を使ってロードしますが，load は reader を指定できます．
 
-
+</section>
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
@@ -639,6 +638,7 @@ https://manpages.debian.org/bullseye/manpages-dev/getpw.3.en.html
    (define (setgrent) (setgr #t)) <br>
    (define (endgrent) (setgr))
    </div>
+</div>
 
 </section>
 
