@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／ファイルやディレクトリの権限</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="fs-stat.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／ファイルやディレクトリの権限
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.7</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+このノートは，
+ファイルやディレクトリのアクセス権限や所有権に関する手続きについて勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">アクセス権限のテスト</a>
+<li class="menu"><a class="noline" href="#1">アクセス権限の変更</a>
+<li class="menu"><a class="noline" href="#2">所有権の変更</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="sshort"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-System.html
+   ">[7.2.3 File System]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">アクセス権限のテスト</h3>
+<p class="short"></p>
+&rtri;<span class="myproc">(access? <span class="mysyn">path</span> <span class="mysyn">how</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/File-System.html
+">[Guile:7.2.3 File System]</a>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/access.html
+">[POSIX:access]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Testing-File-Access.html#index-access_002c-testing-for
+">[glibc:access]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/access.2.en.html
+">[Manpages:ACCESS(2)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+<span class="mysyn">path</span>で指定されたファイルやディレクトリのアクセス権限（<span class="mysyn">how</span>）をテストします．
+権限のテストは，
+この手続きを呼び出したプロセスの実ユーザーID・実グループIDに関して行います．
+<p></p>
+<span class="mysyn">path</span> は，絶対パスか，
+カレントディレクトリを起点とする相対パスを表す文字列です．
+
+<p></p>
+<span class="mysyn">how</span> は，確認したい権限を指定するフラグです．
+これは，以下に示す R_OK，W_OK，X_OK の組み合わせか，
+または F_OK のいずれかです．
+   <ul>
+   <li>
+   <span class="myvar">R_OK</span>&emsp;
+   読み込み可能か否かをテストします．
+   <li>
+   <span class="myvar">W_OK</span>&emsp;
+   書き込み可能か否かをテストします．
+   <li>
+   <span class="myvar">X_OK</span>&emsp;
+   実行／探索が可能か否かをテストします．
+   <li>
+   <span class="myvar">F_OK</span>&emsp;
+   ファイルが存在するか否かをテストします．
+   </ul>     
+R_OK，W_OK，X_OK を組み合わせるときには，<span class="myproc">logior</span> 手続きを使ってビットごとの論理和を求めます．
+
+<p></p>
+&rtri;実行例：以下は /home/algo/tmp というディレクトリ上で作業しています．
+このディレクトリ上に somefile.txt というファイルはないので，
+以下の3番目のテスト結果は #f になっています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(access? "/home/algo/tmp" R_OK)</span>
+<span>&#36;</span>1 = #t
+guile&gt; <span class="mycmd">(access? "/home/algo/tmp" (logior R_OK W_OK X_OK))</span>
+<span>&#36;</span>2 = #t
+guile&gt; <span class="mycmd">(access? "./somefile.txt" (logior R_OK W_OK X_OK))</span>
+<span>&#36;</span>3 = #f
+guile&gt; <span class="mycmd">(access? "/home/algo/tmp" F_OK)</span>
+<span>&#36;</span>4 = #t
+guile&gt; 
+</pre>
+</section>
+
+
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">アクセス権限の変更</h3>
+<p class="short"></p>
+&rtri;<span class="myproc">(chmod <span class="mysyn">object</span> <span class="mysyn">mode</span>)</span><br>
+<div class="dstyle">
+<!-- <span class="myright"> -->
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/chmod.html
+">[POSIX:chmod]</a>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
+">[POSIX:sys/stat.h]</a><br>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Setting-Permissions.html
+">[glibc:Assigning File Permissions]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/chmod.2.en.html
+">[Manpages:CHMOD(2)]</a>
+</small>
+<!-- </span> -->
+</div>
+
+<p class="sshort"></p>
+<span class="mysyn">object</span> によって指定されたファイルやディレクトリのアクセス権限（permission）を変更します．
+
+<p></p>
+<span class="mysyn">object</span> は，ファイル名（文字列），ファイルポート，ファイルディスクリプタのいずれかを指定することができます．
+ただし，ポートやディスクリプタを使用する場合，
+ファイルはオープンしていなければいけません．
+
+<p></p>
+<span class="mysyn">mode</span> は，アクセス権限を表す整数を指定します．これは，
+ターミナル（シェル）上のchmodコマンドの引数として指定する整数と同じものです．
+一般に，その整数は，以下に示すフラグ（8進数）を加算した値です．
+   <p class="sshort"></p>
+   <ul class="none">
+   <li> <span class="myvar">#o0400</span>&emsp;
+        所有者に読み取りを許可する．
+   <li> <span class="myvar">#o0200</span>&emsp;
+        所有者に書き込みを許可する．
+   <li> <span class="myvar">#o0100</span>&emsp;
+        所有者に実行／探索を許可する．
+
+   <li> <span class="myvar">#o0040</span>&emsp;
+        所有グループに読み取りを許可する．
+   <li> <span class="myvar">#o0020</span>&emsp;
+        所有グループに書き込みを許可する．
+   <li> <span class="myvar">#o0010</span>&emsp;
+        所有グループに実行／探索を許可する．
+
+   <li> <span class="myvar">#o0004</span>&emsp;
+        他ユーザーに読み取りを許可する．
+   <li> <span class="myvar">#o0002</span>&emsp;
+        他ユーザーに書き込みを許可する．
+   <li> <span class="myvar">#o0001</span>&emsp;
+        他ユーザーに実行／探索を許可する．
+
+   <li> <span class="myvar">#o4000</span>&emsp;
+        Set-user-ID on execution.
+   <li> <span class="myvar">#o2000</span>&emsp;
+        Set-group-ID on execution.
+   <li> <span class="myvar">#o1000</span>&emsp;
+
+        sticky bit (On directories, restricted deletion flag) 
+   </ul>
+   <p class="sshort"></p>
+例えば，<span class="myvar">#o0755</span> は，
+所有者に読み取り／書き込み／実行／探索のすべての権限を与え，
+所有グループと他ユーザーに読み取りと実行／探索の権限を与えることを示しています．
+
+<p></p>
+&rtri;実行例：/home/algo/tmp/somfile.txt というファイルに対して，
+まず当初のアクセス権限（#o0644）を確認します．
+次に，アクセス権限を #o0755 に変更して，
+変更後のアクセス権限を確認します．
+さらに，setuid，setgid，sticky bit をすべて設定したあと，
+設定後のアクセス権限を確認します．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+guile&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 algo algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+$1 = 0
+guile&gt; <span class="mycmd">(chmod "/home/algo/tmp/somefile.txt" #o0755)</span>
+guile&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rwxr-xr-x 1 algo algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+$2 = 0
+guile&gt; <span class="mycmd">(chmod "/home/algo/tmp/somefile.txt" #o7755)</span>
+guile&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rwsr-sr-t 1 algo algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+$3 = 0
+guile&gt; 
+</pre>
+なお，sticky bit はディレクトリに設定して，
+そのディレクトリ内のファイルの削除や移動を制限するためのものです．
+上の実行例が示すように，通常のファイルにも設定できますが意味をなしません． 
+
+</section>
+
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="2">所有権の変更</h3>
+<p class="short"></p>
+&rtri;<span class="myproc">(chown <span class="mysyn">object</span> <span class="mysyn">owner</span> <span class="mysyn">gourp</span>)</span><br>
+<div class="dstyle">
+<!-- <span class="myright"> -->
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html
+">[POSIX:chown]</a>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/lchown.html
+">[POSIX:lchown]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/File-Owner.html#File-Owner
+">[glibc:File Owner]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/chown.2.en.html
+">[Manpages:CHOWN(2)]</a>
+</small>
+<!-- </span> -->
+</div>
+
+<p class="sshort"></p>
+<span class="mysyn">object</span> によって指定されたファイルやディレクトリの所有者とグループを変更します．<span class="mysyn">object</span> が指定するファイルがシンボリックリンクだったとき，
+シンボリックリンクを辿った先のファイルの所有権を変更します．
+残念ながら，現時点では，シンボリックリンクの所有権だけを変更する機能（システムコールのlchown関数の機能）はサポートされていません．
+
+<p></p>
+<span class="mysyn">object</span> は，ファイル名を表す文字列です．
+実行環境が fchown 関数をサポートしているならば，
+ファイルポートやファイルディスクリプタも指定できます．
+ただし，ポートやディスクリプタを指定する場合，
+そのファイルがオープンしていなければいけません．
+筆者の環境（Debian 11）では，
+ポートやディスクリプタが使えるようです（下記の実行例を参照）．
+
+<p></p>
+<span class="mysyn">owner</span> と <span class="mysyn">group</span> は，それぞれ，
+ユーザーID（整数）とグループID（整数）です．
+ただし，-1 を指定したときには現在のIDを維持します（つまり，変更しません）．
+
+<p></p>
+&rtri;実行例：/home/algo/tmp/somefile.txt というファイルを対象に，
+その所有権を色々な方法で変更してみます．
+所有権が変更されたことは system 手続きに ls コマンドを渡して確認します．system 手続きは，引数として渡されたコマンドをシェルの上で実行します（注：system 手続きの返り値は無視して下さい）．
+それから．一般ユーザーは所有権の変更ができないので，
+スーパーユーザー権限でREPLを起動します．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">sudo guile</span>
+[sudo] algo のパスワード:*************************** &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile@root> 
+</pre>
+まず，/home/algo/tmp/somefile.txt の現在の所有権（algo:algo）を確認します．
+<pre class="shell">
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 algo algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+<span>&#36;</span>1 = 0
+</pre>
+所有権をrootユーザー（root:root）に変更して，その結果を確認します．
+<pre class="shell">
+guile@root&gt; <span class="mycmd">(chown "/home/algo/tmp/somefile.txt" 0 0)</span>
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 root root 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+<span>&#36;</span>2 = 0
+</pre>
+somefile.txt をオープンしてファイルポートを作り，
+そのポートを使って所有権を元の状態（algo:algo）に戻します．
+以下の 1000 はalgoのユーザーIDとグループIDです．
+<pre class="shell">
+guile@root&gt; <span class="mycmd">(define port (open-input-file "/home/algo/tmp/somefile.txt"))</span>
+guile@root&gt; <span class="mycmd">(chown port 1000 1000)</span>
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 algo algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+$3 = 0
+</pre>
+さらに，ファイルポートからファイルディスクリプタを作って，
+ディスクリプタを使って所有権をrootユーザーに変更します．
+以下の fileno は，ファイルポートからファイルディスクリプタを作るための手続きです．
+<pre class="shell">
+guile@root&gt; <span class="mycmd">(define fd (fileno port))</span>
+guile@root&gt; <span class="mycmd">(chown fd 0 0)</span>
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 root root 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+$4 = 0
+</pre>
+最後に，所有者は変えずに，所有グループをalgo（IDは1000）に変更したあと，
+その結果を確認します．
+そのあとさらに，所有グループは変えずに，
+所有者をalgo（IDは1000）に変更して，今回の実行例を終了します．
+<pre class="shell">
+guile@root&gt; <span class="mycmd">(chown "/home/algo/tmp/somefile.txt" -1 1000)</span>
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 root algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+<span>&#36;</span>5 = 0
+guile@root&gt; <span class="mycmd">(chown "/home/algo/tmp/somefile.txt" 1000 -1)</span>
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.txt")</span>
+-rw-r--r-- 1 algo algo 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+<span>&#36;</span>6 = 0
+</pre>
+
+
+
+<p></p>
+&rtri;実行例：シンボリックリンクに対して所有権を変更したときに何が起こるかを観察してみます．まず，somefile.txt と同じディレクトリ上に somefile.lnk というシンボリックリンクを作って，シンボリックリンクとファイルの所有権を確認します．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cd /home/algo/tmp</span>
+<span>&#36;</span> <span class="mycmd">ln -s somefile.txt somefile.lnk</span>
+<span>&#36;</span> <span class="mycmd">ls -l somefile.*</span>
+lrwxrwxrwx 1 algo algo 12  2月  3 21:58 somefile.lnk -> somefile.txt
+-rw-r--r-- 1 algo algo 22  2月  3 21:02 somefile.txt
+</pre>
+次に，
+REPLの中でシンボリックリンク somefile.lnk の所有権をrootユーザーに変更したあと，リンクと元のファイルの所有権を確認してみます．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">sudo guile</span>
+[sudo] algo のパスワード: ********************************* &crarr;
+GNU Guile 3.0.5
+      ...... 起動メッセージ ...... 
+guile@root&gt; <span class="mycmd">(chown "/home/algo/tmp/somefile.lnk" 0 0)</span>
+guile@root&gt; <span class="mycmd">(system "ls -l /home/algo/tmp/somefile.*")</span>
+lrwxrwxrwx 1 algo algo 12  2月  3 21:58 /home/algo/tmp/somefile.lnk -> somefile.txt
+-rw-r--r-- 1 root root 22  2月  3 21:02 /home/algo/tmp/somefile.txt
+<span>&#36;</span>1 = 0
+</pre>
+この結果を見ると，シンボリックリンクの所有権は変化せず，
+リンク先のファイルの所有権が変化しています．
+
+</section>
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

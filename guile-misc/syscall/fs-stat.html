@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／ファイルやディレクトリの属性情報</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="fs-permission.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+<!-- 
+<a class="noline" href="fs-operation.html">[Next]</a>
+ -->
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／ファイルやディレクトリの属性情報
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.7</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+このノートは，
+ファイルやディレクトリの属性情報に関する手続きについて勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">属性の取得</a>
+<li class="menu"><a class="noline" href="#1">属性の抽出</a>
+<li class="menu"><a class="noline" href="#2">時間属性の変更</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="sshort"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-System.html
+   ">[7.2.3 File System]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">属性の取得</h3>
+<p class="short"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/lstat.html
+">[POSIX:stat,lstat]</a>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
+">[POSIX:sys/stat.h]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/File-Attributes.html
+">[glibc:File Attributes]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/lstat.2.en.html
+">[Manpages:STAT(2)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+&rtri;<span class="myvar">(stat <span class="mysyn">object</span>)</span>
+<p class="short"></p>
+<span class="mysyn">object</span> によって指定されたファイルやディレクトリの属性値からなるベクタを返します．属性値の種類については次節（属性値を抽出する手続き）の説明を参照して下さい．
+
+<p></p>
+stat 手続きはシンボリックリンクを辿ります．つまり，
+<span class="mysyn">object</span> がシンボリックリンクだったとき，
+リンクを辿った先のファイルやディレクトリの属性値からなるベクタを返します．
+
+<p></p>
+<span class="mysyn">object</span> は，ファイル名やディレクトリ名（文字列），
+ファイルポート，ファイルディスクリプタのいずれかです．
+ただし，ポートやディスクリプタを指定する場合，
+ファイルはオープンしていなければいけません．
+
+<p></p>
+&rtri;<span class="myvar">(lstat <span class="mysyn">object</span>)</span>
+<p class="short"></p>
+この手続きは，
+シンボリックリンクを辿らないことを除いて，stat 手続きと同じです．
+つまり，<span class="mysyn">object</span> がシンボリックリンクの場合，
+そのシンボリックリンクの属性値からなるベクタを返します．
+
+
+<p></p>
+&rtri;実行例：カレントディレクトリ上に somefile.txt というファイルと，
+そのファイルへのシンボリックリンク somefile.lnk があって，
+以下の作業を行っています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(stat "somefile.txt")</span>
+<span>&#36;</span>1 = #(2053 16913871 33188 1 1000 1000 0 0 1643919306 1643919306 1643919306 4096 0 regular 420 612465598 612465598 1643919306)
+guile&gt; <span class="mycmd">(stat "somefile.lnk")</span>
+<span>&#36;</span>2 = #(2053 16913871 33188 1 1000 1000 0 0 1643919306 1643919306 1643919306 4096 0 regular 420 612465598 612465598 1643919306)
+guile&gt; <span class="mycmd">(lstat "somefile.lnk")</span>
+<span>&#36;</span>3 = #(2053 16914357 41471 1 1000 1000 0 12 1643926087 1643926079 1643926079 4096 0 symlink 511 824688809 600688550 1643926079)
+guile&gt; 
+</pre>
+ベクタの各成分は次節で説明する属性値を示しています．それから，
+やや分かりにくいのですが，somefile.lnk に対する stat の結果（<span>&#36;</span>2）は somefile.txt の結果（<span>&#36;</span>1）と一致していて，lstat の結果（<span>&#36;</span>3）は異なっています．例えば，第2成分の値（たぶん，inode番号）が異なります．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">属性の抽出</h3>
+<p class="short"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
+">[POSIX:sys/stat.h]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/File-Attributes.html
+">[glibc:File Attributes]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/lstat.2.en.html
+">[Manpages:STAT(2)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+&rtri;stat 手続きや lstat 手続きによって得たベクタから属性値を抽出するために，
+以下に示すような手続きが用意されています．
+以下の <span class="mysyn">st</span> は stat 手続きや lstat 手続きによって取得した属性値のベクタを表します．
+
+<p class="short"></p>
+<span class="myvar">(stat:dev <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルを格納しているデバイスのIDを返します．
+</div>
+
+<span class="myvar">(stat:ino <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのinode番号を返します．
+</div>
+
+<span class="myvar">(stat:mode <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのタイプとアクセス権限（を表す整数）を返します．
+なお，ファイルのタイプとアクセス権限は，
+それぞれ別個に，stat:type と stat:perms によって抽出できます（下記参照）．
+</div>
+
+<span class="myvar">(stat:nlink <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのハードリンクの個数を返します．
+</div>
+
+<span class="myvar">(stat:uid <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのユーザーIDを返します．
+</div>
+
+<span class="myvar">(stat:gid <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのグループIDを返します．
+</div>
+
+<span class="myvar">(stat:rdev <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのデバイスIDを返します．
+ただし，ファイルがキャラクターデバイスかブロックデバイスのときにのみ有効です．
+それら以外のファイルに対しては0を返します．
+この属性値が利用できないシステムもあります．
+そのときには #f を返します．
+</div>
+
+<span class="myvar">(stat:size <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのサイズ（バイト単位）を返します．
+</div>
+
+<span class="myvar">(stat:atime <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルの最終アクセス時刻を，基準時刻からの経過時間（秒数）で返します．
+</div>
+
+<span class="myvar">(stat:mtime <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルの最終更新時刻を，基準時刻からの経過時間（秒数）で返します．
+</div>
+
+<span class="myvar">(stat:ctime <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイル属性に対する最終変更時刻を，
+基準時刻からの経過時間（秒数）で返します．
+</div>
+
+<span class="myvar">(stat:atimensec <span class="mysyn">st</span>)</span><br>
+<span class="myvar">(stat:mtimensec <span class="mysyn">st</span>)</span><br>
+<span class="myvar">(stat:ctimensec <span class="mysyn">st</span>)</span><br>
+<div class="dstyle">
+stat:atimensec は，
+ファイルの最終アクセス時刻をナノ秒単位で計測したときの stat:atime からの残余を返します．言い方を変えると，
+最終アクセス時刻を秒単位で精密に計測したときの小数部をナノ秒単位の整数値として返します．他の手続きについても同様です．
+なお，これらの属性値が取得できないシステムもあります．
+そのときには 0 を返します．
+</div>
+
+<span class="myvar">(stat:blksize <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルの入出力を行うときのブロックサイズ（バイト単位）を返します．
+この属性値を 
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html
+">glibc</a> は次のように説明しています．
+   <blockquote>
+The optimal block size for reading or writing this file, in bytes. You might use this size for allocating the buffer space for reading or writing the file. (This is unrelated to st_blocks.) 
+   </blockquote>
+この説明文が述べているように，下記の stat:blocks とは無関係です．
+</div>
+
+<span class="myvar">(stat:blocks <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ディスクスペース上で占有しているファイルの大きさを返します．
+その単位は，512バイトのブロック単位です．
+この属性値が取得できないシステムもあります．
+そのときには #f を返します．
+</div>
+
+<span class="myvar">(stat:type <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのタイプを表すシンボルを返します．
+返り値として次のようなものがあります．
+   <ul>
+   <li>
+   regular，directory，symlink，block-special，char-special，fifo，socket，unknown
+   </ul>
+それぞれのシンボルの意味は
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Testing-File-Type.html
+">[glibc:14.9.3 Testing the Type of a File]</a>
+を参照して下さい．
+</div>
+
+<span class="myvar">(stat:perms <span class="mysyn">st</span>)</span>
+<div class="dstyle">
+ファイルのアクセス権限を表す整数値を返します．
+</div>
+
+<p></p>
+&rtri;実行例：以下では，カレントディレクトリ上の somefile.txt というファイルの属性を幾つか表示しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(define st (stat "somefile.txt"))</span>
+guile&gt; <span class="mycmd">(stat:uid st)</span>
+<span>&#36;</span>1 = 1000
+guile&gt; <span class="mycmd">(stat:size st)</span>
+<span>&#36;</span>2 = 21
+guile&gt; <span class="mycmd">(strftime "%c" (localtime (stat:atime st)))</span>
+<span>&#36;</span>3 = "2022年02月04日 11時26分22秒"
+guile&gt; <span class="mycmd">(stat:type st)</span>
+<span>&#36;</span>4 = regular
+guile&gt; <span class="mycmd">(number->string (stat:perms st) 8)</span>
+<span>&#36;</span>5 = "644"
+guile> 
+</pre>
+<span>&#36;</span>1はファイルのユーザーID，<span>&#36;</span>2はファイルのサイズです．
+<span>&#36;</span>3は最終アクセス時刻を現地時間（localtime）に変換して，
+それを適当な書式で表示（strftime）しています．
+<span>&#36;</span>4はファイルのタイプです．通常のファイルであることを示しています．
+<span>&#36;</span>5はファイルのアクセス権限を8進数に変換して表示しています．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="2">時間属性の変更</h3>
+<p class="short"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/utime.html
+">[POSIX:utime]</a>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/utimensat.html
+">[POSIX:utimensat]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/File-Times.html
+">[glibc:File Times]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/utime.2.en.html
+">[Manpages:UTIME(2)]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/utimensat.2.en.html
+">[Manpages:UTIMENSAT(2)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+&rtri;<span class="myvar">(utime <span class="mysyn">path</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">adtimens</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">adtimens</span> <span class="mysyn">modtimens</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">adtimens</span> <span class="mysyn">modtimens</span> <span class="mysyn">flags</span>)</span><br>
+
+<p class="short"></p>
+この手続きは， <span class="mysyn">path</span> で指定されたファイルの最終アクセス時刻や最終更新時刻を，引数に指定した時刻に設定します．その引数には，
+基準時刻からの経過時間（秒数またはナノ秒数）を指定します．
+一般に，current-time 手続きによって得られる現時刻や，
+ファイルの元々の時刻などを基準に設定時刻を計算します．
+それから，属性値の最終更新時刻は現時刻が自動的に設定されます．
+
+<p></p>
+<span class="mysyn">actime</span>は最終アクセス時刻として使用する整数です．
+その整数は，基準時刻からの経過時間（秒数）を表します．
+<span class="mysyn">actimens</span>は最終アクセス時刻をナノ秒単位で設定するときに使用します．この引数を指定したときには，<span class="mysyn">actime</span>にこの値を加えた時刻が最終アクセス時刻（ナノ秒単位）として設定されます．
+
+<p></p>
+<span class="mysyn">modtime</span>は最終更新時刻として使用する整数です．
+その整数は，基準時刻からの経過時間（秒数）を表します．
+<span class="mysyn">actimens</span>は最終更新時刻をナノ秒単位で設定するときに使用します．この引数を指定したときには，<span class="mysyn">actime</span>にこの値を加えた時刻が最終更新時刻（ナノ秒単位）として設定されます．
+
+<p></p>
+<span class="mysyn">flags</span> は <em>0</em> かまたはグローバル定数の <em>AT_SYMLINK_NOFOLLOW</em> を指定します．<span class="mysyn">path</span>がシンボリックリンクだった場合，
+AT_SYMLINK_NOFOLLOW を指定したときにはリンクを辿らずにシンボリックリンク自体の時刻を設定します．一方，0を指定したり省略した場合，
+リンクを辿った先のファイルの時刻を設定します．
+
+<p></p>
+それぞれの引数を省略した場合，
+各時刻には current-time 手続きの返り値（現時刻）が設定されます．
+
+<p></p>
+&rtri;実行例：以下では，カレントディレクトリ上の somefile.txt というファイルの最終アクセス時間を現時刻から12時間後（12$\times$3600秒後）に設定しています．
+まず，lsコマンドを使って設定前の最終アクセス時刻を確認しています．
+次に，その最終アクセス時刻をatime変数に束縛しています．
+最後に，12時間後の時刻を設定して確認しています．
+<pre class="shell">
+<span>&#36;</span> guile
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(system "ls -lu somefile.txt")</span>
+-rw-r--r-- 1 algo algo 84  2月  6 09:59 somefile.txt
+$1 = 0
+guile&gt; <span class="mycmd">(define atime (stat:atime (stat "somefile.txt")))</span>
+guile&gt; <span class="mycmd">(utime "somefile.txt" (+ atime (* 12 3600)))</span>
+guile&gt; <span class="mycmd">(system "ls -lu somefile.txt")</span>
+-rw-r--r-- 1 algo algo 84  2月  6 21:59 somefile.txt
+$2 = 0
+guile> 
+</pre>
+
+</section>
+
+
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
