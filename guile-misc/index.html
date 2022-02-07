@@ -76,9 +76,23 @@ POSIXシステムコール
    要するに，技術に対する適応能力が低いということです．
    仕方がないので，シェルスクリプトは潔くあきらめて，
    その代わりにSchemeを使おうと思っています．SchemeはS式しかないので楽です．
-   それから，システムコールやライブラリコールの勉強をきっかけにLinuxについてもっと理解を深めたいと思っています．
+   それから，システムコールやライブラリの勉強をきっかけにLinuxについてもっと理解を深めたいと思っています．
    </div>
    <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="syscall/fs-permission.html">
+   ファイルやディレクトリの権限
+   </a>
+   <li class="menu">
+   <a class="noline" href="syscall/fs-stat.html">
+   ファイルやディレクトリの属性情報
+   </a>
+   <li class="menu">
+   <!-- <a class="noline" href="syscall/fs-operation.html"> -->
+   <span class="nolink">
+   ファイルやディレクトリの操作（勉強中）
+   </span>
+   <!-- </a> -->
    <li class="menu">
    <a class="noline" href="syscall/userinfo.html">ユーザー・グループ情報</a>
    <li class="menu">
@@ -88,15 +102,35 @@ POSIXシステムコール
 <li>
 参考資料
    <ul class="menu">
+
    <li class="menu">
    <a class="noline" href="https://www.gnu.org/software/guile/manual/">
    GNU Guile Reference Manual（最新版）
    </a>
+
    <li class="menu"> 
    <a class="noline" 
       href="https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf">
    GNU Guile Reference Manual（Edition 3.0.5, revision 1）
    </a>
+
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a>
+
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a>
+
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+
    </ul>
 </ul>
 
