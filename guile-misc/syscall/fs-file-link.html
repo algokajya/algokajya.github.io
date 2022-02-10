@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／ファイルとリンクの操作</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="fs-stat.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／ファイルとリンクの操作
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.10</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+このノートは，
+ファイルやリンクを操作する手続きについて勉強したことを記録しています．
+<li>
+ファイルシステムに関する理解が不十分のため，いまだ勉強中です，
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ファイルのコピー</a>
+<li class="menu"><a class="noline" href="#1">ファイルの削除</a>
+<li class="menu"><a class="noline" href="#2">ファイルの移動（リネーム）</a>
+<li class="menu"><a class="noline" href="#3">ファイルの転送</a>
+<li class="menu"><a class="noline" href="#4">ハードリンクの作成</a>
+<li class="menu"><a class="noline" href="#5">シンボリックリンクの作成</a>
+<li class="menu"><a class="noline" href="#6">リンク先のファイル名の取得</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="sshort"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-System.html
+   ">[7.2.3 File System]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">ファイルのコピー</h3>
+<p class="short"></p>
+<span class="myvar">(copy-file <span class="mysyn">old file</span> <span class="mysyn">new file</span>)</span>
+<p class="sshort"></p>
+&rtri;この手続きは，<span class="mysyn">old file</span> を <span class="mysyn">new file</span> にコピーします．<span class="mysyn">old file</span> と <span class="mysyn">new file</span> はファイル名を表す文字列です．この手続きの返り値は unspecified です．
+
+<p></p>
+<span class="mysyn">new file</span> が存在しない場合は新たに作成されます．
+その所有者は現行プロセス（copy-file 手続きを実行したプロセス）の実効ユーザーに設定されます．
+所有グループは，親ディレクトリにset-gidが設定されているかどうかによって変化します．set-gidが設定されている場合には親ディレクトリの所有グループに設定されます．そうでない場合には現行プロセスの実効グループに設定されます．
+なお，所有権についてはopenシステムコールのマニュアル（O_CREATフラグの項）を参照して下さい．
+アクセス権限は <span class="mysyn">old file</span> と同じ権限が設定されます．
+
+<p></p>
+<span class="mysyn">old file</span> や <span class="mysyn">new file</span> がシンボリックリンクの場合，
+シンボリックリンクを辿った先のファイルの中身がコピーの対象になります．
+シンボリックリンクの値がコピーされることはありません．
+
+<p></p>
+<span class="mysyn">old file</span> がディレクトリで <span class="mysyn">new file</span> が通常ファイルの場合，エラーは発生せずに，<span class="mysyn">new file</span> はいったんオープンされ，何も書き込まれずにクローズされます．
+その結果として，<span class="mysyn">new file</span> が存在していなかった場合，0バイトの新たなファイルが作成されます．<span class="mysyn">new file</span> が存在していた場合，元の内容は消去されます．
+
+<p></p>
+<span class="mysyn">new file</span> がディレクトリの場合，エラーが発生します．
+
+<p></p>
+&rtri;実行例：一般的な場合の動作は自明とも言えるので，やや特殊な場合の実行例を示します．以下では，dirold というディレクトリを new.txt というファイルにコピーしようとしています．コピーの前後でカレントディレクトリの内容を確認しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ...... 
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 06:43 dirold
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(copy-file "dirold" "new.txt")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 06:43 dirold
+-rwxr-xr-x 1 algo algo    0  2月  9 06:43 new.txt
+<span>&#36;</span>2 = 0
+guile&gt; 
+</pre>
+これは本来ならばエラーにして欲しいような場合ですが，
+エラーは発生せず，new.txtはいったんオープンされ，
+何も書き込まれずにクローズされます．そのため，
+コピー後に new.txt という0バイトのファイルが新たに作成されています．
+
+<p></p>
+&rtri;実行例：以下の実行例では，old.txt というファイルを dirnew というディレクトリにコピーしようとしてエラーが発生しています．赤字がエラーメッセージです．
+<pre class="shell">
+guile&gt; <span class="mycmd">(copy-file "old.txt" "dirnew")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure copy-file: ディレクトリです</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]&gt; 
+</pre>
+
+
+
+<p></p>
+&rtri;(記録)
+<span class="mysyn">old file</span>がディレクトリで<span class="mysyn">new file</span>が通常ファイルの場合の上記の処理は不自然に感じます．ソースコード（filesys.c）を見ると，<span class="mysyn">old file</span>からデータを読み込むために read システムコールを利用しています．read システムコールは引数にディレクトリが指定されると EISDIR というエラーを発行します．ところがcopy-file のソースコードはこのエラーをチェックすることなく<span class="mysyn">new file</span>（と<span class="mysyn">old file</span>）をクローズして正常終了します．そのために上記のような現象が発生しています．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">ファイルの削除</h3>
+<p class="short"></p>
+<span class="myvar">(delete-file <span class="mysyn">file name</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/unlink.html
+">[POSIX:unlink]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Deleting-Files.html#index-unlink
+">[glibc:Deleting Files]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/unlink.2.en.html
+">[Manpages:UNLINK(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;この手続きは，<span class="mysyn">file name</span> が表すハードリンクをファイルシステムから削除します．
+そのリンクがファイルデータへの最後のハードリンクだったときには，
+ファイルデータも削除します．<span class="mysyn">file name</span> はファイル名を表す文字列です．この手続きの返り値は unspecified です．
+
+<p></p>
+<span class="mysyn">file name</span> がシンボリックリンクだった場合，
+リンクを辿ることはなく，シンボリックリンク自体を削除します．
+ファイルデータには何も影響しません．
+
+<p></p>
+<span class="mysyn">file name</span> がディレクトリだった場合，エラーが発生します．
+つまり，delete-file 手続きによってディレクトリを削除することはできません．
+
+<p></p>
+&rtri;実行例：以下の実行例は，file.lnk というシンボリックリンクを削除しています．
+削除する前後のカレントディレクトリの内容を確認しています．
+シンボリックは削除されていますが，
+リンク先のファイルは削除されていません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+合計 4
+lrwxrwxrwx 1 algo algo  8  2月  9 07:33 file.lnk -> file.txt
+-rw-r--r-- 1 algo algo 17  2月  9 07:32 file.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(delete-file "file.lnk")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+合計 4
+-rw-r--r-- 1 algo algo 17  2月  9 07:32 file.txt
+<span>&#36;</span>2 = 0
+guile&gt; 
+</pre>
+
+
+<p></p>
+&rtri;実行例：以下の実行例では，dir というディレクトリを削除しようとしてエラーが発生しています．
+赤字がエラーメッセージです．delete-file 手続きによってディレクトリを削除することはできません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(delete-file "dir")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure delete-file: ディレクトリです</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]&gt; 
+</pre>
+
+<p></p>
+&rtri;(記録)この手続きの処理はシステムコールの unlink(<span class="mysyn">file name</span>) によって行っています．
+諸々の詳細については unlink システムコールのマニュアルを参照して下さい．
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="2">ファイルの移動（リネーム）</h3>
+<p class="short"></p>
+<span class="myvar">(rename-file <span class="mysyn">old path</span> <span class="mysyn">new path</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/rename.html
+">[POSIX:rename]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Renaming-Files.html#index-rename
+">[glibc:Renaming Files]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/rename.2.en.html
+">[Manpages:RENAME(2)]</a>
+</small>
+</div>
+<p class="short"></p>
+&rtri;この手続きは，<span class="mysyn">old name</span> を <span class="mysyn">new name</span> に名前を変更します．
+つまり，<span class="mysyn">old name</span>は削除され（注：例外あり），<span class="mysyn">old name</span> がリンクしていたファイルデータは，rename以後，<span class="mysyn">new name</span> がリンクすることになります．<span class="mysyn">old name</span> と <span class="mysyn">new name</span> はファイル名を表す文字列です．この手続きの返り値は unspecified です．
+
+<p></p>
+<span class="mysyn">old name</span> や <span class="mysyn">new name</span> がシンボリックリンクだった場合，リンクを辿ることはなく，シンボリックリンク自体の名前を変更します．シンボリックリンクがリンクしているファイル名に影響を与えることはありません．
+
+
+<p></p>
+<span class="mysyn">old name</span> がディレクトリの場合，<span class="mysyn">new name</span> が存在しないか，空ディレクトリ（エントリーが1つもないディレクトリデータ）を指していなければなりません．そうでない場合，エラーが発生します．
+
+
+<p></p>
+&rtri;実行例：
+以下の実行例は，old.lnk というシンボリックリンクを new.lnk に移動しています．
+この場合，old.lnk が new.lnk に変化していて，
+リンク先の old.txt は何も変化しません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo  7  2月  9 12:14 old.lnk -> old.txt
+-rw-r--r-- 1 algo algo 17  2月  9 12:13 old.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(rename-file "old.lnk" "new.lnk")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo  7  2月  9 12:14 new.lnk -> old.txt
+-rw-r--r-- 1 algo algo 17  2月  9 12:13 old.txt
+<span>&#36;</span>2 = 0
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;実行例：以下の実行例は，dir-old というディレクトリの名前を dir-new に変更しています．移動先の dir-new が存在していない場合を試しています．
+変更する前後で，カレントディレクトリの内容を確認しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 12:18 dir-old
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(rename-file "dir-old" "dir-new")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 12:18 dir-new
+<span>&#36;</span>2 = 0
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;実行例：以下の実行例は，移動先の dir-new がすでに存在していて，
+空のディレクトリだった場合を試しています．こ場合，問題なく移動できます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 12:30 dir-new
+drwxr-xr-x 2 algo algo 4096  2月  9 12:18 dir-old
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(system "ls -l dir-new")</span>
+<span>&#36;</span>2 = 0  &emsp;（注：dir-new は空ディレクトリ）
+guile&gt; <span class="mycmd">(rename-file "dir-old" "dir-new")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 12:18 dir-new
+<span>&#36;</span>3 = 0
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;実行例：以下の実行例は，移動先の dir-new がすでに存在していて，
+空でない場合を試しています．この場合，エラーが発生します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+drwxr-xr-x 2 algo algo 4096  2月  9 12:36 dir-new
+drwxr-xr-x 2 algo algo 4096  2月  9 12:18 dir-old
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(system "ls -l dir-new")</span>
+-rw-r--r-- 1 algo algo 17  2月  9 12:35 new.txt  &emsp;（注：dir-newは空でない）
+<span>&#36;</span>2 = 0
+guile&gt; <span class="mycmd">(rename-file "dir-old" "dir-new")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure rename-file: ディレクトリは空ではありません</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]> 
+</pre>
+
+
+<p></p>
+&rtri;(記録) この手続きの処理は，
+システムコールの rename(<span class="mysyn">old name</span>,<span class="mysyn">new name</span>) によって行っています．rename システムコールの動作は意外に複雑です．
+例えば，<span class="mysyn">old name</span> と <span class="mysyn">new name</span> が同一のファイルデータへのハードリンクだった場合，
+何もせずに正常終了し，<span class="mysyn">old name</span> は削除されません（注：これが上で述べた「例外」です）．さらに，エラー条件がけっこうあります．
+諸々の詳細については rename システムコールのマニュアルを参照して下さい．
+
+<p></p>
+&rtri;実行例：以下では，移動元のファイル（old.txt）と移動先のファイル（new.txt）が同一のファイルデータにリンクしている場合に何が起こるかを試しています．
+移動操作の前に，両方のファイルのinode番号（<span>&#36;</span>2と<span>&#36;</span>3）を求めて，
+同一のファイルデータにリンクしていることを確認しています．
+移動操作（rename-file）を行っても何も変化しないことが分かります．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 2 algo algo 16  2月 10 06:12 new.txt
+-rw-r--r-- 2 algo algo 16  2月 10 06:12 old.txt
+$1 = 0
+guile&gt; <span class="mycmd">(stat:ino (stat "old.txt"))</span>
+$2 = 16916694
+guile&gt; <span class="mycmd">(stat:ino (stat "new.txt"))</span>
+$3 = 16916694
+guile&gt; <span class="mycmd">(rename-file "old.txt" "new.txt")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 2 algo algo 16  2月 10 06:12 new.txt
+-rw-r--r-- 2 algo algo 16  2月 10 06:12 old.txt
+$4 = 0
+guile&gt; 
+</pre>
+上とは対照的に，移動元のファイル（old.txt）と移動先のファイル（new.txt）が異なるファイルデータにリンクしている場合に何が起こるかを試しています．
+移動操作の前に，両方のファイルのinode番号（<span>&#36;</span>2と<span>&#36;</span>3）を求めて，
+互いに異なるファイルデータにリンクしていることを確認しています．
+移動操作（rename-file）を行うと， 
+移動元のハードリンク（old.txt）が削除されていることが分かります．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 16  2月 10 06:25 new.txt
+-rw-r--r-- 1 algo algo 16  2月 10 06:25 old.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(stat:ino (stat "old.txt"))</span>
+<span>&#36;</span>2 = 16916694
+guile&gt; <span class="mycmd">(stat:ino (stat "new.txt"))</span>
+<span>&#36;</span>3 = 16917052
+guile&gt; <span class="mycmd">(rename-file "old.txt" "new.txt")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 16  2月 10 06:25 new.txt
+<span>&#36;</span>4 = 0
+guile> 
+</pre>
+
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="3">ファイルの転送</h3>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(sendfile <span class="mysyn">out</span> <span class="mysyn">in</span> <span class="mysyn">count</span>)</span><br>
+&emsp;<span class="myvar">(sendfile <span class="mysyn">out</span> <span class="mysyn">in</span> <span class="mysyn">count</span> <span class="mysyn">offset</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/sendfile.2.en.html
+">[Manpages:SENDFILE(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+システムコールの sendfile 関数を使って，<span class="mysyn">in</span> から <span class="mysyn">out</span> へ <span class="mysyn">count</span> バイト分のデータを転送します．<span class="mysyn">out</span> と <span class="mysyn">in</span> はファイルポートかファイルディスクリプタです．<span class="mysyn">count</span> は転送バイト数を表す整数，<span class="mysyn">offset</span> はファイル内の位置を示す整数（バイト単位）です．この手続きの返り値は，実際に転送したバイト数です．
+
+<p></p>
+<span class="mysyn">offset</span> を省略した場合，<span class="mysyn">in</span> の現在の位置から読み始めます．「現在の位置」は（たぶん）カーネルが管理しています．
+一方，<span class="mysyn">offset</span> を指定した場合，<span class="mysyn">offset</span> が示す位置から読み始めます．
+
+<p></p>
+sendfileシステムコールがうまく機能しない場合，read と write を使って転送を試みます．それから，転送速度が遅かったりした場合でも，<span class="mysyn">count</span> バイト数分の転送が完了するまでリトライします．
+
+<p></p>
+&rtri;実行例：sendfile 手続きを使った次のスクリプトを実行します．
+これは，コマンドライン引数からファイル名（infile）を受け取って，
+そのファイルの中身を標準出力（current-output-port）に出力します．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+
+;; sendifle.scm: 
+;;   -- send data from input file to standard output.  
+
+(define (main args)
+  (let* ((infile (cadr args))
+         (inport (open-input-file infile))
+         (count (stat:size (stat infile)))
+         (offset 0))
+    (sendfile (current-output-port) inport count offset)))
+</pre>
+今回の実行例に用いたファイル（somefile.txt）の中身は次の通りです．
+<pre class="grammar">
+-------------------------------------
+This is some text file 
+   prepared for testing sendfile.scm.
+-------------------------------------
+</pre>
+以下は実行結果です．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">./sendfile.scm somefile.txt</span>
+-------------------------------------
+This is some text file 
+   prepared for testing sendfile.scm.
+-------------------------------------
+</pre>
+
+<p></p>
+&rtri;(記録) 残念ながら次の技術的な背景が筆者には不明なので，
+マニュアルの文章をそのまま引用します．
+   <blockquote>
+When <span class="mysyn">in</span> is a port, it is often preferable to specify <span class="mysyn">offset</span>, because <span class="mysyn">in</span>'s offset as a port may be different from the offset of its underlying file descriptor. 
+   </blockquote>
+
+<span class="mysyn">in</span> をファイルディスクリプタにするか，あるいはポートを利用するときには <span class="mysyn">offset</span> を維持管理しながら転送したほうがよいでしょう．
+
+<p></p>
+&rtri;(記録）<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/sendfile.2.en.html
+">[Manpages:SENDFILE(2)]</a>に次のような記述があります．
+   <blockquote>
+Because this copying is done within the kernel, sendfile() is more efficient than the combination of read(2) and write(2), which would require transferring data to and from user space.
+   </blockquote>
+ファイル転送を行う場合，まずは sendfile による転送を検討したほうがよいでしょう．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="4">ハードリンクの作成</h3>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(link <span class="mysyn">old path</span> <span class="mysyn">new path</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/link.html
+">[POSIX:link]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Hard-Links.html#index-link-1
+">[glibc:Hard Links]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/link.2.en.html
+">[Manpages:LINK(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+<span class="mysyn">old path</span> が示すファイルに対して，<span class="mysyn">new path</span> という名前の新たなハードリンクを作成します．<span class="mysyn">old path</span> と <span class="mysyn">new path</span> はファイル名を表す文字列です．返り値は unspecified です．
+
+<p></p>
+<span class="mysyn">old path</span> が存在しない場合や，<span class="mysyn">new path</span> がすでに存在する場合，エラーが発生します．それから，ディレクトリに対してハードリンクを作ろうとしてもエラーが発生します．Linuxシステムでは，ディレクトリに対するハードリンクの作成は許されていません．
+
+<p></p>
+<span class="mysyn">old path</span> がシンボリックリンクだったとき，
+（Linuxシステムでは）シンボリックリンクを辿らずに，
+シンボリックリンクファイル自体へのハードリンクを作成します．つまり，
+シンボリックリンクの先のファイルデータにハードリンクすることはありません．
+
+<p></p>
+&rtri;実行例：既存のファイル（old.txt）に対して新たなハードリンク（new.txt）を作成してみます．作成の前後でカレントディレクトリの内容を確認しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 138  2月 10 12:08 old.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(link "old.txt" "new.txt")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 2 algo algo 138  2月 10 12:08 new.txt
+-rw-r--r-- 2 algo algo 138  2月 10 12:08 old.txt
+<span>&#36;</span>2 = 0
+guile> 
+</pre>
+さらに以下では，両方のファイルのinode番号を調べて，
+両者が同一のファイルデータであることを確認しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(stat:ino (stat "old.txt"))</span>
+<span>&#36;</span>3 = 17039362
+guile&gt; <span class="mycmd">(stat:ino (stat "new.txt"))</span>
+<span>&#36;</span>4 = 17039362
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;実行例：以下では，old.txt へのシンボリックリンク（old.lnk）に対して，link 手続きを実行しています．
+新たなファイル名を new.txt としていますが，
+それが old.txt と同一のファイルデータにハードリンクすることはなく，old.txt へのシンボリックリンクになっています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo   7  2月 10 12:35 old.lnk -> old.txt
+-rw-r--r-- 1 algo algo 138  2月 10 12:08 old.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(link "old.lnk" "new.txt")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 2 algo algo   7  2月 10 12:35 new.txt -> old.txt
+lrwxrwxrwx 2 algo algo   7  2月 10 12:35 old.lnk -> old.txt
+-rw-r--r-- 1 algo algo 138  2月 10 12:08 old.txt
+<span>&#36;</span>2 = 0
+guile&gt; 
+</pre>
+さらに以下では，old.lnk と new.txt のinode番号を調べて，
+それらが同一のシンボリックリンクファイル（へのハードリンク）であることを確認しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(stat:ino (stat "old.lnk"))</span>
+<span>&#36;</span>3 = 17039362
+guile&gt; <span class="mycmd">(stat:ino (stat "new.txt"))</span>
+<span>&#36;</span>4 = 17039362
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;(記録) この手続きの処理は，
+システムコールの link(<span class="mysyn">old path</span>,<span class="mysyn">new path</span>) によって行っています．
+諸々の詳細については link システムコールのマニュアルを参照して下さい．
+
+</section>
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="5">シンボリックリンクの作成</h3>
+<p class="short"></p>
+&rtri;<span class="myvar">(symlink <span class="mysyn">old path</span> <span class="mysyn">new path</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/symlink.html
+">[POSIX:symlink]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Symbolic-Links.html
+">[glibc:Symbolic Links]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/symlink.2.en.html
+">[Manpages:SYMLINK(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+<span class="mysyn">old path</span> を値とする <span class="mysyn">new path</span> という名前のシンボリックリンクを作成します．<span class="mysyn">old path</span> と <span class="mysyn">new path</span> はファイル名を表す文字列です．
+この手続きの返り値は unspecified です．
+
+<p></p>
+<span class="mysyn">old path</span> がシンボリックリンクの場合，リンクは辿らずに，
+上の説明の通りの処理を行います．
+
+<p></p>
+<span class="mysyn">new path</span> がすでに存在する場合，エラーが発生します．
+
+<p></p>
+&rtri;実行例：以下では，カレントディレクトリの変化を観察しながら，
+既存のファイルに対してシンボリックリンクを作成しています．
+まず手始めに，old.txt へのシンボリックリンク（old.lnk）を作っています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 138  2月 10 17:47 old.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(symlink "old.txt" "old.lnk")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo   7  2月 10 18:02 old.lnk -> old.txt
+-rw-r--r-- 1 algo algo 138  2月 10 17:47 old.txt
+<span>&#36;</span>2 = 0
+</pre>
+次に，old.lnk をターゲットとしたシンボリックリンク（new.lnk）を作っています．
+リンクは辿らずに，old.lnk へのリンクが作られます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(symlink "old.lnk" "new.lnk")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo   7  2月 10 18:03 new.lnk -> old.lnk
+lrwxrwxrwx 1 algo algo   7  2月 10 18:02 old.lnk -> old.txt
+-rw-r--r-- 1 algo algo 138  2月 10 17:47 old.txt
+<span>&#36;</span>3 = 0
+</pre>
+最後に，上の作業で作成した（既存の） new.lnk を old.txt へのシンボリックリンクに変更しようとしています．残念ながら，<span class="mysyn">new path</span> が存在する場合，エラーが発生します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(symlink "old.txt" "new.lnk")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure symlink: ファイルが存在します</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]&gt; 
+</pre>
+
+
+<p></p>
+&rtri;(記録) この手続きの処理は，システムコールの symlink(<span class="mysyn">old path</span>,<span class="mysyn">new path</span>) によって行われています．諸々の詳細は symlink システムコールのマニュアルを参照して下さい．
+
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="6">リンク先のファイル名の取得</h3>
+<p class="sshort" id="_"></p>
+&rtri;<span class="myvar">(readlink <span class="mysyn">path</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/readlink.html
+">[POSIX:readlink]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Symbolic-Links.html
+">[glibc:Symbolic Links]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readlink.2.en.html
+">[Manpages:READLINK(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+<span class="mysyn">path</span> で指定されたシンボリックリンクの値（シンボリックリンクが指しているファイルやディレクトリの名前）を返します．
+<span class="mysyn">path</span> はシンボリックリンクのファイル名（文字列）です．
+
+<p></p>
+&rtri;実行例：
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo   7  2月 10 18:03 new.lnk -> old.lnk
+lrwxrwxrwx 1 algo algo   7  2月 10 18:02 old.lnk -> old.txt
+-rw-r--r-- 1 algo algo 138  2月 10 17:47 old.txt
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(readlink "old.lnk")</span>
+<span>&#36;</span>2 = "old.txt"
+guile> <span class="mycmd">(readlink "new.lnk")</span>
+<span>&#36;</span>3 = "old.lnk"
+guile> 
+</pre>
+
+
+<p></p>
+&rtri;(記録) 手続きの内部ではシステムコールの readlink(<span class="mysyn">path</span>,buf,size) を実行しています．buf は名前を受け取るためのバッファ，sizeはバッファの大きさ（バイト数）です．バッファ（buf）が不足している場合には，
+その大きさ（size）を増やしながら，
+名前が正しく読み取れるまで繰り返し実行しています．
+従って，readlink 手続きはリンク先の名前を正しく返してくれると思います．
+
+</section>
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

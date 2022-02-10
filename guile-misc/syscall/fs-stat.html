@@ -39,10 +39,7 @@
 &ensp; 
 <a class="noline" href="../index.html">[Up]</a>
 &ensp; 
-<span class="nolink">[Next]</span>
-<!-- 
-<a class="noline" href="fs-operation.html">[Next]</a>
- -->
+<a class="noline" href="fs-file-link.html">[Next]</a>
 &ensp; 
 <a class="noline" href="../../index.html">ホーム</a><br>
 </div>
@@ -197,15 +194,15 @@ https://manpages.debian.org/bullseye/manpages-dev/lstat.2.en.html
 <span class="mysyn">object</span> によって指定されたファイルやディレクトリの属性値からなるベクタを返します．属性値の種類については次節（属性値を抽出する手続き）の説明を参照して下さい．
 
 <p></p>
-stat 手続きはシンボリックリンクを辿ります．つまり，
-<span class="mysyn">object</span> がシンボリックリンクだったとき，
-リンクを辿った先のファイルやディレクトリの属性値からなるベクタを返します．
-
-<p></p>
 <span class="mysyn">object</span> は，ファイル名やディレクトリ名（文字列），
 ファイルポート，ファイルディスクリプタのいずれかです．
 ただし，ポートやディスクリプタを指定する場合，
 ファイルはオープンしていなければいけません．
+
+<p></p>
+stat 手続きはシンボリックリンクを辿ります．つまり，
+<span class="mysyn">object</span> がシンボリックリンクだったとき，
+リンクを辿った先のファイルやディレクトリの属性値からなるベクタを返します．
 
 <p></p>
 &rtri;<span class="myvar">(lstat <span class="mysyn">object</span>)</span>
@@ -485,9 +482,6 @@ guile>
 </pre>
 
 </section>
-
-
-
 
 
 
