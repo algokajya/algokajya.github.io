@@ -502,7 +502,8 @@ sendfileシステムコールがうまく機能しない場合，read と write 
          (inport (open-input-file infile))
          (count (stat:size (stat infile)))
          (offset 0))
-    (sendfile (current-output-port) inport count offset)))
+    (sendfile (current-output-port) inport count offset)
+    (close-port inport)))
 </pre>
 今回の実行例に用いたファイル（somefile.txt）の中身は次の通りです．
 <pre class="grammar">
