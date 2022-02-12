@@ -313,6 +313,22 @@ pre.grammar {
     overflow: auto; 
 }
 
+pre.other { 
+    line-height: 130%;
+/*    background-color: #f8f8e0; */
+    background-color: #fafafa;
+    font-family: monospace;
+    padding-top: 5px; 
+    padding-bottom: 5px; 
+    padding-left: 5px; 
+    /* width: 90%; */
+    margin-top: 8px;
+    margin-bottom: 8px;
+/*    border: 1px solid #cccccc;  */
+    border: 1px outset #cccccc;  
+    overflow: auto; 
+}
+
 div.dstyle {
     /*
     padding-top: 5px; 
@@ -528,6 +544,15 @@ myvar {
     color: darkviolet; 
 }
 span.myvar { 
+    /* font-weight: bold; */
+    color: darkviolet; 
+}
+
+myproc { 
+    /* font-weight: bold; */
+    color: darkviolet; 
+}
+span.myproc { 
     /* font-weight: bold; */
     color: darkviolet; 
 }
