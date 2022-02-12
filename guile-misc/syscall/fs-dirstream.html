@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya ディレクトリストリーム</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+ディレクトリストリーム
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.13</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+glibcのソースコードを手がかりに，あくまで筆者の力量の範囲内で，
+ディレクトリストリームに関して調べた結果を記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ディレクトリストリームの型と構造体</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#DIR-type">DIR型</a>
+   <li class="menu"><a class="noline" href="#struct-dirstream">dirstream構造体</a>
+   <li class="menu"><a class="noline" href="#struct-dirent">dirent構造体</a>
+   </ul>
+<li class="menu"><a class="noline" href="#1">ライブラリ関数</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#opendir">opendir関数</a>
+   <li class="menu"><a class="noline" href="#readdir">readdir関数</a>
+   <li class="menu"><a class="noline" href="#rewinddir">rewinddir関数</a>
+   <li class="menu"><a class="noline" href="#closedir">closedir関数</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">ディレクトリストリームの型と構造体</h3>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="DIR-type">DIR型</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=dirent/dirent.h;h=218f1ed44b9c267ddbaeea4f5d3f07d9f8db4f9e;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">dirent/dirent.h</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;ディレクトリストリームのデータ型として，
+次の DIR 型が定義されています．
+なお，上記の 
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=dirent/dirent.h;h=218f1ed44b9c267ddbaeea4f5d3f07d9f8db4f9e;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">dirent/dirent.h</a>
+は，DIR型を定義しているファイルの相対パスを示しています（以下同様）．その起点はglibcのソースコードを展開したディレクトリです．
+<pre class="list">
+/* This is the data type of directory stream objects.
+   The actual structure is opaque to users.  */
+typedef struct __dirstream DIR;
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="struct-dirstream">dirstream構造体</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/dirstream.h;h=a0d8acf08dc0066fc2ef6a1d759c480a05904438;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">sysdeps/unix/sysv/linux/dirstream.h</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;struct __dirstream（以下，<em>dirstream構造体</em>）は，
+次のように定義されています．
+<pre class="list">
+/* Directory stream type.
+
+   The miscellaneous Unix `readdir' implementations read directory data
+   into a buffer and return `struct dirent *' pointers into it.  */
+
+struct __dirstream
+  {
+    int fd;                     /* File descriptor.  */
+
+    __libc_lock_define (, lock) /* Mutex lock for this structure.  */
+
+    size_t allocation;          /* Space allocated for the block.  */
+    size_t size;                /* Total valid data in the block.  */
+    size_t offset;              /* Current offset into the block.  */
+
+    off_t filepos;              /* Position of next entry to read.  */
+
+    int errcode;                /* Delayed error code.  */
+
+    /* Directory block.  We must make sure that this block starts
+       at an address that is aligned adequately enough to store
+       dirent entries.  Using the alignment of "void *" is not
+       sufficient because dirents on 32-bit platforms can require
+       64-bit alignment.  We use "long double" here to be consistent
+       with what malloc uses.  */
+    char data[0] __attribute__ ((aligned (__alignof__ (long double))));
+  };
+</pre>
+ディレクトリストリームの実体（ディレクトリエントリーの列）は，
+上記の data 配列にバイナリデータとして格納されていると思われます．
+この点を正確に理解するためには getdents.c の中で定義されている __getdents 関数の処理内容を理解しなければならないのですが，
+残念ながら筆者にはその力量がありません．
+ただ，readdir関数の処理（後述）を見ると，
+このように推測するのが妥当だと思います．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="struct-dirent">dirent構造体</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/bits/dirent.h;h=b760f6860e3f2121578b326d4174280f9ad6b4d3;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">sysdeps/unix/sysv/linux/bits/dirent.h</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;ディレクトリエントリーは，
+次のような構造体（以下，<em>dirent構造体</em>）として定義されています．
+なお，日本語の行コメントは
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">readdir(3)</a>（readdirライブラリ関数のmanpage）を参考に，
+筆者が追加したものです．
+<pre class="list">
+struct dirent
+  {
+#ifndef __USE_FILE_OFFSET64
+    __ino_t d_ino;                  // inode番号
+    __off_t d_off;                  // 理解不能（下記参照）
+#else
+    __ino64_t d_ino;
+    __off64_t d_off;
+#endif
+    unsigned short int d_reclen;    // このエントリーの長さ
+    unsigned char d_type;           // ファイルの種別
+    char d_name[256];               // ファイル名・ディレクトリ名
+  };
+</pre>
+
+&rtri;上記の <em>d_off</em> について
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">readdir(3)</a>
+は次のように説明しています．
+<blockquote>
+The value returned in d_off is the same as would be returned by calling 
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/telldir.3.en.html
+">telldir(3)</a>
+at the current position in the directory stream. Be aware that despite its type and name, the d_off field is seldom any kind of directory offset on modern filesystems. Applications should treat this field as an opaque value, making no assumptions about its contents; see also 
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/telldir.3.en.html
+">telldir(3)</a>.
+</blockquote>
+さらに，
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/telldir.3.en.html
+">telldir(3)</a>のNOTESは次のように説明しています．
+<blockquote>
+In early filesystems,
+the value returned by telldir() was a simple file offset within a directory. 
+Modern filesystems use tree or hash structures, rather thanflat tables, 
+to represent directories. On such filesystems, 
+the value returned by telldir() (and used internally 
+by <a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">readdir(3)</a>) is a "cookie" that is used by the implementation 
+to derive a position within a directory. 
+Application programs should treat this strictly as an opaque value, 
+making no assumptions about its contents.
+</blockquote>
+上記の「used internally by <a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">readdir(3)</a>」は，readdirライブラリ関数がd_offを使用しているように推測させますが，実質的にまったく使用していないと思います（後述）．
+従って，d_offの意味（役割）は，
+ディレクトリストリームの概要を理解する上では気にする必要はないように思います．
+
+<p></p>
+&rtri;<em>d_reclen</em>は，dirent構造体をバイナリーデータ（バイト列）として見たときのバイト数です．
+
+<p></p>
+&rtri;
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">readdir(3)</a>は<em>d_type</em>を次のように説明しています．
+<blockquote>
+This field contains a value indicating the file type, making it possible to avoid the expense of calling 
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/lstat.2.en.html
+">lstat(2)</a> if further actions depend on the type of the file.
+</blockquote>
+
+</section>
+
+
+
+<p></p>
+<!-- =============================================== -->
+<section>
+<h3 class="section" id="1">ライブラリ関数</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="opendir">opendir関数</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/opendir.c;h=9e81d00630a9b43d862a6f38fce123e4ce2167f8;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">sysdeps/unix/sysv/linux/opendir.c
+</a><br>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/fdopendir.html
+">[POSIX:opendir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Opening-a-Directory.html#index-opendir
+">[glibc:Opening a Directory Stream]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/opendir.3.en.html
+">[Manpages:OPENDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;opendir関数は，
+ディレクトリファイルをオープンして，
+ディレクトリストリームのメモリブロックを確保しています．opendir関数が行っているのはここまでです．
+ディレクトリファイルからディレクトリエントリー群を取得してメモリブロックに設定する処理は，readdir関数が行っています．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="readdir">readdir関数</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/readdir.c;h=c31f34963995f1da8bbe466c615ec6c57c35c5b5;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">sysdeps/unix/sysv/linux/readdir.c</a><br>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/readdir.html
+">[POSIX:readdir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Reading_002fClosing-Directory.html
+">[glibc:Reading and Closing a Directory Stream]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">[Manpages:READDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+readdir関数は，
+<ul>
+<li>
+メモリブロック内のディレクトリエントリーをすべて消費していたら（正確には，dirstraem構造体のsizeとoffsetに対して，offset $\geq$ size となっていたら），
+メモリブロックに収まる量のディレクトリエントリー群をディレクトリファイルから新たに読み込んで，
+<li>
+メモリブロック内のエントリーを呼び出されるたびに順々に返す
+</ul>
+といった処理を行います．
+
+<p></p>
+ディレクトリエントリー群を新たに読み込む処理を無視して，エントリーを返す処理だけを抽出すると次のような処理を行っています．
+なお，readdir関数は下記の関数（__readdir_unlocked）を呼び出しているだけです．
+<pre class="list">
+struct dirent *
+__readdir_unlocked (DIR *dirp)
+{
+  struct dirent *dp;
+
+  do
+    {
+      size_t reclen;
+
+      dp = (struct dirent *) &dirp->data[dirp->offset];
+      reclen = dp->d_reclen;
+      dirp->offset += reclen;
+      dirp->filepos = dp->d_off;
+
+      /* Skip deleted files.  */
+    } while (dp->d_ino == 0);
+
+  return dp;
+}
+</pre>
+readdir関数が呼び出されるたびに上記の処理を繰り返し行っていることを想像してみると，fileposメンバはまったく利用せず，
+ディレクトリエントリーはoffsetメンバを使って取得していることが分かります．
+上記のコード以外の部分（ディレクトリエントリー群を新たに読み込む処理）でもfileposを使っている実行文が1つもありません．
+従って，上記のfileposメンバへの代入は必要ないように思えます．
+さらに，dirent構造体のd_offメンバも上の代入文にしか現れないので，
+これも利用していないように見えます．
+ただし，ここで述べていることは，readdir関数だけを見ている場合の話です．
+
+<p></p>
+さらに，上の処理から，
+ディレクトリエントリーの列を，dirent構造体の配列ではなく，
+バイナリーデータ（バイト列）として扱っていることが分かります．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="rewinddir">rewinddir関数</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/rewinddir.c;h=b1e82597039481a0f9ea1fc34b05412988249cac;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">sysdeps/unix/sysv/linux/rewinddir.c</a><br>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/rewinddir.html
+">[POSIX:rewinddir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Random-Access-Directory.html#index-rewinddir
+">[glibc:rewiddir]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/rewinddir.3.en.html
+">[Manpages:REWINDDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;rewinddir関数は，
+ディレクトリファイルのオフセットを先頭に戻して，
+ディレクトリストリーム（dirstream構造体）のsizeとoffsetを0に設定します．
+このようにするとディレクトリストリームをリセットしたことになります．
+なぜなら，readdir関数は offset $\geq$ size の場合，
+ディレクトリファイルからディレクトリエントリー群を新たに読み込むからです．
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="closedir">closedir関数</h4>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/closedir.c;h=eee0193fc42539451e238d2cf4bb35e8e792bb91;hb=098c795e85fbd05c5ef59c2d0ce59529331bea27
+">sysdeps/unix/sysv/linux/closedir.c</a><br>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/closedir.html
+">[POSIX:closedir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Reading_002fClosing-Directory.html
+">[glibc:Reading and Closing a Directory Stream]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/closedir.3.en.html
+">[Manpages:CLOSEDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+&rtri;closedir関数は，メモリブロックを解放して，
+ディレクトリファイルをクローズします．
+
+
+
+
+
+</section>
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

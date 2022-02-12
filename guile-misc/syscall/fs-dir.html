@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／ファイルやディレクトリの操作</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="userinfo.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／ファイルやディレクトリの操作
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.13</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+このノートは，
+ファイルやディレクトリを操作する手続きについて勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ディレクトリの操作</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">ディレクトリの作成</a>
+   <li class="menu"><a class="noline" href="#2">ディレクトリの削除</a>
+   <li class="menu"><a class="noline" href="#3">カレントディレクトリの取得と変更</a>
+   <li class="menu"><a class="noline" href="#4">マスクの取得と変更</a>
+   </ul>
+<li class="menu"><a class="noline" href="#5">ディレクトリストリームの操作</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#6">ディレクトリストリームのオープン</a>
+   <li class="menu"><a class="noline" href="#7">ディレクトリエントリーの取得</a>
+   <li class="menu"><a class="noline" href="#8">ディレクトリストリームのリセット</a>
+   <li class="menu"><a class="noline" href="#9">ディレクトリストリームのクローズ</a>
+   <li class="menu"><a class="noline" href="#10">簡単な具体例</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="sshort"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-System.html
+   ">[7.2.3 File System]</a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/guile.html#Processes
+   ">[7.2.7 Processes]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li class="menu"> 
+独自調査
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   fs-dirstream.html">ディレクトリストリーム</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">ディレクトリの操作</h3>
+
+
+<p class="short"></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="1">ディレクトリの作成</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(mkdir <span class="mysyn">path</span>)</span><br>
+&emsp;<span class="myvar">(mkdir <span class="mysyn">path</span> <span class="mysyn">mode</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/
+">[POSIX:mkdir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Creating-Directories.html#index-mkdir
+">[glibc:Creating Directories]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/mkdir.2.en.html
+">[Manpages:MKDIR(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+<span class="mysyn">path</span> が表すディレクトリを新たに作成し，<span class="mysyn">mode</span> によって指定されたアクセス権限を設定します．<span class="mysyn">mode</span> が省略された場合，それを #o0777 に設定してディレクトリを作成します．<span class="mysyn">path</span> はディレクトリ名を表す文字列，<span class="mysyn">mode</span> はアクセス権限を表す整数です（<a class="noline" href="fs-permission.html#access-mode">アクセス権限の変更</a>を参照）．返り値は unspecified です．
+
+<p></p>
+新たに作成されたディレクトリの実際のアクセス権限は，
+   <div class="dstyle">
+ <span class="mysyn">mode</span> <span>&</span> ~<span class="mysyn">umask</span> <span>&</span> #o0777
+   </div>
+に設定されます．
+ここで，<span class="mysyn">umask</span> はディレクトリのアクセス権限を設定する際のマスクを表し，~<span class="mysyn">umask</span> は <span class="mysyn">umask</span> のビットごとの否定（反転）を表します．<span class="mysyn">umask</span> は，一般的には，#o0022 に設定されています．
+<span>&</span> はビットごとの論理積を表しています．#o0777 との論理積を取るということは，
+初期的なアクセス権限は setuid，setgid，sticky bit を設定しないということを意味しています．
+
+<p></p>
+新たに作成されたディレクトリの所有者は，現行プロセス（mkdir手続きを実行したプロセス）の実効ユーザーに設定されます．
+所有グループは，親ディレクトリに set-gid が設定されているかどうかによって変わります．set-gid が設定されている場合，
+親ディレクトリの所有グループに設定されます．
+そうでない場合，現行プロセスの実効グループに設定されます．
+
+<p></p>
+親ディレクトリに set-gid が設定されている場合，
+新たに作成されたディレクトリにも set-gid が設定されます．
+
+<p></p>
+&rtri;(記録) この手続きの処理は，
+システムコールの mkdir(<span class="mysyn">path</span>,<span class="mysyn">mode</span>) によって行っています．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="2">ディレクトリの削除</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(rmdir <span class="mysyn">path</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/rmdir.html
+">[POSIX:rmdir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Deleting-Files.html
+">[glibc:Deleting Files]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/rmdir.2.en.html
+">[Manpages:RMDIR(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+<span class="mysyn">path</span> が表すディレクトリを削除します．
+<span class="mysyn">path</span> はディレクトリ名を表す文字列です．
+返り値は unspecified です．
+
+<p></p>
+削除されるディレクトリは空でなければいけません．
+
+<p></p>
+&rtri;実行例：以下では /home/algo/tmp というディレクトリ上で作業しています．subdir というサブディレクトリを作成して，すぐに削除しています．さらに，元々存在していた scheme というサブディレクトリ（注：空でない）を削除しようとしてエラーが発生しています．
+またさらに，通常ファイル（guile-3.0.7.tar.gz）を rmdir 手続きを使って削除しようとしてエラーが発生しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 21878396 12月 23 13:30 guile-3.0.7.tar.gz
+drwxr-xr-x 2 algo algo     4096  2月  7 17:08 scheme
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(mkdir "subdir")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 21878396 12月 23 13:30 guile-3.0.7.tar.gz
+drwxr-xr-x 2 algo algo     4096  2月  7 17:08 scheme
+drwxr-xr-x 2 algo algo     4096  2月 13 07:04 subdir
+<span>&#36;</span>2 = 0
+guile&gt; <span class="mycmd">(rmdir "subdir")</span>
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+-rw-r--r-- 1 algo algo 21878396 12月 23 13:30 guile-3.0.7.tar.gz
+drwxr-xr-x 2 algo algo     4096  2月  7 17:08 scheme
+<span>&#36;</span>3 = 0
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(rmdir "scheme")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure rmdir: ディレクトリは空ではありません</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]> 
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(rmdir "guile-3.0.7.tar.gz")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure rmdir: ディレクトリではありません</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]> 
+</pre>
+
+<p></p>
+&rtri;(記録)
+この手続きの処理は，システムコールの rmdir(<span class="mysyn">path</span>) によって行っています．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="3">カレントディレクトリの取得と変更</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(getcwd)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/getcwd.html
+">[POSIX:getcwd]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Working-Directory.html
+">[glibc:Working Directory]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/getcwd.3.en.html
+">[Manpages:GETCWD(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+カレントディレクトリの絶対パスの名前（文字列）を返します．
+
+<p></p>
+&rtri;(記録)
+getcwd 手続きの処理は，ライブラリ関数の getcwd(<span class="mysyn">buf</span>,<span class="mysyn">size</span>) によって行っています．<span class="mysyn">buf</span> は絶対パスを受け取るためのバッファ，<span class="mysyn">size</span> はバッファの大きさです．getcwd 手続きは，バッファの大きさが不足するには大きさを増やしながら絶対パスを取得しています．
+
+<p></p>
+&rtri;<span class="myvar">(chdir <span class="mysyn">path</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/chdir.html
+">[POSIX:chdir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Working-Directory.html
+">[glibc:Working Directory]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/chdir.2.en.html
+">[Manpages:CHDIR(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+カレントディレクトリを <span class="mysyn">path</span> に変更します．<span class="mysyn">path</span> は変更先のディレクトリ（文字列）です．相対パスと絶対パスのどちらでも指定できます．返り値は unspecified です．
+
+<p></p>
+&rtri;実行例
+<pre class="shell">
+guile&gt; <span class="mycmd">(getcwd)</span>
+<span>&#36;</span>1 = "/home/algo/guile-3.0.7/libguile"
+guile&gt; <span class="mycmd">(chdir "../module")</span>
+guile&gt; <span class="mycmd">(getcwd)</span>
+<span>&#36;</span>2 = "/home/algo/guile-3.0.7/module"
+guile&gt; <span class="mycmd">(chdir "/home/algo/guile-3.0.7/module/ice-9")</span>
+guile&gt; <span class="mycmd">(getcwd)</span>
+<span>&#36;</span>3 = "/home/algo/guile-3.0.7/module/ice-9"
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;(記録)
+chdir 手続きの処理は，
+システムコールの chdir(<span class="mysyn">path</span>) によって行っています．
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="4">マスクの取得と変更</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(umask)</span><br>
+&emsp;<span class="myvar">(umask <span class="mysyn">mode</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/umask.html
+">[POSIX:umask]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Setting-Permissions.html
+">[glibc:Assigning File Permissions]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/umask.2.en.html
+">[Manpages:UMASK(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+ディレクトリやファイルを作成する際のマスクを取得したり変更します．
+<span class="mysyn">mode</span> を省略したときには現在（現行プロセス）のマスク（整数）を返します．<span class="mysyn">mode</span> を指定したときには，マスクを <span class="mysyn">mode</span> に設定し，元々のマスク（整数）を返します．<span class="mysyn">mode</span> はマスクを表す整数です．一般的には8進数によって指定します．
+
+<p></p>
+&rtri;実行例：以下では，現在のマスク（10進数の18；8進数の#o0022）を確認したあと，
+マスクを #o0045 （10進数の37）に変更してみています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(umask)</span>
+<span>&#36;</span>1 = 18
+guile&gt; <span class="mycmd">(umask #o0045)</span>
+<span>&#36;</span>2 = 18
+guile&gt; <span class="mycmd">(umask)</span>
+<span>&#36;</span>3 = 37
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;(記録) この手続きの処理は，システムコールの umask(<span class="mysyn">mode</span>) によって行っています．<span class="mysyn">mode</span> を省略した場合，mask=umask(0); umask(mask) によって現在のマスク（mask）を取得して（元のマスクに戻して）います．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="5">ディレクトリストリームの操作</h3>
+<p class="short"></p>
+&rtri;以下の手続き群に対して，Guileのマニュアルは次のように述べています．
+<blockquote>
+Before using this and the procedures below, make sure to see the higher-level procedures for directory traversal that are available (see <a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html
+">File Tree Walk</a>). 
+</blockquote>
+
+<p></p>
+&rtri;ディレクトリストリームについて調べたことを
+<a class="noline" href="fs-dirstream.html">ディレクトリストリーム</a>
+にまとめています．以下の説明は，その調べた結果を踏まえています．
+
+<p></p>
+&rtri;
+ディレクトリストリームとディレクトリファイルは一体化して処理されています．
+両者は独立していません．ディレクトリストリームにはある程度の大きさのメモリブロックが割り当てられます．そのメモリブロックはすべてのディレクトリエントリーを格納するには小さいかも知れません．そのような場合，
+そのメモリブロックに入る量のディレクトリエントリーが，必要に応じて順々に，ディレクトリファイルから読み込まれます．
+このような処理を行っているため，ディレクトリストリームを処理している最中に，ディレクトリファイルのファイルオフセットを変更するような処理を行うことはできません．そんなことをすると，ディレクトリストリームに関する結果はオカシナものになるでしょう．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="6">ディレクトリストリームのオープン</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(opendir <span class="mysyn">dirname</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/fdopendir.html
+">[POSIX:opendir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Opening-a-Directory.html#index-opendir
+">[glibc:Opening a Directory Stream]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/opendir.3.en.html
+">[Manpages:OPENDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+<span class="mysyn">dirname</span> が表すディレクトリのディレクトリストリームをオープンして，ストリーム内のディレクトリエントリーの位置を示すオフセット（以下，<em>ストリームオフセット</em>）をストリームの先頭に設定して，
+そのストリームオブジェクトを返します．
+<span class="mysyn">dirname</span> はディレクトリ名を表す文字列です．
+
+<p></p>
+&rtri;(記録) この手続きは，
+ライブラリ関数の opendir(<span class="mysyn">dirname</span>) を実行して，
+その返り値をGuileのオブジェクトに変換して返しています．
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="7">ディレクトリエントリーの取得</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(readdir <span class="mysyn">stream</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/readdir.html
+">[POSIX:readdir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Reading_002fClosing-Directory.html
+">[glibc:Reading and Closing a Directory Stream]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/readdir.3.en.html
+">[Manpages:READDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+ストリームオフセットが示しているディレクトリエントリーを返すとともに，ストリームオフセットを次のディレクトリエントリーの位置に進めます．<span class="mysyn">stream</span> は opendir 手続きによって返されたディレクトリストリームです．返り値のディレクトリエントリーは，
+ファイルやディレクトリの名前（文字列）です．
+
+<p></p>
+ストリームオフセットがディレクトリストリームの末端に到達していた場合，
+EOF オブジェクトを返します．
+EOF オブジェクトか否かは eof-object? 手続きによって検査できます．
+
+<p></p>
+&rtri;(記録) 内部的には readdir ライブラリ関数を実行しています．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="8">ディレクトリストリームのリセット</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(rewinddir <span class="mysyn">stream</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/rewinddir.html
+">[POSIX:rewinddir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Random-Access-Directory.html#index-rewinddir
+">[glibc:rewiddir]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/rewinddir.3.en.html
+">[Manpages:REWINDDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+ストリームオフセットをディレクトリストリームの先頭に設定し直します．<span class="mysyn">stream</span> は opendir 手続きによって返されたディレクトリストリームです．
+返り値は unspecified です．
+
+<p></p>
+&rtri;ストリームオフセットだけでなく，ディレクトリファイルのファイルオフセットもリセットします．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="9">ディレクトリストリームのクローズ</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(closedir <span class="mysyn">stream</span>)</span>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/closedir.html
+">[POSIX:closedir]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Reading_002fClosing-Directory.html
+">[glibc:Reading and Closing a Directory Stream]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/closedir.3.en.html
+">[Manpages:CLOSEDIR(3)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+ディレクトリストリーム <span class="mysyn">stream</span> をクローズします．
+返り値は unspecified です．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="10">簡単な具体例</h4>
+<p class="sshort"></p>
+&rtri;以下のスクリプトは，ディレクトリ名をコマンドライン引数から受け取って，
+そのディレクトリエントリーの一覧を表示します．
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+
+;; disp-dir.scm
+
+(define (main args)
+  (define dirname (cadr args))
+  (define dirstream (opendir dirname))
+  (let loop ((entry (readdir dirstream)))
+    (when (not (eof-object? entry))
+      (display entry) (newline)
+      (loop (readdir dirstream))))
+  (closedir dirstream))
+</pre>
+以下の実行例では，guile-3.0.7のソースコードを展開したディレクトリのmoduleサブディレクトリの一覧を表示しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">./disp-dir.scm /home/algo/guile-3.0.7/module</span>
+srfi
+rnrs
+scheme
+rnrs.scm
+scripts
+statprof.scm
+.
+..
+oop
+language
+texinfo
+Makefile.am
+system
+texinfo.scm
+web
+sxml
+Makefile.in
+ice-9
+<span>&#36;</span>
+</pre>
+上記の実行例が示すように，カレントディレクトリを表す "." や親ディレクトリを表す ".." もディレクトリストリームの中に含まれています．さらに，エントリーの並び順は，端的に言って，デタラメです．例えば，ls -1 コマンドによってディレクトリの内容を表示した下記の結果とは並び順がまったく違います．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">ls -1 /home/algo/guile-3.0.7/module</span>
+Makefile.am
+Makefile.in
+ice-9/
+language/
+oop/
+rnrs/
+rnrs.scm
+scheme/
+scripts/
+srfi/
+statprof.scm
+sxml/
+system/
+texinfo/
+texinfo.scm
+web/
+</pre>
+
+
+</section>
+
+
+
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
