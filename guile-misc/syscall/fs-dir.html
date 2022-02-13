@@ -96,7 +96,8 @@ Guile色々／ディレクトリの操作
    <li class="menu"><a class="noline" href="#7">ディレクトリエントリーの取得</a>
    <li class="menu"><a class="noline" href="#8">ディレクトリストリームのリセット</a>
    <li class="menu"><a class="noline" href="#9">ディレクトリストリームのクローズ</a>
-   <li class="menu"><a class="noline" href="#10">簡単な具体例</a>
+   <li class="menu"><a class="noline" href="#10">ディレクトリストリームの型検査</a>
+   <li class="menu"><a class="noline" href="#11">簡単な具体例</a>
    </ul>
 </ul>
 
@@ -549,7 +550,17 @@ https://manpages.debian.org/bullseye/manpages-dev/closedir.3.en.html
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="10">簡単な具体例</h4>
+<h4 class="hdln" id="10">ディレクトリストリームの型検査</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(directory-stream? <span class="mysyn">object</span>)</span>
+<p class="short"></p>
+<span class="mysyn">object</span> がディレクトリストリームか否かを検査します．
+ディレクトリストリームの場合には #t を返し，
+そうでない場合は #f を返します，<span class="mysyn">object</span> は任意のオブジェクトです．
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="11">簡単な具体例</h4>
 <p class="sshort"></p>
 &rtri;以下のスクリプトは，ディレクトリ名をコマンドライン引数から受け取って，
 そのディレクトリエントリーの一覧を表示します．
