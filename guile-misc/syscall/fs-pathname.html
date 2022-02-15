@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／パス名の処理</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="fs-dir.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／パス名の処理
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.15</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+このノートは，
+パス名を処理する手続きについて勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ディレクトリ名の抽出</a>
+<li class="menu"><a class="noline" href="#1">ファイル名の抽出</a>
+<li class="menu"><a class="noline" href="#2">ファイル名・ディレクトリ名の正規化</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="sshort"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-System.html
+   ">[7.2.3 File System]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">ディレクトリ名の抽出</h3>
+
+<p class="short"></p>
+&rtri;<span class="myvar">(dirname <span class="mysyn">path</span>)</span>
+<p class="sshort"></p>
+<span class="mysyn">path</span> から，スラッシュで区切られた最後の要素を除く残りの部分を抽出して返します．<span class="mysyn">path</span> がスラッシュを含まない場合，カレントディレクトリを表す "." を返します．<span class="mysyn">path</span> はファイル名やディレクトリ名を表す文字列です．
+
+<p></p>
+この手続きは純粋に文字列の処理を行っているだけで，
+実体としてのファイルやディレクトリとは無関係です．
+例えば，実体が存在しないパス名を指定しても上で述べた通りの文字列を返します．
+
+<p></p>
+&rtri;実行例：以下の non-exist というディレクトリは存在しません．dirname 手続きの処理はファイルやディレクトリの実体とは無関係です．
+<pre class="shell">
+$ guile
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(dirname "/home/algo/not-exist/somefile.txt")</span>
+<span>&#36;</span>1 = "/home/algo/not-exist"
+guile&gt; <span class="mycmd">(dirname "/home/algo/not-exist")</span>
+<span>&#36;</span>2 = "/home/algo"
+guile&gt; <span class="mycmd">(dirname "not-exist/somefile.txt")</span>
+<span>&#36;</span>3 = "not-exist"
+guile&gt; <span class="mycmd">(dirname "somefile.txt")</span>
+<span>&#36;</span>4 = "."
+</pre>
+パス名の前後に空白があってもトリミングはしません．
+さらに，パス名の最後にスラッシュが入ると挙動が変化します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(dirname "/home/algo/not-exist ")</span>
+<span>&#36;</span>5 = "/home/algo"
+guile&gt; <span class="mycmd">(dirname "/home/algo/not-exist/ ")</span>
+<span>&#36;</span>6 = "/home/algo/not-exist"
+</pre>
+ディレクトリ名に空白が入っていても問題なく抽出するようです．
+<pre class="shell">
+guile&gt; <span class="mycmd">(dirname "/home/algo/not exist/somefile.txt")</span>
+<span>&#36;</span>7 = "/home/algo/not exist"
+guile&gt; 
+</pre>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">ファイル名の抽出</h3>
+
+<p class="short"></p>
+&rtri;<span class="myvar">(basename <span class="mysyn">path</span>)</span><br>
+&emsp;<span class="myvar">(basename <span class="mysyn">path</span> <span class="mysyn">suffix</span>)</span>
+<p class="sshort"></p>
+<span class="mysyn">path</span> から，スラッシュで区切られた最後の要素を除く残りの部分を抽出して返します．<span class="mysyn">suffix</span> を指定して，かつ，
+最後の要素の末尾が <span class="mysyn">suffix</span> に一致した場合，<span class="mysyn">suffix</span> も削除して返します．<span class="mysyn">path</span> はファイル名やディレクトリの名を表す文字列，<span class="mysyn">suffix</span> はファイルの拡張子を表す文字列です．
+
+<p></p>
+dirname 手続きと同様に，
+この手続きは純粋に文字列の処理を行っているだけで，
+実体としてのファイルやディレクトリとは無関係です．
+
+<p></p>
+&rtri;
+実行例：以下の non-exist というディレクトリは存在しません．basename 手続きの処理はファイルやディレクトリの実体とは無関係です．
+<pre class="shell">
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist/somefile.txt")</span>
+<span>&#36;</span>1 = "somefile.txt"
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist/somefile.txt" "txt")</span>
+<span>&#36;</span>2 = "somefile."
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist/somefile.txt" "scm")</span>
+<span>&#36;</span>3 = "somefile.txt"
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist")</span>
+<span>&#36;</span>4 = "not-exist"
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist/")</span>
+<span>&#36;</span>5 = "not-exist/"
+</pre>
+dirname 手続きと同様に，
+パス名の前後に空白があってもトリミングはしません．
+さらに，パス名の最後にスラッシュが入ると挙動が変化します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist ")</span>
+<span>&#36;</span>6 = "not-exist "
+guile&gt; <span class="mycmd">(basename "/home/algo/not-exist/ ")</span>
+<span>&#36;</span>7 = " "
+guile&gt; 
+</pre>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="2">ファイル名・ディレクトリ名の正規化</h3>
+
+<p class="short"></p>
+&rtri;<span class="myvar">(canonicalize-path <span class="mysyn">path</span>)</span>
+<p class="sshort"></p>
+<span class="mysyn">path</span> が表すファイルやディレクトリの絶対パスを返します．
+返り値の絶対パスは，"." や ".." や 多重のスラッシュ（//など）やシンボリックリンクをいっさい含みません．<span class="mysyn">path</span> はファイル名やディレクトリ名を表す文字列です．
+
+<p></p>
+上の説明からも分かりますが，dirname や basename とは違って，<span class="mysyn">path</span>
+が表すファイルやディレクトリは存在していなければなりません．
+
+<p></p>
+シンボリックリンクをすべて辿った先の，実体としてのファイルやディレクトリの絶対パスを返します．
+
+
+<p></p>
+&rtri;実行例：次のようなディレクトリ（ホームディレクトリ上のtemp）の上で色々と試してみます．
+
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">pwd</span>
+/home/algo/temp
+<span>&#36;</span> <span class="mycmd">ls -lR .</span>
+.:
+lrwxrwxrwx 1 algo algo   16  2月 15 16:40 bbb.lnk -> temp-bbb/bbb.txt
+lrwxrwxrwx 1 algo algo   12  2月 15 16:45 somefile.lnk -> somefile.txt
+-rw-r--r-- 1 algo algo   22  2月 15 16:44 somefile.txt
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 temp-aaa/
+lrwxrwxrwx 1 algo algo    8  2月 15 16:56 temp-aaa-lnk -> temp-aaa/
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 temp-bbb/
+
+./temp-aaa:
+lrwxrwxrwx 1 algo algo  7  2月 15 16:40 aaa.lnk -> aaa.txt
+-rw-r--r-- 1 algo algo 22  2月 15 16:44 aaa.txt
+
+./temp-bbb:
+-rw-r--r-- 1 algo algo 22  2月 15 16:44 bbb.txt
+</pre>
+まず，通常ファイルやディレクトリを指定してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(canonicalize-path "somefile.txt")</span>
+<span>&#36;</span>1 = "/home/algo/temp/somefile.txt"
+guile&gt; <span class="mycmd">(canonicalize-path "temp-aaa")</span>
+<span>&#36;</span>2 = "/home/algo/temp/temp-aaa"
+guile&gt; <span class="mycmd">(canonicalize-path "temp-aaa/aaa.txt")</span>
+<span>&#36;</span>3 = "/home/algo/temp/temp-aaa/aaa.txt"
+</pre>
+次に，シンボリックリンクを色々と試してみます．
+最後の結果（<span>&#36;</span>7）は，すべてのシンボリックリンクを辿った先のファイルの絶対パスが返ってきています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(canonicalize-path "somefile.lnk")</span>
+<span>&#36;</span>4 = "/home/algo/temp/somefile.txt"
+guile&gt; <span class="mycmd">(canonicalize-path "bbb.lnk")</span>
+<span>&#36;</span>5 = "/home/algo/temp/temp-bbb/bbb.txt"
+guile&gt; <span class="mycmd">(canonicalize-path "temp-aaa-lnk")</span>
+<span>&#36;</span>6 = "/home/algo/temp/temp-aaa"
+guile&gt; <span class="mycmd">(canonicalize-path "temp-aaa-lnk/aaa.lnk")</span>
+<span>&#36;</span>7 = "/home/algo/temp/temp-aaa/aaa.txt"
+guile&gt; 
+</pre>
+やや極端な実行例を示します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(canonicalize-path "./temp-aaa-lnk//../temp-bbb/../temp-aaa-lnk/./aaa.lnk")</span>
+<span>&#36;</span>8 = "/home/algo/temp/temp-aaa/aaa.txt"
+guile> 
+</pre>
+
+<p></p>
+存在しないファイルやディレクトリを指定するとエラーが発生します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(canonicalize-path "temp-bbb/ccc.txt")</span>
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">In procedure canonicalize-path: そのようなファイルやディレクトリはありません</span>
+
+Entering a new prompt.  Type `,bt' for a backtrace or `,q' to continue.
+guile [1]&gt; 
+</pre>
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
