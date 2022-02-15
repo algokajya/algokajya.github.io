@@ -267,7 +267,7 @@ ol.pnum li:before {
 pre.list { 
     line-height: 130%;
 /*    background-color: #f8f8e0; */
-    background-color: #f2efe4;
+    background-color: #faf7ec;   /* #f2efe4; */
     font-family: monospace;
     padding-top: 5px; 
     padding-bottom: 5px; 
@@ -282,7 +282,7 @@ pre.list {
 
 pre.shell { 
     line-height: 130%;
-    background-color: #f4fff4; 
+    background-color: #fafffa;   /* #f6fff6; */
     /* background-color: #f0f0f0; */
     /* background-color: #f0fff0; */
     font-family: monospace;
