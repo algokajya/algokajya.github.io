@@ -89,15 +89,16 @@ Guile色々／ディレクトリの操作
    <li class="menu"><a class="noline" href="#2">ディレクトリの削除</a>
    <li class="menu"><a class="noline" href="#3">カレントディレクトリの取得と変更</a>
    <li class="menu"><a class="noline" href="#4">マスクの取得と変更</a>
+   <li class="menu"><a class="noline" href="#5">ディレクトリやファイルの存在検査</a>
    </ul>
-<li class="menu"><a class="noline" href="#5">ディレクトリストリームの操作</a>
+<li class="menu"><a class="noline" href="#6">ディレクトリストリームの操作</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#6">ディレクトリストリームのオープン</a>
-   <li class="menu"><a class="noline" href="#7">ディレクトリエントリーの取得</a>
-   <li class="menu"><a class="noline" href="#8">ディレクトリストリームのリセット</a>
-   <li class="menu"><a class="noline" href="#9">ディレクトリストリームのクローズ</a>
-   <li class="menu"><a class="noline" href="#10">ディレクトリストリームの型検査</a>
-   <li class="menu"><a class="noline" href="#11">簡単な具体例</a>
+   <li class="menu"><a class="noline" href="#7">ディレクトリストリームのオープン</a>
+   <li class="menu"><a class="noline" href="#8">ディレクトリエントリーの取得</a>
+   <li class="menu"><a class="noline" href="#9">ディレクトリストリームのリセット</a>
+   <li class="menu"><a class="noline" href="#10">ディレクトリストリームのクローズ</a>
+   <li class="menu"><a class="noline" href="#11">ディレクトリストリームの型検査</a>
+   <li class="menu"><a class="noline" href="#12">簡単な具体例</a>
    </ul>
 </ul>
 
@@ -412,13 +413,27 @@ guile&gt;
 <p></p>
 &rtri;(記録) この手続きの処理は，システムコールの umask(<span class="mysyn">mode</span>) によって行っています．<span class="mysyn">mode</span> を省略した場合，mask=umask(0); umask(mask) によって現在のマスク（mask）を取得して（元のマスクに戻して）います．
 
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="5">ディレクトリやファイルの存在検査</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(file-exists? <span class="mysyn">path</span>)</span><br>
+<p class="sshort"></p>
+この手続きについては 
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-misc/syscall/fs-file-link.html#file-exists-p
+">ファイルとリンクの操作[ファイルやディレクトリの存在検査]
+</a>
+を参照して下さい．
+
 </section>
 
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="5">ディレクトリストリームの操作</h3>
+<h3 class="section" id="6">ディレクトリストリームの操作</h3>
 <p class="short"></p>
 &rtri;以下の手続き群に対して，Guileのマニュアルは次のように述べています．
 <blockquote>
@@ -442,7 +457,7 @@ https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="6">ディレクトリストリームのオープン</h4>
+<h4 class="hdln" id="7">ディレクトリストリームのオープン</h4>
 <p class="sshort"></p>
 &rtri;<span class="myvar">(opendir <span class="mysyn">dirname</span>)</span>
 <div class="dstyle">
@@ -470,7 +485,7 @@ https://manpages.debian.org/bullseye/manpages-dev/opendir.3.en.html
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="7">ディレクトリエントリーの取得</h4>
+<h4 class="hdln" id="8">ディレクトリエントリーの取得</h4>
 <p class="sshort"></p>
 &rtri;<span class="myvar">(readdir <span class="mysyn">stream</span>)</span>
 <div class="dstyle">
@@ -501,7 +516,7 @@ EOF オブジェクトか否かは eof-object? 手続きによって検査でき
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="8">ディレクトリストリームのリセット</h4>
+<h4 class="hdln" id="9">ディレクトリストリームのリセット</h4>
 <p class="sshort"></p>
 &rtri;<span class="myvar">(rewinddir <span class="mysyn">stream</span>)</span>
 <div class="dstyle">
@@ -527,7 +542,7 @@ https://manpages.debian.org/bullseye/manpages-dev/rewinddir.3.en.html
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="9">ディレクトリストリームのクローズ</h4>
+<h4 class="hdln" id="10">ディレクトリストリームのクローズ</h4>
 <p class="sshort"></p>
 &rtri;<span class="myvar">(closedir <span class="mysyn">stream</span>)</span>
 <div class="dstyle">
@@ -550,7 +565,7 @@ https://manpages.debian.org/bullseye/manpages-dev/closedir.3.en.html
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="10">ディレクトリストリームの型検査</h4>
+<h4 class="hdln" id="11">ディレクトリストリームの型検査</h4>
 <p class="sshort"></p>
 &rtri;<span class="myvar">(directory-stream? <span class="mysyn">object</span>)</span>
 <p class="short"></p>
@@ -560,7 +575,7 @@ https://manpages.debian.org/bullseye/manpages-dev/closedir.3.en.html
 
 <p></p>
 <!-- =============================================== -->
-<h4 class="hdln" id="11">簡単な具体例</h4>
+<h4 class="hdln" id="12">簡単な具体例</h4>
 <p class="sshort"></p>
 &rtri;以下のスクリプトは，ディレクトリ名をコマンドライン引数から受け取って，
 そのディレクトリエントリーの一覧を表示します．
