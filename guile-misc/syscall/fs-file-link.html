@@ -57,6 +57,8 @@ Guile色々／ファイルとリンクの操作
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.2.16</span>：file-exists? 手続きを追加．
+<li class="revise">
 <span class="mydate">2022.2.10</span>：初出
 </ul>
 </div>
@@ -92,6 +94,7 @@ Guile色々／ファイルとリンクの操作
 <li class="menu"><a class="noline" href="#4">ハードリンクの作成</a>
 <li class="menu"><a class="noline" href="#5">シンボリックリンクの作成</a>
 <li class="menu"><a class="noline" href="#6">リンク先のファイル名の取得</a>
+<li class="menu"><a class="noline" href="#7">ファイルやディレクトリの存在検査</a>
 </ul>
 
 
@@ -705,7 +708,7 @@ guile [1]&gt;
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
 <h3 class="section" id="6">リンク先のファイル名の取得</h3>
-<p class="sshort" id="_"></p>
+<p class="sshort"></p>
 &rtri;<span class="myvar">(readlink <span class="mysyn">path</span>)</span>
 <div class="dstyle">
 <small>
@@ -748,6 +751,82 @@ guile>
 
 </section>
 
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="7">ファイルやディレクトリの存在検査</h3>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(file-exists? <span class="mysyn">path</span>)</span>
+<p class="sshort"></p>
+<span class="mysyn">path</span> で指定されたファイルやディレクトリが存在しアクセスできるときには #t を返し，そうでないときには #f を返します．<span class="mysyn">path</span> はファイル名やディレクトリ名を表す文字列です．
+
+<p></p>
+この手続きはシンボリックリンクを辿ります．
+以下に示すように，この手続きは stat 手続きを使って属性値が取得できるか否かによって存在性を判定しています．従って，シンボリックリンクに対する振る舞いは stat 手続きと同じです．
+
+<p></p>
+&rtri;実行例：以下の ls コマンドの結果が示すようなディレクトリ上で色々と試してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(system "ls -l")</span>
+lrwxrwxrwx 1 algo algo   16  2月 15 16:40 bbb.lnk -> temp-bbb/bbb.txt
+lrwxrwxrwx 1 algo algo    8  2月 16 07:07 dangling.lnk -> temp.txt
+lrwxrwxrwx 1 algo algo   12  2月 15 16:45 somefile.lnk -> somefile.txt
+-rw-r--r-- 1 algo algo   22  2月 15 16:44 somefile.txt
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 temp-aaa
+lrwxrwxrwx 1 algo algo    8  2月 15 16:56 temp-aaa-lnk -> temp-aaa
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 temp-bbb
+<span>&#36;</span>1 = 0
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(file-exists? "somefile.txt")</span>
+<span>&#36;</span>2 = #t
+guile&gt; <span class="mycmd">(file-exists? "somefile.lnk")</span>
+<span>&#36;</span>3 = #t
+guile&gt; <span class="mycmd">(file-exists? "temp-aaa")</span>
+<span>&#36;</span>4 = #t
+guile&gt; <span class="mycmd">(file-exists? "temp.txt")</span>
+<span>&#36;</span>5 = #f
+guile&gt; <span class="mycmd">(file-exists? "dangling.lnk")</span>
+<span>&#36;</span>6 = #f
+guile&gt; <span class="mycmd">(file-exists? "temp-ccc")</span>
+<span>&#36;</span>7 = #f
+guile&gt; 
+</pre>
+
+<p></p>
+&rtri;(記録)
+この手続きは，(ice-9 boot-9)モジュールの中で次のように定義されています（注：意味を変えずに少しだけ書き換えています）．
+<pre class="list">
+;; For reference, Emacs file-exists-p uses stat in this same way.
+(define file-exists?
+  (if (provided? 'posix)
+      (lambda (str)
+        (not (not (stat str #f))))
+      (lambda (str)
+        (let ((port (catch 'system-error (lambda () (open-input-file str))
+                           (lambda args #f))))
+          (if port (begin (close-port port) #t)
+              #f)))))
+</pre>
+<!-- 
+(define (provided? feature)
+  "Return #t iff FEATURE is available to this Guile interpreter."
+  (and (memq feature *features*) #t))
+-->
+provided? 手続きはUNIX系システムかどうかを判定していて，UNIX系システムの場合，
+(provided? 'posix) は #t を返します．従って，Linuxの場合，file-exists? 手続きは次のように定義されていることになります．なお，二重否定は真値を #t に変換するためのものです．
+<pre class="list">
+(define file-exists?
+  (lambda (str) (not (not (stat str #f)))))
+</pre>
+この手続きは，str によって指定されたファイルやディレクトリの属性値が取得できたときには #t を返し，何らかの理由によって取得できなかったときには #f を返します．そのため，この手続きはファイルやディレクトリの存在性を近似的に検査していると言えます．例えば，ファイルが存在していてもアクセス権限がないときには #f を返します．#f を返す条件については，システムコールの stat 関数のエラー条件
+（例えば，
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/stat.2.en.html
+">[Manpages:STAT(2)]のERROR</a>など）を参照して下さい．
+
+</section>
 
 
 

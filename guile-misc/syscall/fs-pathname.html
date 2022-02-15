@@ -83,8 +83,8 @@ Guile色々／パス名の処理
 <p class="short"></p>
 
 <ul class="menu">
-<li class="menu"><a class="noline" href="#0">ディレクトリ名の抽出</a>
-<li class="menu"><a class="noline" href="#1">ファイル名の抽出</a>
+<li class="menu"><a class="noline" href="#0">ディレクトリ部の抽出</a>
+<li class="menu"><a class="noline" href="#1">ベース部の抽出</a>
 <li class="menu"><a class="noline" href="#2">ファイル名・ディレクトリ名の正規化</a>
 </ul>
 
@@ -164,17 +164,17 @@ Manpages
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="0">ディレクトリ名の抽出</h3>
+<h3 class="section" id="0">ディレクトリ部の抽出</h3>
 
 <p class="short"></p>
 &rtri;<span class="myvar">(dirname <span class="mysyn">path</span>)</span>
 <p class="sshort"></p>
-<span class="mysyn">path</span> から，スラッシュで区切られた最後の要素を除く残りの部分を抽出して返します．<span class="mysyn">path</span> がスラッシュを含まない場合，カレントディレクトリを表す "." を返します．<span class="mysyn">path</span> はファイル名やディレクトリ名を表す文字列です．
+<span class="mysyn">path</span> からディレクトリ部（最後のスラッシュより前の部分）を抽出して返します．<span class="mysyn">path</span> がスラッシュを含まない場合，カレントディレクトリを表す "." を返します．<span class="mysyn">path</span> はファイル名やディレクトリ名を表す文字列です．
 
 <p></p>
 この手続きは純粋に文字列の処理を行っているだけで，
 実体としてのファイルやディレクトリとは無関係です．
-例えば，実体が存在しないパス名を指定しても上で述べた通りの文字列を返します．
+例えば，実体が存在しないパス名を指定しても，そのディレクトリ部を返します．
 
 <p></p>
 &rtri;実行例：以下の non-exist というディレクトリは存在しません．dirname 手続きの処理はファイルやディレクトリの実体とは無関係です．
@@ -211,14 +211,14 @@ guile&gt;
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="1">ファイル名の抽出</h3>
+<h3 class="section" id="1">ベース部の抽出</h3>
 
 <p class="short"></p>
 &rtri;<span class="myvar">(basename <span class="mysyn">path</span>)</span><br>
 &emsp;<span class="myvar">(basename <span class="mysyn">path</span> <span class="mysyn">suffix</span>)</span>
 <p class="sshort"></p>
-<span class="mysyn">path</span> から，スラッシュで区切られた最後の要素を除く残りの部分を抽出して返します．<span class="mysyn">suffix</span> を指定して，かつ，
-最後の要素の末尾が <span class="mysyn">suffix</span> に一致した場合，<span class="mysyn">suffix</span> も削除して返します．<span class="mysyn">path</span> はファイル名やディレクトリの名を表す文字列，<span class="mysyn">suffix</span> はファイルの拡張子を表す文字列です．
+<span class="mysyn">path</span> からベース部（最後のスラッシュの後ろの部分）を抽出して返します．さらに，<span class="mysyn">suffix</span> を指定して，かつ，
+ベース部の末尾が <span class="mysyn">suffix</span> に一致した場合，<span class="mysyn">suffix</span> も削除して返します．<span class="mysyn">path</span> はファイル名やディレクトリの名を表す文字列，<span class="mysyn">suffix</span> はファイルの拡張子を表す文字列です．
 
 <p></p>
 dirname 手続きと同様に，
@@ -265,8 +265,7 @@ guile&gt;
 返り値の絶対パスは，"." や ".." や 多重のスラッシュ（//など）やシンボリックリンクをいっさい含みません．<span class="mysyn">path</span> はファイル名やディレクトリ名を表す文字列です．
 
 <p></p>
-上の説明からも分かりますが，dirname や basename とは違って，<span class="mysyn">path</span>
-が表すファイルやディレクトリは存在していなければなりません．
+dirname や basename とは違って，<span class="mysyn">path</span> が表すファイルやディレクトリは存在していなければなりません．存在しない場合，エラーが発生します．
 
 <p></p>
 シンボリックリンクをすべて辿った先の，実体としてのファイルやディレクトリの絶対パスを返します．

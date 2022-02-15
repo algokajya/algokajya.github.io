@@ -57,6 +57,8 @@ Guile色々／ファイルやディレクトリの属性情報
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.2.16</span>：stat手続きの説明を追加．
+<li class="revise">
 <span class="mydate">2022.2.7</span>：初出
 </ul>
 </div>
@@ -189,8 +191,9 @@ https://manpages.debian.org/bullseye/manpages-dev/lstat.2.en.html
 </div>
 
 <p class="sshort"></p>
-&rtri;<span class="myvar">(stat <span class="mysyn">object</span>)</span>
-<p class="short"></p>
+&rtri;<span class="myvar">(stat <span class="mysyn">object</span>)</span><br>
+&emsp;<span class="myvar">(stat <span class="mysyn">object</span> <span class="mysyn">on-error</span>)</span>
+<p class="sshort"></p>
 <span class="mysyn">object</span> によって指定されたファイルやディレクトリの属性値からなるベクタを返します．属性値の種類については次節（属性値を抽出する手続き）の説明を参照して下さい．
 
 <p></p>
@@ -200,9 +203,13 @@ https://manpages.debian.org/bullseye/manpages-dev/lstat.2.en.html
 ファイルはオープンしていなければいけません．
 
 <p></p>
+<span class="mysyn">on-error</span> は，内部的に実行しているシステムコールがエラーを返してきたとき（例えば，ファイルが存在しないなどのとき）の手続きの動作を制御するためのパラメタです．<span class="mysyn">on-error</span> に真値を指定した場合，手続きはエラー（例外）を発生して終了します．一方，#f を指定した場合，エラー（例外）を発生せずに #f を返します．このパラメタの既定値は真値です．
+
+<p></p>
 stat 手続きはシンボリックリンクを辿ります．つまり，
 <span class="mysyn">object</span> がシンボリックリンクだったとき，
 リンクを辿った先のファイルやディレクトリの属性値からなるベクタを返します．
+
 
 <p></p>
 &rtri;<span class="myvar">(lstat <span class="mysyn">object</span>)</span>
@@ -211,7 +218,6 @@ stat 手続きはシンボリックリンクを辿ります．つまり，
 シンボリックリンクを辿らないことを除いて，stat 手続きと同じです．
 つまり，<span class="mysyn">object</span> がシンボリックリンクの場合，
 そのシンボリックリンクの属性値からなるベクタを返します．
-
 
 <p></p>
 &rtri;実行例：カレントディレクトリ上に somefile.txt というファイルと，
@@ -231,6 +237,13 @@ guile&gt;
 </pre>
 ベクタの各成分は次節で説明する属性値を示しています．それから，
 やや分かりにくいのですが，somefile.lnk に対する stat の結果（<span>&#36;</span>2）は somefile.txt の結果（<span>&#36;</span>1）と一致していて，lstat の結果（<span>&#36;</span>3）は異なっています．例えば，第2成分の値（たぶん，inode番号）が異なります．
+
+
+<p></p>
+&rtri;(記録)
+stat 手続きの処理は，
+システムコールの stat 関数または fstat 関数によって行っています．lstat 手続きの処理は，システムコールの lstat 関数によって行っています．
+
 
 </section>
 
