@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／ディレクトリ階層の探索：nftw，ftw，scandir</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="fs-dir.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="fs-pathname.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／ディレクトリ階層の探索：nftw，ftw，scandir
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.21</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+このノートは，
+ディレクトリ階層を探索するための高度な手続きについて勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">モジュール</a>
+<li class="menu"><a class="noline" href="#1">nftw 手続き</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#2">nftw 手続きの形式</a>
+   <li class="menu"><a class="noline" href="#3">必須引数</a>
+   <li class="menu"><a class="noline" href="#4">オプション引数</a>
+   <li class="menu"><a class="noline" href="#5">nftw 手続きの返り値</a>
+   <li class="menu"><a class="noline" href="#6">実行例</a>
+   <li class="menu"><a class="noline" href="#7">具体例</a>
+   <li class="menu"><a class="noline" href="#8">補足</a>
+   </ul>
+<li class="menu"><a class="noline" href="#9">ftw 手続き</a>
+<li class="menu"><a class="noline" href="#10">scandir 手続き</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="sshort"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html
+   ">[7.12 File Tree Walk]</a>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/File-System.html
+   ">[7.2.3 File System]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/nftw.html
+   ">[nftw] </a>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/ftw.html
+   ">[ftw] </a>
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/functions/scandir.html
+   ">[scandir] </a>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Working-with-Directory-Trees.html
+   ">[14.3 Working with Directory Trees]</a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Scanning-Directory-Content.html
+   ">[14.2.6 Scanning the Content of a Directory]</a>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   <a class="noline" href="
+   https://manpages.debian.org/bullseye/manpages-dev/ftw.3.en.html
+   ">[FTW(3):ftw,nftw]</a>
+
+   </ul>
+<li class="menu"> 
+独自調査
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   fs-dirstream.html">ディレクトリストリーム</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">モジュール</h3>
+
+<p class="short"></p>
+以下に説明する手続きを利用するためには，(ice-9 ftw) モジュールをロードする必要があります．
+
+<pre class="list">
+(use-modules (ice-9 ftw))
+</pre>
+
+</section>
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">nftw 手続き</h3>
+
+<p class="short"></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="2">nftw 手続きの形式</h4>
+<p class="short"></p>
+&rtri;<span class="myvar">(nftw <span class="mysyn">path</span> <span class="mysyn">proc</span>)</span><br>
+&emsp;<span class="myvar">(nftw <span class="mysyn">path</span> <span class="mysyn">proc</span> <span class="mysyn">option</span> ... )</span><br>
+<p class="sshort"></p>
+<span class="mysyn">path</span> によって指定されたディレクトリ下のすべてのファイルやディレクトリ（以下，<em>ノード</em>）を再帰的に探索します．
+さらに，探索の途中で，各ノードに対して <span class="mysyn">proc</span> を適用します．<span class="mysyn">path</span> は探索の起点となるディレクトリ名（文字列）です．
+絶対パスと相対パスのどちらでも指定できます．<span class="mysyn">proc</span>は各ノードに適用する手続き，<span class="mysyn">option</span>は nftw の振る舞いを制御するための引数です．
+これらと返り値については後述します．
+
+<p></p>
+<span class="mysyn">path</span> にファイルを指定することもできます．
+その場合，そのファイルだけが探索の対象になります．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="3">必須引数</h4>
+<p class="short"></p>
+&rtri;<b><span class="myvar"><span class="mysyn">proc</span></span></b> は次のようなプロトタイプの手続きです．
+   <div class="dstyle">
+   <span class="myproc">(<span class="mysyn">proc</span> <span class="mysyn">node-name</span> <span class="mysyn">st</span> <span class="mysyn">flag</span> <span class="mysyn">base</span> <span class="mysyn">level</span>)</span>
+   </div>
+nftw 手続きは，各ノードに <span class="mysyn">proc</span> を適用するとき，上記の各引数に次のような値を渡します．
+
+<p class="sshort"></p>
+<span class="myvar"><span class="mysyn">node-name</span></span> には，
+ノードの名前（文字列）を渡します．
+これには探索起点の <span class="mysyn">path</span> も含まれます．
+従って，<span class="mysyn">path</span> に（カレントディレクトリを起点とする）相対パスを指定したときには <span class="mysyn">node-name</span> も相対パスになり，<span class="mysyn">path</span> に絶対パスを指定したときには <span class="mysyn">node-name</span> も絶対パスになります．
+
+<p class="sshort"></p>
+<span class="myvar"><span class="mysyn">st</span></span> には，
+ノードの属性値からなるベクトル（<a class="noline" href="fs-stat.html#stat-lstat">stat手続き</a>または<a class="noline" href="fs-stat.html#stat-lstat">lstat手続き</a>をノードに適用したときの返り値）を渡します．
+
+<p class="sshort"></p>
+<span class="myvar"><span class="mysyn">flag</span></span> には，ノードに関する基礎情報として，
+下記のシンボルのうちの１つを渡します．
+
+<table class="symbol">
+<tr>
+   <th>シンボル</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>&apos;regular</td>
+   <td>
+   ノードが通常ファイルである（ディレクトリでない）ことを示します．
+   これにはスペシャルデバイスやパイプなどの特殊なファイルも含まれます．
+   </td>
+</tr>
+<tr>
+   <td>&apos;directory</td>
+   <td>
+   ノードがディレクトリであることを示します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;directory-processed</td>
+   <td>
+   <span class="mysyn">node-name</span> がディレクトリであって，
+   その子孫ノードのすべてに対して<span class="mysyn">proc</span>が適用されたことを示します．このシンボルは後述する 'depth オプションを指定した場合に，
+   上記の 'directory の代わりに渡されます．
+   </td>
+</tr>
+<tr>
+   <td>&apos;invalid-stat</td>
+   <td>
+   ノードに対するstat手続きがエラーを起こした（#fを返した）ことを示します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;directory-not-readable</td>
+   <td>
+   ノードがディレクトリで，かつ，読み取れなかったことを示します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;stale-symlink</td>
+   <td>
+   <span class="mysyn">node-name</span> がdanglingなシンボリックリンクであることを示します．nftw は，新たに見つけたノードがdanglingなシンボリックリンクだった場合，<span class="mysyn">node-name</span> にそのシンボリックリンクの名前を渡し，<span class="mysyn">flag</span> に 'stale-symlink を渡します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;symlink</td>
+   <td>
+   ノードがシンボリックリンクであり，リンク先のノードが存在することを示します．nftw は，後述する 'physical オプションが指定されたとき，シンボリックリンクを辿らずに，シンボリックリンク自体の名前を <span class="mysyn">node-name</span> に渡し，<span class="mysyn">flag</span> に 'symlink を渡します．
+   </td>
+</tr>
+</table>
+
+<p class="sshort"></p>
+<span class="myvar"><span class="mysyn">base</span></span> は，文字列としてのノード名（<span class="mysyn">node-name</span>）におけるベース部が始まる文字位置（整数）が渡されます．この引数は，ノード名のディレクトリ部とベース部を分離しやすくするためのものです．特に，後述する 'chdir オプションを指定して nftw を実行したときに役立つものと思います．
+
+<p class="sshort"></p>
+<span class="myvar"><span class="mysyn">level</span></span> は，<span class="mysyn">path</span> を根とするディレクトリ階層におけるノードのレベル（整数）が渡されます．
+根（<span class="mysyn">path</span>）のレベルは 0 です．
+
+<p class="short"></p>
+<span class="mysyn">proc</span> の返り値が #t かそれ以外かによって nftw 手続きの振る舞いが変化します．<span class="mysyn">proc</span> の返り値が #t だった場合，<span class="mysyn">proc</span> の処理が成功したものと見なして，探索を継続します．一方，#t 以外だった場合，<span class="mysyn">proc</span> の実行中に何らかのエラーが発生したものと見なして，探索を終了します．さらにその場合，nftw は <span class="mysyn">proc</span> の返り値をそのまま返します．
+
+<p></p>
+&rtri;(注意)
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html#File-Tree-Walk
+">Guileのマニュアル[7.12 File Tree Walk]</a> は，<span class="mysyn">proc</span> に関して次のように注意しています（注：「ftw」となっているところを「nftw」に訂正）．
+<blockquote>
+In the current implementation, 
+returning non-#t from <span class="mysyn">proc</span> is the only valid way to terminate nftw. <span class="mysyn">proc</span> must not use throw or similar to escape. 
+</blockquote>
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="4">オプション引数</h4>
+<p class="short"></p>
+&rtri;<b><span class="myvar"><span class="mysyn">option</span></span></b> は，nftw の振る舞いを変えるためのもので，次のような引数を指定します．これらは幾つでも指定できます．
+
+<table class="symbol">
+<tr>
+   <th>引数</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>'chdir</td>
+   <td>
+   これを指定すると，<span class="mysyn">proc</span> をノードに適用する直前で，
+   ノードを含むディレクトリをカレントディレクトリに設定します．
+従って，新たなノードを探索するたびにカレントディレクトリが変化します．ただし，nftwが終了するときにカレントディレクトリを元々のディレクトリ（nftw を開始した時点のカレントディレクトリ）に戻します．
+カレントディレクトリを変更したときの注意すべき点として，<span class="mysyn">path</span> が相対パスの場合，<span class="mysyn">proc</span>の内部で正しいノード名を取得するために，<span class="mysyn">node-name</span> と <span class="mysyn">base</span> を使ってベース部を抽出する必要があります．<span class="mysyn">path</span> が絶対パスのときには <span class="mysyn">node-name</span> も絶対パスになるのでそのまま利用できます．
+   </td>
+</tr>
+<tr>
+   <td>&apos;depth</td>
+   <td>
+   ・これを指定すると，<span class="mysyn">proc</span> をpost-order（後行順；帰りがけ順）に適用します．
+つまり，現在のノードがディレクトリのとき，
+その子孫ノードのすべてに <span class="mysyn">proc</span> を適用し終えたあとで現在のノードに <span class="mysyn">proc</span> を適用します．<br>
+・これを指定しなかった場合，pre-order（先行順；行きがけ順）に <span class="mysyn">proc</span> を適用します．<br>
+・このオプションについては，後述する補足事項も参照して下さい．
+   </td>
+</tr>
+<tr>
+   <td>&apos;hash-size <span class="mysyn">size</span></td>
+   <td>
+   探索のために利用するハッシュ表の大きさ（スロット数）を指定します．<span class="mysyn">size</span> はスロット数を表す整数です．既定値は 211 スロットです．nftw は，
+各ノードに対して <span class="mysyn">proc</span> を2度以上適用することはなく，
+各シンボリックリンクを2度以上辿ることもありません．
+これらを実現するためにハッシュ表を使っています．
+ちなみに，これによって，巡回的なシンボリックリンクがあったとしても，
+それらを無限に辿ることはありません．
+   </td>
+</tr>
+<tr>
+   <td>&apos;mount</td>
+   <td>
+   これを指定すると，マウントポイントをまたがって探索しません．つまり，<span class="mysyn">path</span> と同じファイルシステムだけを探索します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;physical</td>
+   <td>
+   ・これを指定すると，（danglingでない）シンボリックリンクを辿りません．つまり，
+   （danglingでない）シンボリックリンクのノードに <span class="mysyn">proc</span> を適用しようとするとき，nftw は <span class="mysyn">node-name</span> にシンボリックリンクの名前を渡し，<span class="mysyn">flag</span> に 'symlink を渡します．さらに，<span class="mysyn">proc</span> の <span class="mysyn">st</span> 引数にはシンボリックリンク自体の属性値を渡します．<br>
+・これを指定しなかった場合，nftw は，シンボリックリンクを辿った先のファイルやディレクトリに <span class="mysyn">proc</span> を適用し，（danglingでない）シンボリックリンク自体に <span class="mysyn">proc</span> を適用することはありません．<br>
+・なお，danglingなシンボリックリンクは，その先のファイルやディレクトリに辿ることはできないので，常に <span class="mysyn">proc</span> の適用対象になります．
+   </td>
+</tr>
+</table>
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="5">nftw 手続きの返り値</h4>
+<p class="short"></p>
+&rtri;nftw 手続きは，すべてのノードに対して <span class="mysyn">proc</span> が #t を返してきた場合，#t を返します．これは探索が問題なく成功したことを意味します．
+一方，あるノードに対して <span class="mysyn">proc</span> が #t 以外の値を返してきた場合，その時点で探索を終了し，<span class="mysyn">proc</span> の返り値をそのまま返します．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="6">実行例</h4>
+<p class="short"></p>
+
+&rtri;以下では，次のようなディレクトリに対して nftw 手続きを適用します．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">ls -lR /home/algo/temp</span>
+/home/algo/temp:
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 dir-aaa/
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 dir-bbb/
+lrwxrwxrwx 1 algo algo   12  2月 15 16:45 somefile.lnk -> somefile.txt
+-rw-r--r-- 1 algo algo   22  2月 15 16:44 somefile.txt
+
+/home/algo/temp/dir-aaa:
+lrwxrwxrwx 1 algo algo  7  2月 15 16:40 aaa.lnk -> aaa.txt
+-rw-r--r-- 1 algo algo 22  2月 15 16:44 aaa.txt
+
+/home/algo/temp/dir-bbb:
+-rw-r--r-- 1 algo algo 22  2月 15 16:44 bbb.txt
+<span>&#36;</span> 
+</pre>
+
+<p class="short"></p>
+&rtri;まず nftw 手続きを使って，/home/algo/temp ディレクトリ下のすべてのノードを表示してみます．
+以下の disp 手続きは，
+第1引数の name（ノード名）を表示するだけのものです．
+他の引数は無視しています．
+それから，nftw に探索を続けさせるために #t を返すようにしています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(define (disp name st flag base level) (display name) (newline) #t)</span>
+guile&gt; <span class="mycmd">(use-modules (ice-9 ftw))</span>
+guile&gt; <span class="mycmd">(nftw "/home/algo/temp" disp)</span>
+/home/algo/temp
+/home/algo/temp/dir-aaa
+/home/algo/temp/dir-aaa/aaa.txt
+/home/algo/temp/dir-bbb
+/home/algo/temp/dir-bbb/bbb.txt
+/home/algo/temp/somefile.txt
+<span>&#36;</span>1 = #t
+guile&gt; 
+</pre>
+
+<p class="short"></p>
+&rtri;上の結果を見るとシンボリックリンクが表示されていません．
+これは，nftw は（デフォルトでは）シンボリックリンクを辿った先のファイルやディレクトリに disp を適用するためです．
+そこで，'physical オプションを指定して nftw 手続きを実行してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(nftw "/home/algo/temp" disp 'physical)</span>
+/home/algo/temp
+/home/algo/temp/dir-aaa
+/home/algo/temp/dir-aaa/aaa.txt
+/home/algo/temp/dir-aaa/aaa.lnk
+/home/algo/temp/dir-bbb
+/home/algo/temp/dir-bbb/bbb.txt
+/home/algo/temp/somefile.txt
+/home/algo/temp/somefile.lnk
+<span>&#36;</span>2 = #t
+guile&gt; 
+</pre>
+今度はシンボリックリンクが表示されます．nftw は，'physical が指定されたとき，
+シンボリックリンクを辿らずに，シンボリックリンク自体を1つのノードとして扱います．
+
+<p class="short"></p>
+&rtri;次に，'depth オプションを指定して実行してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(nftw "/home/algo/temp" disp 'physical 'depth)</span>
+/home/algo/temp/dir-aaa/aaa.txt
+/home/algo/temp/dir-aaa/aaa.lnk
+/home/algo/temp/dir-aaa
+/home/algo/temp/dir-bbb/bbb.txt
+/home/algo/temp/dir-bbb
+/home/algo/temp/somefile.txt
+/home/algo/temp/somefile.lnk
+/home/algo/temp
+<span>&#36;</span>3 = #t
+guile&gt; 
+</pre>
+nftw は，'depth が指定されると，post-order（後行順；帰りがけ順）に disp を適用します．そのため，下位のノードから順に表示されることになります．<span class="mysyn">proc</span> の適用順序については，後述する補足事項も参照して下さい．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="7">具体例</h4>
+<p class="short"></p>
+&rtri;ディレクトリ階層を字下げをしながら階層的に表示するスクリプトを作ってみます
+<pre class="list">
+#!/usr/bin/guile \
+-e main -s
+!#
+
+;; show-ft.scm
+
+(use-modules (ice-9 ftw))
+
+(define (main args)
+  (let ((dir-name (cadr args)))
+    (nftw dir-name disp-node 'physical)))
+
+(define (disp-node name st flag base level)
+  (define (indent-space level) (make-string (* level 3) #\space))
+  (let ((base-name (substring name base)))
+    (display (indent-space level))
+    (display base-name)
+    (cond 
+     ((eq? flag 'directory)
+      (display "/"))
+     ((eq? flag 'symlink)
+      (display " -> ") (display (readlink name)))
+     ((eq? flag 'invalid-stat)
+      (display " -- stat?"))
+     ((eq? flag 'directory-not-readable)
+      (display "-- not-readable?"))
+     ((eq? flag 'stale-symlink)
+      (display " -- dangling symlink")))
+    (newline))
+  #t
+  )
+</pre>
+
+<p></p>
+&rtri;下記の /home/algo/temp は先に示したディレクトリです．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">./show-ft.scm /home/algo/temp</span>
+/home/algo/temp/
+   dir-aaa/
+      aaa.txt
+      aaa.lnk -> aaa.txt
+   dir-bbb/
+      bbb.txt
+   somefile.txt
+   somefile.lnk -> somefile.txt
+</pre>
+
+&rtri;次のようなやや病的なディレクトリにも適用してみます．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">ls -lR /home/algo/temp2</span>
+/home/algo/temp2:
+drwxr-xr-x 2 algo algo 4096  2月 19 14:45 dir-aaa/
+drwxr-xr-x 2 algo algo 4096  2月 19 14:45 dir-bbb/
+lrwxrwxrwx 1 algo algo    7  2月 19 14:50 ppp.lnk -> ppp.txt
+lrwxrwxrwx 1 algo algo    7  2月 19 14:50 qqq.lnk -> rrr.lnk
+lrwxrwxrwx 1 algo algo    7  2月 19 14:50 rrr.lnk -> qqq.lnk
+
+/home/algo/temp2/dir-aaa:
+-rw-r--r-- 1 algo algo  0  2月 19 14:44 aaa.txt
+lrwxrwxrwx 1 algo algo 10  2月 19 14:45 bbb.lnk -> ../dir-bbb/
+
+/home/algo/temp2/dir-bbb:
+lrwxrwxrwx 1 algo algo 10  2月 19 14:45 aaa.lnk -> ../dir-aaa/
+-rw-r--r-- 1 algo algo  0  2月 19 14:45 bbb.txt
+<span>&#36;</span> <span class="mycmd">./show-ft.scm /home/algo/temp2</span>
+/home/algo/temp2/
+   dir-aaa/
+      aaa.txt
+      bbb.lnk -> ../dir-bbb
+   ppp.lnk -- dangling symlink
+   rrr.lnk -- dangling symlink
+   qqq.lnk -- dangling symlink
+   dir-bbb/
+      bbb.txt
+      aaa.lnk -> ../dir-aaa
+</pre>
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="8">補足</h4>
+<p class="short"></p>
+&rtri;Guileのハッシュ表は，
+スロット数に対するエントリー数の割合が，あるしきい値の上限を超えたり下限を下回ったりしたら，自動的にハッシュ表を拡大・縮小して，
+すべてのエントリーを再ハッシュします（つまり，余計な仕事をします）．
+従って，ハッシュ表のスロット数がある程度予測できるのであれば，'hash-size を指定したほうがよいでしょう．
+
+<p></p>
+&rtri;nftw はディレクトリ階層の各ノードを素直に再帰的に探索します．
+つまり，探索処理を大まかに見ると，nftw は次のような go 関数を <span class="mysyn">path</span> に対して実行していると言えます．
+なお，下記の v はディレクトリ階層内のノードを表します．
+<pre class="grammar">
+   go(v)
+      apply <span class="mysyn">proc</span> to v if 'depth is not specified.
+      Children ← if v is a directory 
+                     then the set of children of v
+                     else the empty set
+      for each w in Children: go(w) 
+      apply <span class="mysyn">proc</span> to v if 'depth is specified.
+</pre>
+これは，nftw の中で定義されている go 手続きを抽象化したものです．
+これを見ると，各ノードの訪問順序は，'depth オプションを指定してもしなくても変わりません．'depth オプションは，訪問順序を制御するのではなく，<span class="mysyn">proc</span> をどのタイミングで適用するかを制御します．'depth を指定しなかったときには pre-oder（先行順；行きがけ順）に適用し，'depth を指定したときには post-order（後行順；帰りがけ順）に適用します．
+
+<p></p>
+&rtri;nftw や下記の ftw は，POSIXにおいてライブラリ関数として定義されていて，glibc もそれらを実装しています．しかし，Guile の nftw や ftw は，glibc のライブラリ関数を使わずに独自に実装しています．
+ただし，ライブラリ関数の仕様を可能な限り忠実に再現しようとしています．
+例えば，<span class="mysyn">proc</span> の適用は pre-order か post-order のいずれかを排他的に選ばなければなりません．せっかく独自に実装しているのですから，pre-order と post-order を同時に指定できるようにしても良かったのではないかと感じます．
+さらに，その排他性のため，pre-order のときに <span class="mysyn">proc</span> に渡される&apos;directory フラグと，post-order のときに渡される &apos;directory-processed フラグはどちらもノードがディレクトリであることを示しているだけにすぎません．
+つまり，それらを分離する必要はなく，仕様に不備があるように感じてしまいます．
+でも，排他性についても分離についても，
+ライブラリ関数の仕様がそうなっているため，
+その仕様を忠実に再現しているものと思われます．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="9">ftw 手続き</h3>
+
+<p class="short"></p>
+&rtri;<span class="myvar">(ftw <span class="mysyn">path</span> <span class="mysyn">proc</span>)</span><br>
+&emsp;<span class="myvar">(ftw <span class="mysyn">path</span> <span class="mysyn">proc</span> <span class="mysyn">'hash-size</span> <span class="mysyn">size</span>)</span><br>
+<p class="sshort"></p>
+<span class="mysyn">path</span> によって指定されたディレクトリ下のすべてのファイルやディレクト（以下，<em>ノード</em>）を再帰的に探索します．
+さらに，探索の途中で，各ノードに対して <span class="mysyn">proc</span> を適用します．<span class="mysyn">path</span> は探索の起点となるディレクトリ名を表す文字列，<span class="mysyn">proc</span> は手続き（後述），<span class="mysyn">size</span> は探索のために利用するハッシュ表の大きさ（整数），シンボルの 'hash-size はその大きさを指定するときのキーワードです．この手続きの返り値については後述します．
+
+<p></p>
+<span class="mysyn">proc</span> は次のようなプロトタイプの手続きです．
+   <div class="dstyle">
+   <span class="myproc">(<span class="mysyn">proc</span> <span class="mysyn">node-name</span> <span class="mysyn">st</span> <span class="mysyn">flag</span>)</span>
+   </div>
+ftw 手続きは，各ノードに <span class="mysyn">proc</span> を適用するとき，上記の各引数に次のような値を渡します．<span class="mysyn">node-name</span> にはノードの名前（文字列）を渡します．これには探索起点の <span class="mysyn">path</span> も含まれます．<span class="mysyn">st</span> にはノードの属性値からなるベクトル（<a class="noline" href="fs-stat.html#stat-lstat">stat手続き</a>をノードに適用したときの返り値）を渡します．<span class="mysyn">flag</span> には下記のシンボルのうちの１つを渡します．
+
+<table class="symbol">
+<tr>
+   <th>シンボル</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>&apos;regular</td>
+   <td>
+   ノードが通常ファイルである（ディレクトリでない）ことを示します．
+   これにはスペシャルデバイスやパイプなどの特殊なファイルも含まれます．
+   </td>
+</tr>
+<tr>
+   <td>&apos;directory</td>
+   <td>
+   ノードがディレクトリであることを示します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;invalid-stat</td>
+   <td>
+   ノードに対するstat手続きがエラーを起こした（#fを返した）ことを示します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;directory-not-readable</td>
+   <td>
+   ノードがディレクトリで，かつ，読み取れなかったことを示します．
+   </td>
+</tr>
+<tr>
+   <td>&apos;symlink</td>
+   <td>
+   ftw の 'symlink の意味は nftw の 'stale-symlink と同じです（とても紛らわしい）．つまり，ノードが<em>dangling</em>なシンボリックリンクであることを示します．ftw は，シンボリックリンクを辿った先のファイルやディレクトリに対して <span class="mysyn">proc</span> を適用しようとします．ただし，新たに見つけたノードがdanglingなシンボリックリンクだった場合，<span class="mysyn">node-name</span> にそのシンボリックリンクの名前を渡し，<span class="mysyn">flag</span> に 'symlink を渡します．
+   </td>
+</tr>
+</table>
+
+<p></p>
+<span class="mysyn">proc</span> の返り値が #t かそれ以外かによって ftw 手続きの振る舞いが変化します．返り値が #t だった場合，<span class="mysyn">proc</span> の処理が成功したものと見なして，探索を継続します．一方，#t 以外だった場合，<span class="mysyn">proc</span> の実行中に何らかのエラーが発生したものと見なして，探索を終了します．さらにその場合，ftw は <span class="mysyn">proc</span> の返り値をそのまま返します．
+
+<p></p>
+ftw はシンボリックリンクを辿った先のノードに対して<span class="mysyn">proc</span>を適用します．ただし，各ノードに対して<span class="mysyn">proc</span>は一度しか適用しません．
+
+<p></p>
+ftw 手続きは，すべてのノードに対する <span class="mysyn">proc</span> の適用が #t を返してきた場合，#t を返します．これは探索が問題なく成功したことを意味します．
+一方，あるノードに対する <span class="mysyn">proc</span> の適用が #t 以外の値を返してきた場合，その時点で探索を終了し，<span class="mysyn">proc</span> の返り値をそのまま返します．
+
+<p></p>
+&rtri;(注意)
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html#File-Tree-Walk
+">Guileのマニュアル[7.12 File Tree Walk]</a> は，<span class="mysyn">proc</span> に関して次のように注意しています．
+<blockquote>
+In the current implementation, 
+returning non-#t from <span class="mysyn">proc</span> is the only valid way to terminate ftw. <span class="mysyn">proc</span> must not use throw or similar to escape. 
+</blockquote>
+
+
+<p></p>
+&rtri;(記録)
+nftw 手続きと同様に，Guile は，ftw 手続きもライブラリ関数を使わずに独自に実装しています．ただし，その仕様はライブラリ関数の仕様に極力合わせようとしています．
+例えば，上記の 'symlink は 'stale-symlink にすべきだと思うのですが（つまり，nftw と ftw で &apos;symlink の意味を変えるべきではないと思うのですが），
+ライブラリ関数の仕様が上のようになっているため，それを忠実に再現しているものと思われます．
+
+<p></p>
+ftw 手続きの難点はシンボリックリンクを辿ってしまうことです．
+シンボリックリンクを辿るか否かを <span class="mysyn">proc</span> の内部で判断したい場合がけっこうあると思います．そういった場合，ftw 手続きは根本的に使えません．
+ソースコードを見ても効率的に大きな差があるとは感じません．
+以上のようなことから，ftw 手続きは，nftw 手続きによって置き換えられると言ってもよいと思います．
+
+<p></p>
+元々は，POSIXが定めるライブラリ関数の仕様に沿って実現したものだと思います．おそらく，旧い時代への互換性のために残しているのではないかと推測します．
+ちなみに，<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/ftw.html
+">POSIXの仕様書[ftw;APPLICATION USAGE]</a> は次のようなことを述べています．
+<blockquote>
+Applications should use the nftw() function instead of the obsolescent ftw() function.
+</blockquote>
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="10">scandir 手続き</h3>
+
+<p class="short"></p>
+&rtri;<span class="myvar">(scandir <span class="mysyn">path</span>)</span><br>
+&emsp;<span class="myvar">(scandir <span class="mysyn">path</span> <span class="mysyn">select?</span>)</span><br>
+&emsp;<span class="myvar">(scandir <span class="mysyn">path</span> <span class="mysyn">select?</span> <span class="mysyn">compare?</span>)</span><br>
+<p class="sshort"></p>
+<span class="mysyn">path</span> によって指定されたディレクトリに含まれるノード名（ファイル名やディレクトリ名）からなるリストを返します．リストは string-locale&lt;? をもとにソートされます．
+
+<p class="short"></p>
+<span class="myvar"><span class="mysyn">path</span></span> はディレクトリ名を表す文字列です．
+
+<p class="short"></p>
+<span class="myvar"><span class="mysyn">select?</span></span> は文字列を引数とする述語です．
+これを指定した場合，<span class="mysyn">select?</span> が真となるノード名だけが選ばれます．
+
+<p class="short"></p>
+<span class="myvar"><span class="mysyn">compare?</span></span> は2つの文字列を比較する述語です．
+これを指定した場合，string-locale&lt;? の代わりに <span class="mysyn">compare?</span> をもとにソートします．
+
+<p></p>
+&rtri;実行例
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(system "ls -l /home/algo/temp")</span>
+lrwxrwxrwx 1 algo algo   12  2月 15 16:45 somefile.lnk -> somefile.txt
+-rw-r--r-- 1 algo algo   22  2月 15 16:44 somefile.txt
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 temp-aaa
+drwxr-xr-x 2 algo algo 4096  2月 15 16:40 temp-bbb
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(use-modules (ice-9 ftw))</span>
+guile&gt; <span class="mycmd">(scandir "/home/algo/temp")</span>
+<span>&#36;</span>2 = ("." ".." "somefile.lnk" "somefile.txt" "temp-aaa" "temp-bbb")
+guile&gt; 
+</pre>
+
+</section>
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

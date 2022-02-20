@@ -3,7 +3,7 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1">
-   <title>AlgoKajya Guile色々／ディレクトリの操作</title>
+   <title>AlgoKajya Guile色々／ディレクトリやディレクトリストリームの操作</title>
    <link rel="stylesheet" type="text/css" href="../../guile.css">
    <!-- %%% MathJax %%% -->
    <!--
@@ -39,7 +39,7 @@
 &ensp; 
 <a class="noline" href="../index.html">[Up]</a>
 &ensp; 
-<a class="noline" href="fs-pathname.html">[Next]</a>
+<a class="noline" href="fs-ftw.html">[Next]</a>
 &ensp; 
 <a class="noline" href="../../index.html">ホーム</a><br>
 </div>
@@ -47,7 +47,7 @@
 
 <!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="title">
-Guile色々／ディレクトリの操作
+Guile色々／ディレクトリやディレクトリストリームの操作
 </div>
 
 
@@ -124,7 +124,7 @@ Guile, Scheme
    https://www.gnu.org/software/guile/manual/html_node/File-System.html
    ">[7.2.3 File System]</a>
    <a class="noline" href="
-   https://www.gnu.org/software/guile/manual/guile.html#Processes
+   https://www.gnu.org/software/guile/manual/html_node/Processes.html
    ">[7.2.7 Processes]</a>
    <li class="menu"> 
    <a class="noline" href="
@@ -164,7 +164,7 @@ Manpages
    <ul class="menu">
    <li class="menu"> 
    <a class="noline" href="
-   fs-dirstream.html">ディレクトリストリーム</a><br>
+   fs-dirstream.html">ディレクトリストリームの調査</a><br>
    </ul>
 <li>
 このノートはMathJaxを使用しています．
@@ -444,7 +444,7 @@ https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html
 
 <p></p>
 &rtri;ディレクトリストリームについて調べたことを
-<a class="noline" href="fs-dirstream.html">ディレクトリストリーム</a>
+<a class="noline" href="fs-dirstream.html">ディレクトリストリームの調査</a>
 にまとめています．以下の説明は，その調べた結果を踏まえています．
 
 <p></p>
@@ -452,7 +452,7 @@ https://www.gnu.org/software/guile/manual/html_node/File-Tree-Walk.html
 ディレクトリストリームとディレクトリファイルは一体化して処理されています．
 両者は独立していません．ディレクトリストリームにはある程度の大きさのメモリブロックが割り当てられます．そのメモリブロックはすべてのディレクトリエントリーを格納するには小さいかも知れません．そのような場合，
 そのメモリブロックに入る量のディレクトリエントリーが，必要に応じて順々に，ディレクトリファイルから読み込まれます．
-このような処理を行っているため，ディレクトリストリームを処理している最中に，ディレクトリファイルのファイルオフセットを変更するような処理を行うことはできません．そんなことをすると，ディレクトリストリームに関する結果はオカシナものになるでしょう．
+そのため，ディレクトリストリームを処理している最中に，ディレクトリファイルのファイルオフセットを変更するような処理を行うことはできません．そんなことをすると，ディレクトリストリームに関する結果はオカシナものになるでしょう．
 
 
 <p></p>
