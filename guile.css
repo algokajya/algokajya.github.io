@@ -370,6 +370,10 @@ table.symbol {
     border-bottom: solid 1px #404040;
 }
 
+table.symbol tr:nth-child(odd) {
+    background-color:  #f0f0f0;
+}
+
 table.symbol th {
     padding-left: 10px;
     padding-right: 10px;
@@ -378,15 +382,14 @@ table.symbol th {
     border-bottom: solid 1px #404040;
 }
 
-table.symbol tr:nth-child(odd) {
-    background-color:  #f0f0f0;
-}
 
 table.symbol td {
     vertical-align: top;
     padding-left: 10px;
     padding-right: 10px;
     border: none;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
 }
 
 table.symbol td:nth-child(1) {
