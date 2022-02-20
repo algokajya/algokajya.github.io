@@ -66,18 +66,7 @@ Schemeの処理系の一つであるGuileについて学習した色々な事柄
    </ul>
 <p class="sshort"></p>
 <li>
-POSIXシステムコール
-   <div class="abstract">
-   筆者にとって，
-   シェルスクリプトは心理的な負荷がとても高い技術です．
-   特殊な構文や文字列処理の難しさに適応できそうもありません．
-   学生時代に技術系の研究室に入れなかったことや，
-   卒業後に技術系の仕事に就かなかったことが根本的な敗因です．
-   要するに，技術に対する適応能力が低いということです．
-   仕方がないので，シェルスクリプトは潔くあきらめて，
-   その代わりにSchemeを使おうと思っています．SchemeはS式しかないので楽です．
-   それから，システムコールやライブラリの勉強をきっかけにLinuxについてもっと理解を深めたいと思っています．
-   </div>
+ファイルシステム
    <ul class="menu">
    <li class="menu">
    <a class="noline" href="syscall/fs-permission.html">
@@ -93,16 +82,36 @@ POSIXシステムコール
    </a>
    <li class="menu">
    <a class="noline" href="syscall/fs-dir.html">
-   ディレクトリの操作
-   </a>
-   &emsp;
+   ディレクトリやディレクトリストリームの操作
+   </a><br>
    <a class="noline" href="syscall/fs-dirstream.html">
-   ディレクトリストリーム
+   ディレクトリストリームの調査
+   </a>
+   <li class="menu">
+   <a class="noline" href="syscall/fs-ftw.html">
+   ディレクトリ階層の探索
    </a>
    <li class="menu">
    <a class="noline" href="syscall/fs-pathname.html">
    パス名の処理
    </a>
+   </ul>
+
+<p class="sshort"></p>
+<li>
+POSIXシステムコール
+   <div class="abstract">
+   筆者にとって，
+   シェルスクリプトは心理的な負荷がとても高い技術です．
+   特殊な構文や文字列処理の難しさに適応できそうもありません．
+   学生時代に技術系の研究室に入れなかったことや，
+   卒業後に技術系の仕事に就かなかったことが根本的な敗因です．
+   要するに，技術に対する適応能力が低いということです．
+   仕方がないので，シェルスクリプトは潔くあきらめて，
+   その代わりにSchemeを使おうと思っています．SchemeはS式しかないので楽です．
+   それから，システムコールやライブラリの勉強をきっかけにLinuxについてもっと理解を深めたいと思っています．
+   </div>
+   <ul class="menu">
    <li class="menu">
    <a class="noline" href="syscall/userinfo.html">ユーザー・グループ情報</a>
    <li class="menu">
