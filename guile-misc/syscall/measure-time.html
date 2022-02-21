@@ -461,10 +461,10 @@ $1 = 11645165765
 guile> 
 </pre>
 <p></p>
-Guile 3.0.7のソースコード（stime.c）を見ると，
-この手続きは，glibc の
+Guile 3.0.7のソースコード（stime.c）を見ると，REPLまたはスクリプトの開始時刻と get-internal-real-time 手続きを実行したときの時刻を glibc の
 <a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">clock_gettime</a>
-関数を使って次のように実現されています．
+関数を使って次のように求めていて，
+それらの時刻から経過時間を求めて返しています．
    <div class="dstyle">
    clock_gettime (CLOCK_REALTIME, &amp;ts);
    </div>
@@ -494,10 +494,10 @@ guile>
 子プロセスのCPU時間が親プロセス（REPLのプロセス）のCPU時間に含まれていないことを確認しています．
 
 <p></p>
-Guile 3.0.7のソースコード（stime.c）を見ると，
-この手続きは，glibc の
+Guile 3.0.7のソースコード（stime.c）を見ると，REPLまたはスクリプトの開始時刻と get-internal-run-time 手続きを実行したときの時刻を glibc の
 <a class="noline" href="https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html">clock_gettime</a>
-関数を使って次のように実現されています．
+関数を使って次のように求めていて，
+それらの時刻から経過時間を求めて返しています．
    <div class="dstyle">
    clock_gettime (CLOCK_PROCESS_CPUTIME_ID, &ts);
    </div>
