@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile色々／日付と時刻</title>
+   <link rel="stylesheet" type="text/css" href="../../guile.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile色々／日付と時刻
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.2.24</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<p class="short"></p>
+<ul>
+<li>
+日付と時刻に関して勉強したことを記録しています．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#getting-the-current-time">現在時刻（エポックからの経過時間）の取得</a>
+<li class="menu"><a class="noline" href="#broken-down-time">成分別時刻</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#gmtime">UTCの成分別時刻への変換</a>
+   <li class="menu"><a class="noline" href="#localtime">ローカルな成分別時刻への変換</a>
+   <li class="menu"><a class="noline" href="#mktime">成分別時刻から経過時間への逆変換</a>
+   </ul>
+<li class="menu"><a class="noline" href="#extract-from-broken-down-time">時刻成分の抽出</a>
+<li class="menu"><a class="noline" href="#date-time-format">成分別時刻の書式整形</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#0">整形文字列への変換</a>
+   <li class="menu"><a class="noline" href="#conversion-specification">書式指定</a>
+   </ul>
+<li class="menu"><a class="noline" href="#date-time-format-2">整形文字列から成分別時刻への逆変換</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">逆変換の手続き</a>
+   <li class="menu"><a class="noline" href="#2">逆変換の書式指定</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p class="short"></p>
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<p class="short"></p>
+<ul>
+<li>
+Guile, Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Time.html#Time
+   ">[7.2.5 Time]</a>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a> (for Debian 11)
+   </ul>
+<li class="menu"> 
+POSIX
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://pubs.opengroup.org/onlinepubs/9699919799/
+   ">The Open Group Base Specifications Issue 7, 2018 edition<br>
+   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
+   </a><br>
+   </ul>
+<li class="menu"> 
+   glibc
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/index.html#SEC_Contents
+   ">The GNU C Library
+   </a>
+<br>
+   <a class="noline" href="
+   https://www.gnu.org/software/libc/manual/html_node/Calendar-Time.html
+   ">[21.5 Calendar Time]</a><br>
+   </ul>
+<li class="menu"> 
+Manpages
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://manpages.debian.org/">Debian Manpages</a><br>
+   </ul>
+<li>
+このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="getting-the-current-time">現在時刻（エポックからの経過時間）の取得</h3>
+
+<p class="short"></p>
+&rtri;<span class="myvar">(curent-time)</span>
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/time.html
+">[POSIX:time]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Getting-the-Time.html
+">[glibc:21.5.1 Getting the Time]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/time.2.en.html
+">[Manpages:TIME(2)]</a>
+</small>
+</div>
+<p class="sshort"></p>
+エポック（1970-01-01 00:00:00 UTC）から手続き実行時点までの経過時間（秒数）を返します．返り値に閏秒（うるう秒）は含まれません．以下に実行例を示します．
+<pre class="shell">
+<span>&#36;</span> guile
+GNU Guile 3.0.5
+      ..... 起動メッセージ ......
+guile&gt; <span class="mycmd">(current-time)</span>
+<span>&#36;</span>1 = 1645621292
+guile&gt; 
+</pre>
+
+<p></p>
+この手続きは，システムコールの time 関数を使って経過時間を求めています．
+このシステムコールに関して，<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Getting-the-Time.html
+">[glibc:21.5.1 Getting the Time]</a> は次のように述べています．
+<blockquote>
+ It uses the same clock as &apos;clock_gettime (CLOCK_REALTIME_COARSE)&apos;, 
+when the clock is available or &apos;clock_gettime (CLOCK_REALTIME)&apos; otherwise. 
+</blockquote>
+さらに，Debian の <a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/clock_gettime.2.en.html
+">[Manpages:CLOCK_GETRES(2)]</a> に 
+<blockquote>
+CLOCK_REALTIME_COARSE (since Linux 2.6.32; Linux-specific)
+</blockquote>
+とあるので，おそらく clock_gettime (CLOCK_REALTIME_COARSE) を使って経過時間を求めているものと思います．
+
+<p></p>
+&rtri;<span class="myvar">(gettimeofday)</span>
+
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/gettimeofday.html
+">[POSIX:gettimeofday]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Getting-the-Time.html
+">[glibc:21.5.1 Getting the Time]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/gettimeofday.2.en.html
+">[Manpages:GETTIMEOFDAY(2)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+エポック（1970-01-01 00:00:00 UTC）から手続き実行時点までの経過時間（マイクロ秒単位）を，秒単位の部分（整数）と残りのマイクロ秒単位の部分（整数）のペアとして返します．返り値に閏秒（うるう秒）は含まれません．
+なお，マイクロ秒単位の精度が得られるかどうかはシステムに依存します．
+以下に実行例を示します．下記（<span>&#36;</span>1）の第1要素が秒単位の部分，第2要素が残りのマイクロ秒単位の部分です．
+<pre class="shell">
+guile&gt; <span class="mycmd">(gettimeofday)</span>
+<span>&#36;</span>2 = (1645621495 . 17717)
+guile&gt; 
+</pre>
+
+<p></p>
+この手続きは，システムコールの gettimeofday 関数を使って経過時間を求めています．
+このシステムコールに対して，それぞれの仕様書は次のように述べています．
+<blockquote>
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/gettimeofday.html
+">[POSIX:gettimeofday,APPLICATION USAGE]</a>
+</small>
+<br>
+Applications should use the clock_gettime() function instead of the obsolescent gettimeofday() function.
+</blockquote>
+
+<blockquote>
+<small>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Getting-the-Time.html
+">[glibc:21.5.1 Getting the Time]</a>
+</small>
+<br>
+As of the 2008 revision of POSIX, this function is considered obsolete. 
+The GNU C Library will continue to provide this function indefinitely, 
+but new programs should use clock_gettime instead. 
+</blockquote>
+
+<blockquote>
+<small>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/gettimeofday.2.en.html
+">[Manpages:GETTIMEOFDAY(2),NOTES]</a>
+</small>
+<br>
+The time returned by gettimeofday() is affected by discontinuous jumps 
+in the system time (e.g., if the system administrator manually changes 
+the system time). If you need a monotonically increasing clock, 
+see clock_gettime(2).
+</blockquote>
+
+残念なことに，現在のGuileは clock_gettime 関数を使って現在時刻を求める手続きを用意していません．get-internal-real-time という手続きが clock_gettime 関数を使っているのですが，それはプロセス開始時刻からの経過時間（つまり，エポックから見たときのプロセス開始時刻と現在時刻の差分）を求めています．
+
+<p></p>
+ただし，これは，マイクロ秒単位の精度で現在時刻を求めたい場合の話です．
+秒単位の精度でよければ time 手続きを使えばよいと思います．
+
+</section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="broken-down-time">成分別時刻</h3>
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="gmtime">UTCの成分別時刻への変換</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(gmtime <span class="mysyn">time</span>)</span>
+
+
+<p class="sshort"></p>
+<span class="mysyn">time</span> が表す時刻をエポック（970-01-01 00:00:00 UTC）からの経過時間と見なして，UTC の broken-down time を表すベクタに変換して返します．<span class="mysyn">time</span> は，秒単位の整数です．通常，current-time 手続きや gettimeofday 手続きによって取得した経過時間を指定します．簡単な実行例を示します．
+<pre class="shell">
+guile&gt; (gmtime (current-time))
+<span>&#36;</span>1 = #(23 7 13 23 1 122 3 53 0 0 "GMT")
+guile&gt; 
+</pre>
+
+
+<p></p>
+Guileにおける <em>broken-down time</em>（以下，<em>成分別時刻</em>）は，秒・分・時・日・月・年などの成分に分解した時刻のことです．Guileは成分別時刻をベクタによって表現しています．成分の種類については次節（成分を抽出する手続き）を参照して下さい．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="localtime">ローカルな成分別時刻への変換</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(localtime <span class="mysyn">time</span>)</span><br>
+&emsp;<span class="myvar">(localtime <span class="mysyn">time</span> <span class="mysyn">zone</span>)</span>
+
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/localtime.html
+">[POSIX:localtime]</a>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03
+">[POSIX: 8.3 Other Environment Variables,TZ]</a>
+<br>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Broken_002ddown-Time.html
+">[glibc:21.5.3 Broken-down Time]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+">[glibc:21.5.6 Specifying the Time Zone with TZ]</a>
+<br>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/localtime.3.en.html
+">[Manpages:CTIME(3)]</a>
+<!-- 
+<a class="noline" href="
+https://manpages.debian.org/bullseye/libdatetime-timezone-perl/DateTime::TimeZone::Catalog.3pm.en.html
+">[Manpages:DateTime::TimeZone::Catalog(3pm)]</a>
+-->
+</small>
+</div>
+
+<p class="sshort"></p>
+<span class="mysyn">time</span> が表す時刻をエポック（970-01-01 00:00:00 UTC）からの経過時間と見なして，<span class="mysyn">zone</span> が表すタイムゾーンの broken-down time を表すベクタに変換して返します．<span class="mysyn">zone</span> を省略した場合，環境変数の <b><span class="myvar">TZ</span></b> に設定されたタイムゾーンかまたはシステム標準のタイムゾーン（/etc/localtime）を使用します．
+
+<p></p>
+<em><span class="mysyn">time</span></em> は秒単位の整数です．通常，current-time 手続きや gettimeofday 手続きによって取得した経過時間を指定します．
+
+<p></p>
+<em><span class="mysyn">zone</span></em> は次のような形式の文字列を指定します．
+   <div class="dstyle">
+   ":<span class="mysyn">path</span>"
+   </div>
+ここで，<span class="mysyn">path</span> はタイムゾーンのデータファイルのパスです．そのパスの先頭がスラッシュ（/）だった場合，データファイルの絶対パスが指定されたものと解釈します．一方，パスの先頭がスラッシュ（/）でなかった場合，<em>/usr/share/zoneinfo</em> ディレクトリに保存されているデータファイルが指定されたものと解釈します．
+例えば，アメリカのニューヨークのタイムゾーンは，
+   <div class="dstyle">
+   ":/usr/share/zoneinfo/America/New_York" 
+    &emsp;または&emsp;
+   ":America/New_York"
+   </div>
+と指定します．
+なお，タイムゾーンのデータファイルであれば <span class="mysyn">path</span> には何でも（例えば，シンボリックリンクでも）指定できます．
+
+<p></p>
+&rtri;実行例
+<pre class="shell">
+guile&gt; <span class="mycmd">(define ctm (current-time))</span>
+guile&gt; <span class="mycmd">(localtime ctm)</span>
+<span>&#36;</span>1 = #(58 11 22 23 1 122 3 53 0 -32400 "JST")
+guile&gt; <span class="mycmd">(localtime ctm ":Asia/Tokyo")</span>
+<span>&#36;</span>2 = #(58 11 22 23 1 122 3 53 0 -32400 "JST")
+guile&gt; <span class="mycmd">(localtime ctm ":America/New_York")</span>
+<span>&#36;</span>3 = #(58 11 8 23 1 122 3 53 0 18000 "EST")
+guile&gt; (<span class="mycmd">localtime ctm ":/etc/localtime")</span>
+<span>&#36;</span>4 = #(58 11 22 23 1 122 3 53 0 -32400 "JST")
+guile&gt; 
+</pre>
+最後の実行例は，
+システム標準のタイムゾーンのデータファイル（/etc/localtime)を指定しています．
+ちなみに，/etc/localtime は /usr/share/zoneinfo/Asia/Tokyo へのシンボリックリンクです．
+
+
+<p></p>
+&rtri;(記録)
+タイムゾーンの文字列について，<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Time.html#Time
+">Guileのマニュアル[Guile:7.2.5 Time]</a> は <a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+">[glibc:21.5.6 Specifying the Time Zone with TZ]</a> を参照せよ，と述べています．glibcのマニュアルは，おおよそ次のことを述べています．
+   <ul>
+   <li>
+   文字列の指定形式は3種類あります．上で述べた形式（コロンから始まる文字列形式）はそのうちの1つで，glibc では the most common format だそうです．
+ちなみに，他の2つの形式は more cumbersome and less precise とのことです．
+   <li>
+   <a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03
+">[POSIX: 8.3 Other Environment Variables,TZ]</a> は，他の2つの形式を詳細に定義していて，コロンのあとに文字列を指定する形式の解釈は実装依存としています．
+従って，上で述べた形式の解釈，すなわちコロンのうしろにタイムゾーンのデータファイル名を指定するという解釈は，glibc に固有の方式として理解しておいたほうがよいでしょう．
+   <li>
+   タイムゾーンのデータファイルは，
+   通常，<a class="noline" href="https://www.iana.org/time-zones">Time Zone Database</a> に基づいて作成されているとのことです．
+   </ul>
+
+<p></p>
+&rtri;(記録)
+タイムゾーンに関係した手続きとして <em>(tzset)</em> があります．
+この手続きは，REPLまたはスクリプトにおけるタイムゾーンの既定値を，TZ 環境変数に設定されたタイムゾーンかシステム標準のタイムゾーン（/etc/localtime）に設定します．
+でも，通常，この手続きを使用することはないでしょう．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="mktime">成分別時刻から経過時間への逆変換</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(mktime <span class="mysyn">sbd-time</span>)</span><br>
+&emsp;<span class="myvar">(mktime <span class="mysyn">sbd-time</span> <span class="mysyn">zone</span>)</span>
+<p class="sshort"></p>
+成分別時刻と同じ形式のベクタ <span class="mysyn">sbd-time</span> を，
+「エポック（970-01-01 00:00:00 UTC）からの経過時間（秒数）」と
+「正規化された成分別時刻」のペアに変換して返します．
+別の言い方をすると（あくまで意味論的に言い換えると），
+<span class="mysyn">sbd-time</span> をエポックからの経過時間に変換して，
+その経過時間に localtime を適用することによって成分別時刻を求めて，
+それらをペアにして返すと言うことができます．
+
+<p></p>
+タイムゾーン <span class="mysyn">zone</span> を指定した場合，<span class="mysyn">sbd-time</span> と正規化された成分別時刻をそのタイムゾーンの時刻として処理します．<span class="mysyn">zone</span> を省略した場合，TZ 環境変数かまたはシステム標準のタイムゾーン（/etc/localtime）を使用します．
+なお，<span class="mysyn">zone</span>の指定方法については <a class="noline" href="#localtime">localtime</a> の説明を参照して下さい．
+
+<p></p>
+<em>正規化された成分別時刻</em>とは，各成分に対する常識的な条件（例えば，秒や分は0以上59以下の整数であり，時は0以上23以下の整数であるといった条件）を満たす成分別時刻のことです．<em><span class="mysyn">sbd-time</span></em> は成分別時刻のベクタと同じ形式をしていれば，正規化されている必要はありません．例えば，秒の成分として -120 や 120 といった値を指定することができます．このような場合，mktime は秒の成分を0に変更して，代わりに分の成分から2を引いたり加えたりして，成分別時刻を正規化します．
+
+<p></p>
+&rtri;実行例
+<pre class="shell">
+guile&gt; <span class="mycmd">(current-time)</span>
+<span>&#36;</span>1 = 1645652617
+guile&gt; <span class="mycmd">(localtime $1)</span>
+<span>&#36;</span>2 = #(37 43 6 24 1 122 4 54 0 -32400 "JST")
+guile&gt; <span class="mycmd">(mktime $2)</span>
+<span>&#36;</span>3 = (1645652617 . #(37 43 6 24 1 122 4 54 0 -32400 "JST"))
+guile&gt; <span class="mycmd">(mktime #(-120 43 6 24 1 122 4 54 0 -32400 "JST"))</span>
+<span>&#36;</span>4 = (1645652460 . #(0 41 6 24 1 122 4 54 0 -32400 "JST"))
+guile&gt; <span class="mycmd">(mktime #(120 43 6 24 1 122 4 54 0 -32400 "JST"))</span>
+<span>&#36;</span>5 = (1645652700 . #(0 45 6 24 1 122 4 54 0 -32400 "JST"))
+guile&gt; 
+</pre>
+current-time によって現在時刻（<span>&#36;</span>1）を取得して，
+それを localtime によって成分別時刻（<span>&#36;</span>2）に変換して，
+それに mktime を適用して現在時刻と成分別時刻のペア（<span>&#36;</span>3）を作っています．
+<p class="short"></p>
+4番目の実行例は，成分別時刻の第1成分（秒の成分）を負の整数にして mktime を適用しています．
+その結果（<span>&#36;</span>4；正規化された成分別時刻）を見ると，
+第1成分は0に変化し，第2成分（分の成分）が43分から41分に変化しています．
+5番目の実行例は，第1成分（秒）を120にして mktime を適用しています．
+その結果（<span>&#36;</span>5；正規化された成分別時刻）を見ると，
+第1成分は0に変化し，第2成分（分の成分）が43分から45分に変化しています．
+ 
+
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="extract-from-broken-down-time">時刻成分の抽出</h3>
+
+<p></p>
+gmtime 手続きや localtime 手続きによって得た成分別時刻から各成分を抽出するために，
+以下に示すような手続きが用意されています．以下の <span class="mysyn">tm</span> は成分別時刻を表すベクタです．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:sec <span class="mysyn">tm</span>)</span><br>
+秒（0〜59）を返します．
+
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:min <span class="mysyn">tm</span>)</span><br>
+分（0〜59）を返します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:hour <span class="mysyn">tm</span>)</span><br>
+時（0〜23）を返します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:mday <span class="mysyn">tm</span>)</span><br>
+月内の日付（1〜31）を返します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:mon <span class="mysyn">tm</span>)</span><br>
+月（0〜11）を返します．これは，月の数から1を引いた値を表します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:year <span class="mysyn">tm</span>)</span><br>
+年（西暦年から1900を引いた値）を返します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:wday <span class="mysyn">tm</span>)</span><br>
+曜日を返します．これは0〜6の整数で，0から順に日曜，月曜，... を表します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:yday <span class="mysyn">tm</span>)</span><br>
+年内の通算日（0〜365）を返します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:isdst <span class="mysyn">tm</span>)</span><br>
+夏時間が有効か否かのフラグ（整数）を返します．0は無効，正整数は有効，負の整数は不明を表します．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:gmtoff <span class="mysyn">tm</span>)</span><br>
+UTCからの時差（zone time offset）の秒数（-46800〜43200）を返します．
+一般的には，時差の値は，UTCの基準点から見て東方向を正の値（+1〜+12），
+西方向を負の値（-12〜-1）にするようです（east of UTC）．
+でも，Guileの成分別時刻における時差（この手続きの返り値）は，
+西方向を正の値，東方向を負の値としています（west of UTC）．
+例えば，日本（Asia/Tokyo）の zone time offset は，
+一般的には+9時間（日本のほうが9時間進んでいる）ですが，
+この手続きの返り値は -32400 秒（-9時間）です．
+
+<p class="short"></p>
+&rtri;<span class="myvar">(tm:zone <span class="mysyn">tm</span>)</span><br>
+タイムゾーンを表す記号（文字列）を返します．
+
+<p></p>
+&rtri;実行例
+<pre class="shell">
+guile&gt; <span class="mycmd">(localtime (current-time))</span>
+<span>&#36;</span>1 = #(49 5 7 24 1 122 4 54 0 -32400 "JST")
+guile&gt; <span class="mycmd">(tm:sec <span>&#36;</span>1)</span>
+<span>&#36;</span>2 = 49
+guile&gt; <span class="mycmd">(tm:min <span>&#36;</span>1)</span>
+<span>&#36;</span>3 = 5
+guile&gt; <span class="mycmd">(tm:hour <span>&#36;</span>1)</span>
+<span>&#36;</span>4 = 7
+guile&gt; <span class="mycmd">(tm:mday <span>&#36;</span>1)</span>
+<span>&#36;</span>5 = 24
+guile&gt; <span class="mycmd">(tm:mon <span>&#36;</span>1)</span>
+<span>&#36;</span>6 = 1
+guile&gt; <span class="mycmd">(tm:year <span>&#36;</span>1)</span>
+<span>&#36;</span>7 = 122
+guile&gt; <span class="mycmd">(tm:wday <span>&#36;</span>1)</span>
+<span>&#36;</span>8 = 4
+guile&gt; <span class="mycmd">(tm:yday <span>&#36;</span>1)</span>
+<span>&#36;</span>9 = 54
+guile&gt; <span class="mycmd">(tm:isdst <span>&#36;</span>1)</span>
+<span>&#36;</span>10 = 0
+guile&gt; <span class="mycmd">(tm:gmtoff <span>&#36;</span>1)</span>
+<span>&#36;</span>11 = -32400
+guile&gt; <span class="mycmd">(tm:zone <span>&#36;</span>1)</span>
+<span>&#36;</span>12 = "JST"
+guile&gt; 
+</pre>
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="date-time-format">成分別時刻の書式整形</h3>
+
+<p class="short"></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="0">整形文字列への変換</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(strftime <span class="mysyn">format</span> <span class="mysyn">tm</span>)</span><br>
+
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/strftime.html
+">[POSIX:strftime]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Formatting-Calendar-Time.html
+">[glibc:21.5.4 Formatting Calendar Time]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/strftime.3.en.html
+">[Manpages:STRFTIME(3)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+成分別時刻 <span class="mysyn">tm</span> を <span class="mysyn">format</span> で指定された書式に沿って整形した文字列を返します．<span class="mysyn">format</span> は書式を指定した文字列です．
+簡単な実行例を示します．書式指定文字列については後述する説明を参照して下さい．
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(define tm (localtime (current-time)))</span>
+guile&gt; <span class="mycmd">tm</span>
+<span>&#36;</span>1 = #(16 50 12 24 1 122 4 54 0 -32400 "JST")
+guile&gt; <span class="mycmd">(strftime "%F" tm)</span>
+<span>&#36;</span>2 = "2022-02-24"
+guile&gt; <span class="mycmd">(strftime "%F %T" tm)</span>
+<span>&#36;</span>3 = "2022-02-24 12:50:16"
+guile&gt; <span class="mycmd">(strftime "%c" tm)</span>
+<span>&#36;</span>4 = "2022年02月24日 12時50分16秒"
+guile&gt; <span class="mycmd">(strftime "%Ec" tm)</span>
+<span>&#36;</span>5 = "令和04年02月24日 12時50分16秒"
+guile&gt; <span class="mycmd">(strftime "%EC%_Ey年%_m月%e日 %l時%_M分%_S秒" tm)</span>
+<span>&#36;</span>6 = "令和04年 2月24日 12時50分16秒"
+guile> 
+</pre>
+
+最後の実行例は，
+年月日などの各数字列を空白を付加して表示するような書式を指定しています．
+残念ながら，和暦の年（Ey）には空白の詰め込み（下線 _）は機能しないようです．
+ロケールに依存する変換については，変換処理がライブラリ関数とは独立している可能性があるので，<span class="mysyn">glibc-修正子</span>は機能しないのかも知れません．
+
+<p></p>
+&rtri;(記録)
+この手続きは，Gnulibが提供する nstrftime 関数を使って実現しています．
+残念ながら，
+そのマニュアルは見当たりません（少なくとも筆者には見つけることができません）．<a class="noline" href="https://www.gnu.org/software/gnulib/">Gnulibのサイト</a>と見ると，「The manual is still minimal and sketchy」とあるので，nstrftime のマニュアルはないのかも知れません．<a class="noline" href="
+https://www.gnu.org/software/gnulib/MODULES.html#module=nstrftime
+">ソースコード</a>は公開されているので，それを読めば詳しいことを知ることができるでしょう．
+
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="conversion-specification">書式指定</h4>
+<p class="short"></p>
+&rtri;書式指定文字列（上記の <em><span class="mysyn">format</span></em>）は，
+変換指定と通常の文字から構成された文字列です．
+<em>変換指定</em>（conversion specification）は，
+もっとも一般的には，次のような形式をしています．
+<p class="sshort"></p>
+   <div class="ddstyle">
+      %[<span class="mysyn">glibc-修正子</span>][<span class="mysyn">幅</span>][<span class="mysyn">ロケール修正子</span>]<span class="mysyn">変換指定子</span>
+   </div>
+<p class="sshort"></p>
+ここで，角括弧は省略可能であることを示しています．例えば，
+<p class="sshort"></p>
+   <div class="ddstyle">
+   "%_10S" 
+   </div>
+<p class="sshort"></p>
+という書式指定は，<span class="mysyn">glibc-修正子</span>の下線（_）と，<span class="mysyn">幅</span>の 10 と，<span class="mysyn">変換指定子</span>の S からなり，それぞれ，
+数字以外の部分は空白を詰め込むこと，半角10文字分の幅で表示すること，秒数を表示することを示しています．
+
+<p></p>
+上記の形式を見ても分かるように，省略不可の<span class="mysyn">変換指定子</span>が基本的な書式整形を行います．各修正子や幅はその結果を修正するためのものです．そこで，まず<span class="mysyn">変換指定子</span>について説明して，そのあとで各修正子と幅について説明します．
+
+<p></p>
+&rtri;
+<em><span class="mysyn">変換指定子</span></em>（conversion specifier）は，
+成分別時刻から各成分を適当な書式で表示したり，
+複数の成分を合成して表示するためのもので，以下に示す文字を指定します．
+なお，<span class="mysyn">変換指定子</span>は，おおまかに，
+ロケール非依存のものとロケール依存のものに分類できるので，
+以下ではその分類に沿って示しています．
+また，E から始まる2文字のものは，
+分かりやすさを意図して，<span class="mysyn">変換指定子</span>に<span class="mysyn">ロケール修正子</span>を付加したものを示しています．文字 E が<span class="mysyn">ロケール修正子</span>で，それに続く文字（C, Y, yなど）が<span class="mysyn">変換指定子</span>です．
+
+<br>
+<p></p>
+・単一の時刻成分を抽出する変換指定子（ロケール非依存）．
+<table class="symbol">
+<tr>
+   <th>変換指定子</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>C&emsp;&emsp;&emsp;&emsp;&emsp;</td>
+   <td>
+   西暦年の上2桁（世紀から1を引いた値）．「19」や「20」など．
+   </td>
+</tr>
+<tr>
+   <td>Y</td>
+   <td>
+   西暦年（4桁）．「2022」年など．紀元以前の年は0や負数で表示される．
+   </td>
+</tr>
+<tr>
+   <td>y</td>
+   <td>
+   西暦年の下2桁．「00」〜「99」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>G,g</td>
+   <td>
+   西暦年（The ISO 8601 week-based year）．Y や y とほぼ同じです．
+   年末・年始のぎりぎりの日時を処理したときに違いが生じます．
+   後述する V 変換指定子のところで説明する週番号（ISO週番号）に応じて年を決めます．例えば，大晦日の適当な時刻を処理した際に，大晦日を含む週がISO週番号では翌年の最初の週だったとき，G や g 変換指定子の結果は翌年になります．逆の場合（年始の日時を処理したときに，その結果が前年になる場合）もあります．これをどういった場面で使うのかは不明です，
+   </td>
+</tr>
+<tr>
+   <td>m</td>
+   <td>
+   月．「01」〜「12」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>d</td>
+   <td>
+   日（月内の通算日）．「01」〜「31」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>e</td>
+   <td>
+   日（月内の通算日）．「&nbsp;1」〜「31」．1桁の場合，空白を付加する．
+   </td>
+</tr>
+<tr>
+   <td>j</td>
+   <td>
+   日（年内の通算日）．「001」〜「366」．3桁未満の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>H</td>
+   <td>
+   時（24時間表記）．「00」〜「23」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>k</td>
+   <td>
+   時（24時間表記）．「&nbsp;0」〜「23」．1桁の場合，空白を付加する．
+   </td>
+</tr>
+<tr>
+   <td>I</td>
+   <td>
+   時（12時間表記）．「01」〜「12」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>l</td>
+   <td>
+   時（12時間表記）．「&nbsp;1」〜「12」．1桁の場合，空白を付加する．
+   </td>
+</tr>
+<tr>
+   <td>M</td>
+   <td>
+   分．「00」〜「59」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>S</td>
+   <td>
+   秒．「00」〜「60」（注：60は閏秒を含むとき）．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>s</td>
+   <td>
+   秒．エポック（1970-01-01 00:00:00 UTC）からの秒数．
+   </td>
+</tr>
+<tr>
+   <td>u</td>
+   <td>
+   曜日の番号．「1」〜「7」．月曜日を1とする．
+   </td>
+</tr>
+<tr>
+   <td>w</td>
+   <td>
+   曜日の番号．「0」〜「6」．月曜日を0とする．
+   </td>
+</tr>
+<tr>
+   <td>U</td>
+   <td>
+   週の番号（年内の通算番号）．その年の最初の日曜日を含む週を0番とする．
+   「00」〜「53」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>V</td>
+   <td>
+   週の番号（ISO 8601 が定める週番号）．新たな年の日を4日以上含む最初の週（つまり，1月4日を含む週）を0番とする．「01」〜「53」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>W</td>
+   <td>
+   週の番号（年内の通算番号）．その年の最初の月曜日を含む週を0番とする．
+   「00」〜「53」．1桁の場合，0を付加する．
+   </td>
+</tr>
+<tr>
+   <td>z</td>
+   <td>
+   ・RFC 822/ISO 8601:1988 style numeric time zone．Asia/Tokyoの場合，「+0900」．<br>
+   ・gmtime や localtime によって得られるタイムゾーンは west of UTC（UTCの基準点から見て西回りは正，東回りは負）の値ですが，
+   ここでは east of UTC（東周りは正，西回りは負）の値になるようです．まぎらわしい．
+   </td>
+</tr>
+<tr>
+   <td>Z</td>
+   <td>
+   タイムゾーンの省略名．Asia/Tokyoの場合，「JST」．
+   </td>
+</tr>
+</table>
+
+<p></p>
+・複数の時刻成分を合成する変換指定子（ロケール非依存）．
+<table class="symbol">
+<tr>
+   <th>変換指定子</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>D&emsp;&emsp;&emsp;&emsp;&emsp;</td>
+   <td>
+   "%m/%d/%y"（月/日/年）と等価．年は2桁．
+   </td>
+</tr>
+<tr>
+   <td>F</td>
+   <td>
+   "%Y-%m-%d"（年-月-日）と等価．年は4桁．
+   </td>
+</tr>
+<tr>
+   <td>R</td>
+   <td>
+   時刻（24時間表記）．"%H:%M"（時:分）と等価．秒は表示しない．「13:08」など．
+   </td>
+</tr>
+<tr>
+   <td>T</td>
+   <td>
+   時刻（24時間表記）．"%H:%M:%S"（時:分:秒）と等価．「13:08:14」など．
+   </td>
+</tr>
+</table>
+
+<p></p>
+・ロケール依存の変換指定子．
+<table class="symbol">
+<tr>
+   <th>変換指定子</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>EC</td>
+   <td>
+   和暦の元号（ja_JPロケールの場合）．「令和」など．
+   </td>
+</tr>
+<tr>
+   <td>EY</td>
+   <td>
+   和暦の年（ja_JPロケールの場合）．「令和04年」など．
+   </td>
+</tr>
+<tr>
+   <td>Ey</td>
+   <td>
+   和暦の年の数字部分（ja_JPロケールの場合）．「04」など．
+   </td>
+</tr>
+<tr>
+   <td>b</td>
+   <td>
+   月の省略名．ja_JPロケールの場合，「&nbsp;1月」〜「12月」．1桁の場合，空白を付加する．
+   </td>
+</tr>
+<tr>
+   <td>h</td>
+   <td>
+   上記の b と等価．
+   </td>
+</tr>
+<tr>
+   <td>B&emsp;&emsp;&emsp;&emsp;&emsp;</td>
+   <td>
+   月の完全な名前．ja_JPロケールの場合，「1月」〜「12月」．1桁の場合，空白を付加しない．
+   </td>
+</tr>
+<tr>
+   <td>a</td>
+   <td>
+   曜日の省略名．ja_JPロケールの場合，「日」曜日〜「土」曜日．
+   </td>
+</tr>
+<tr>
+   <td>A</td>
+   <td>
+   曜日の完全な名前．ja_JPロケールの場合，「日曜日」〜「土曜日」．
+   </td>
+</tr>
+<tr>
+   <td>p,P</td>
+   <td>
+   午前・午後の表示．ja_JPロケールの場合，ｐ と P に違いはなく，「午前」と「午後」．ちなみに，ja_JP以外のロケールの場合，pは大文字（AM,PMなど）で表示し，Pは小文字（am,pmなど）で表示するらしい．
+   </td>
+</tr>
+<tr>
+   <td>c</td>
+   <td>
+   日付と時刻の表示．年を西暦で表示する．ja_JPロケールの場合，「2022年02月23日 13時08分14秒」など．
+   </td>
+</tr>
+<tr>
+   <td>Ec</td>
+   <td>
+   日付と時刻の表示．ja_JPロケールの場合，年を和暦で表示する．「令和04年02月23日 13時08分14秒」など．
+   </td>
+</tr>
+<tr>
+   <td>x</td>
+   <td>
+   日付の表示（時刻を含まない）．年を西暦で表示する．ja_JPロケールの場合，「2022年02月23日」など．
+   </td>
+</tr>
+<tr>
+   <td>Ex</td>
+   <td>
+   日付の表示（時刻を含まない）．ja_JPロケールの場合，年を和暦で表示する．「令和04年02月23日」など．
+   </td>
+</tr>
+<tr>
+   <td>r</td>
+   <td>
+   時刻の表示．ja_JPロケールの場合，「午前」・「午後」を含む12時間形式．「午後01時08分14秒」など．
+   </td>
+</tr>
+<tr>
+   <td>X</td>
+   <td>
+   時刻の表示．24時間形式．ja_JPロケールの場合，「13時08分14秒」など．
+   </td>
+</tr>
+</table>
+
+
+<p></p>
+・その他（ロケール非依存）
+<table class="symbol">
+<tr>
+   <th>変換指定子</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>n&emsp;&emsp;&emsp;&emsp;&emsp;</td>
+   <td>
+   改行する．
+   </td>
+</tr>
+<tr>
+   <td>t</td>
+   <td>
+   タブ文字．
+   </td>
+</tr>
+<tr>
+   <td>%</td>
+   <td>
+   パーセント記号（%）を表示する．
+   </td>
+</tr>
+</table>
+
+<p></p>
+&rtri;<em><span class="mysyn">ロケール修正子</span></em> は，<span class="mysyn">変換指定子</span>の結果をロケールに応じた書式に修正するためのものです．次の2つがあります．残念ながら，2つを同時に指定することはできません．
+
+<table class="symbol">
+<tr>
+   <th>ロケール修正子</th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>E&emsp;&emsp;&emsp;</td>
+   <td>
+   ・EC（元号） や EY（和暦の年）のように，
+   ロケールに依存した別書式があるときに，
+   その別書式を使って表示します．<br>
+   ・この修正子は，<span class="mysyn">変換指定子</span>の c, C, x, X, y, Y に対して適用できます．
+     その他の<span class="mysyn">変換指定子</span>に適用した場合（例えば，"%Em"などと指定した場合），その動作は不明です（一般的には，単なる文字列として処理されるようです）．<br>
+   ・単独では使用できません．"%E"のように単独で指定すると，
+   単なる文字列として処理されるようです．
+   </td>
+</tr>
+<tr>
+   <td>O</td>
+   <td>
+   ・ロケールに応じた数字表記がある場合，数字をその数字表記に変換します．
+   ja_JPロケールの場合，漢数字に変換します．
+   例えば，「53」を「五十三」に変換します．<br>
+   ・この修正子は，<span class="mysyn">変換指定子</span>の C, y, m, d, e, j, H, k, I, l, M, S, u, w, U, V, W, g に対して適用できます．別の言い方をすると，Y（4桁の西暦年）とs（エポックからの秒数）を除く，数字列を結果とする<span class="mysyn">変換指定子</span>に適用できます． 
+     その他の<span class="mysyn">変換指定子</span>に適用した場合（例えば，"%OY"や"%OD"などと指定した場合），その動作は不明です（一般的には，単なる文字列として処理されるようです）．<br>
+   ・単独では使用できません．"%O"のように単独で指定すると，
+   単なる文字列として処理されるようです．
+   </td>
+</tr>
+</table>
+
+<p></p>
+&rtri;<em><span class="mysyn">幅</span></em> は正整数（10進表記）を指定します．
+<span class="mysyn">変換指定子</span>の結果がその幅に収まらない場合，
+指定された幅を無視して結果を表示するようです．
+結果が幅よりも短い場合，<span class="mysyn">変換指定子</span>の種類に応じて，
+結果以外の部分に0を詰め込んだり空白を詰め込んだりします．
+マニュアルは，幅が指定できるとしか述べていなくて，
+詳しい説明は何もないので，
+実際に試しながら使うしかないと思います．
+
+
+<p></p>
+&rtri;<em><span class="mysyn">glibc-修正子</span></em> は，glibc 固有の修正機能で，
+次のような文字を指定します．
+以下の最初の3つの修正子は数字列を結果とする<span class="mysyn">変換指定子</span>に適用することを想定しています．数字列以外を結果とする<span class="mysyn">変換指定子</span>に適用した場合の動作は不明です．
+
+<table class="symbol">
+<tr>
+   <th><span class="mysyn">glibc-修正子</span></th>
+   <th>意味</th>
+</tr>
+<tr>
+   <td>_（下線）&emsp;&emsp;&emsp;</td>
+   <td>
+   ・数字列を結果とする<span class="mysyn">変換指定子</span>に適用した場合，
+   数字以外の部分に空白を詰め込みます．<br>
+   ・<span class="mysyn">変換指定子</span>がその結果に0を詰め込む場合であっても，その0も空白に変更してしまいます．
+例えば，"%_S"（空白付加＆秒数）を指定した場合，1桁の秒数は本来ならば0が詰め込まれますが，下線（_）によってその0は空白に変更されてしまいます．例えば，
+「00」秒や「01」秒は「&nbsp;0」秒や「&nbsp;1」秒のように表示されます．<br>
+   ・常識的には，年内の通算日（j）や秒（S）などの0付加の<span class="mysyn">変換指定子</span>しかないものに適用して使うものだと思います．<br>
+   ・数字列以外を結果とする<span class="mysyn">変換指定子</span>に指定した場合，
+   その動作は不明です．
+   </td>
+</tr>
+<tr>
+   <td>-（ダッシュ）</td>
+   <td>
+   ・数字列を結果とする<span class="mysyn">変換指定子</span>に適用した場合，
+   数字以外の部分には何も詰めずに短縮します．<br>
+   ・0付加の<span class="mysyn">変換指定子</span>が詰め込む0も短縮してしまいます．例えば，"%-S"（短縮＆秒数）を指定した場合，1桁の秒数は本来ならば0が詰め込まれますが，ダッシュ（-）によってその0は短縮されてしまいます．例えば，
+「00」秒や「01」秒は「0」秒や「1」秒のように表示されます．<br>
+   ・数字列以外を結果とする<span class="mysyn">変換指定子</span>に指定した場合，
+   その動作は不明です．
+   </td>
+</tr>
+<tr>
+   <td>0</td>
+   <td>
+   ・数字列を結果とする<span class="mysyn">変換指定子</span>に適用した場合，
+   結果としての数字（有効な数字とでも言える部分）以外の部分に 0 を詰め込みます．<br>
+   ・空白付加の<span class="mysyn">変換指定子</span>が詰め込む空白も0に変更してしまいます．
+   ただ，数字列だけを結果とする空白付加の<span class="mysyn">変換指定子</span>については，
+   それに対応する0付加の<span class="mysyn">変換指定子</span>があるので，
+   これを使用することがあるのかどうかやや不明です．
+   1つの可能性としては，幅を指定した場合に，結果以外の部分に0を詰め込みたいときに使う，といったことが考えられます．<br>
+   ・数字列以外を結果とする<span class="mysyn">変換指定子</span>に指定した場合，
+   その動作は不明です．
+   </td>
+</tr>
+<tr>
+   <td>^（ハット）</td>
+   <td>
+   ・<span class="mysyn">変換指定子</span>の結果に含まれるアルファベット文字を大文字にします．
+      <br>
+   ・ja_JPロケールでは，<span class="mysyn">変換指定子</span>の Z に対してのみ機能します．
+   その他の<span class="mysyn">変換指定子</span>に適用しても無視されるようです（アルファベット文字を含まないので）．
+   </td>
+</tr>
+<tr>
+   <td>#</td>
+   <td>
+   ・<span class="mysyn">変換指定子</span>の結果に含まれるアルファベットの大文字と小文字を交換します．<br>
+   ・なお，これは<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-ja-dev/strftime.3.ja.html
+">[Manpage:STRFTIME(3)]</a> には（glibcの拡張機能として）説明がありますが，<a class="noline" href="
+">[glibc:21.5.4 Formatting Calendar Time]</a> には説明がありません．<br>
+   ・guileでは機能するようです．<br>
+   ・ja_JPロケールでは，<span class="mysyn">変換指定子</span>の Z に対してのみ機能します．
+   その他の<span class="mysyn">変換指定子</span>に適用しても無視されるようです（アルファベット文字を含まないので）．
+   </td>
+</tr>
+</table>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="date-time-format-2">整形文字列から成分別時刻への逆変換</h3>
+
+<p class="short"></p>
+&rtri;以下では，
+整形文字列への変換・逆変換の手続きの説明と合わせて，
+せっかくの機会なので，書式指定についても記録しておきます．
+
+<p class="short"></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="1">逆変換の手続き</h4>
+<p class="sshort"></p>
+&rtri;<span class="myvar">(strptime <span class="mysyn">format</span> <span class="mysyn">str</span>)</span><br>
+
+<p class="sshort"></p>
+<div class="dstyle">
+<small>
+<a class="noline" href="
+https://pubs.opengroup.org/onlinepubs/9699919799/functions/strptime.html
+">[POSIX:strptime]</a>
+<a class="noline" href="
+https://www.gnu.org/software/libc/manual/html_node/Low_002dLevel-Time-String-Parsing.html#index-strptime
+">[glibc:21.5.5.1 Interpret string according to given format]</a>
+<a class="noline" href="
+https://manpages.debian.org/bullseye/manpages-dev/strptime.3.en.html
+">[Manpages:STRPTIME(3)]</a>
+</small>
+</div>
+
+<p class="sshort"></p>
+strftime 手続きと逆の変換を行います．
+つまり，<span class="mysyn">format</span> で指定された書式に沿って
+文字列 <span class="mysyn">str</span> を解析して，成分別時刻に変換します．
+ただし，変換後の成分別時刻と <span class="mysyn">str</span> の中で変換に使用した文字の個数のペアを返します．
+
+
+<p></p>
+<!-- =============================================== -->
+<h4 class="hdln" id="2">逆変換の書式指定</h4>
+<p class="short"></p>
+&rtri;srtftime 手続きとほとんど同じ変換指定子を利用できます．
+次の点が異なります．
+   <ul>
+   <li> 
+   <span class="mysyn">glib-修正子</span> の下線（_），ダッシュ（-），ハット（^）は使えません．0は使えます．
+   <li> <span>&#037;</span>n と <span>&#037;</span>t は「Matches any white space」だそうです（これを素直に信じるならば，改行やタブ文字にマッチするのではないことになります）．
+   <li> <span>&#037;</span>Z については，
+   「Note: Currently, this is not fully implemented. The format is recognized, input is consumed but no field in tm is set. 」とのことです．
+   </ul>
+
+<p></p>
+&rtri;実行例：日付や時刻の表記がja_JPロケールが定義する書式に適合していれば，
+日時を表す文字列から年月日・時分秒を簡単に抽出することができます．
+ちなみに，ja_JPロケールの日付・時刻の書式は，ロケール定義ファイル
+/usr/share/i18n/locales/ja_JP
+の
+LC_TIME
+カテゴリーで定義されています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(strptime "<span>&#037;</span>Ec <span>&#037;</span>z <span>&#037;</span>Z" "令和04年02月24日 12時52分10秒 +0900 JST")</span>
+<span>&#36;</span>1 = (#(10 52 12 24 1 122 4 54 -1 -32400 #f) . 27)
+guile> 
+</pre>
+書式指定 <span>&#037;</span>z と文字列中の +0900 はタイムゾーンの時差を設定しています．
+残念ながら，夏時間の有効・無効のフラグ（上記の -1）は設定できません．
+上記の -1 はstrptime が勝手に設定したものです．それから，
+上で述べたように，<span>&#037;</span>Z を使ってタイムゾーンの略称（JST）を設定しようとしても無視されます．
+
+</section>
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
