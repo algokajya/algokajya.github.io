@@ -230,11 +230,11 @@ Guileは，あらゆるモジュール（ソースコード）を，<em>%load-pa
 このグローバル変数の値はディレクトリのリストです．
 例えば，筆者の環境では次のようなリストになっています．
 <pre class="shell">
-&#36; <span class="mycmd">guile</span>
+<span>&#36;</span> <span class="mycmd">guile</span>
 GNU Guile 3.0.5
       ...... 起動メッセージ ...... 
 guile&gt; <span class="mycmd">%load-path</span>
-&#36;1 = ("/usr/share/guile/3.0" "/usr/share/guile/site/3.0" "/usr/share/guile/site" "/usr/share/guile")
+<span>&#36;</span>1 = ("/usr/share/guile/3.0" "/usr/share/guile/site/3.0" "/usr/share/guile/site" "/usr/share/guile")
 guile&gt; 
 </pre>
 
@@ -267,11 +267,11 @@ Guileは，モジュールのソースコードをVMコードにコンパイル�
 グローバル変数 <em>%load-compiled-path</em> に登録されたディレクトリにキャッシュされ，再利用されます．このグローバル変数の値はディレクトリのリストです．
 例えば，筆者の環境では次のようなリストになっています．
 <pre class="shell">
-&#36; <span class="mycmd">guile</span>
+<span>&#36;</span> <span class="mycmd">guile</span>
 GNU Guile 3.0.5
       ...... 起動メッセージ ......
 guile&gt; <span class="mycmd">%load-compiled-path</span>
-&#36;1 = ("/usr/lib/x86_64-linux-gnu/guile/3.0/ccache" "/usr/lib/x86_64-linux-gnu/guile/3.0/site-ccache")
+<span>&#36;</span>1 = ("/usr/lib/x86_64-linux-gnu/guile/3.0/ccache" "/usr/lib/x86_64-linux-gnu/guile/3.0/site-ccache")
 guile&gt; 
 </pre>
 
@@ -402,10 +402,10 @@ Guileは，モジュールのソースコードのファイルを検索すると
 モジュール名が表現する相対パスに，<em> %load-extensions</em> に登録された拡張子を付けて検索します．<em> %load-extensions</em> は，ソースコードファイルの拡張子のリストを値とするグローバル変数です．
 例えば，筆者の環境では以下に示すようなリストです．
 <pre class="shell">
-&#36; <span class="mycmd">guile</span>
+<span>&#36;</span> <span class="mycmd">guile</span>
 GNU Guile 3.0.5
 guile&gt; <span class="mycmd">%load-extensions</span>
-\DIL;1 = (".scm" "")
+<span>&#36;</span>1 = (".scm" "")
 guile&gt; 
 </pre>
 このグローバル変数に新たな拡張子（例えば，".mod"など）を登録すれば，
