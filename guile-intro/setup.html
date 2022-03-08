@@ -42,6 +42,8 @@ Guile入門／Guileの準備
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.3.8</span>：Guileのバージョンによる変化を（ほんの少し）追記．<br>
+<li class="revise">
 <span class="mydate">2022.1.16</span>：本文中の日付が欠落していたので修正．<br>
 <li class="revise">
 <span class="mydate">2022.1.6</span>：変更履歴の形式を変更<br>
@@ -108,11 +110,18 @@ $ <span class="mycmd">sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</sp
 
 <li>
 <em>guile-3.0-doc</em>
-は，Info形式のマニュアルです．<a class="noline" href="https://www.gnu.org/software/guile/">公式サイト</a>で公開されている<a class="noline" href="https://www.gnu.org/software/guile/manual/">マニュアル</a>と，Guileのバージョンは異なりますが，内容的には同じだと思います（少なくとも目次は同じです）．
+は，Info形式のマニュアルです．<a class="noline" href="https://www.gnu.org/software/guile/">公式サイト</a>で公開されている<a class="noline" href="https://www.gnu.org/software/guile/manual/">マニュアル</a>と，Guileのバージョンは異なりますが，内容的には同じだと思います（<s>少なくとも目次は同じです</s>；下記の追記参照）．
 <li>
 <em>guile-3.0-dev</em>
 は，Guileを利用しているソフトウェアをコンパイルするときなどに必要になります．おそらく，C言語と連携するときにも必要になるだろうと思います．
 </ul>
+<p class="sshort"></p>
+<small>
+(追記:2022.3.8）
+Guile 3.0.6 をリリースしたときにマニュアルの編成を変更したようです．
+筆者が気づいた限りでは，3.0.5 の「6.7 Foreign Objects」と「6.8 Smobs」が，最新版のマニュアルでは「6.20 Foreign Objects」と「6.21 Smobs」に変わっています．
+ついでに言うと，僅かなバージョン番号の違いとはいえ，バグ修正だけでなく機能追加も行われています．筆者が勉強していて気づいた限りで，例えば call-with-port は 3.0.5 では実装されていなかったのですが，3.0.6 以降では実装されています．
+</small>
 </section>
 
 
