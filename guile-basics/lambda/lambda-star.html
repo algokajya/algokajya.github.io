@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／拡張版ラムダ式（lambda*）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="lambda.html">[Prev]</a> 
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<span class="nolink">[Next]</span>
+<!-- 
+<a class="noline" href="case-lambda.html">[Next]</a> 
+-->
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／拡張版ラムダ式（lambda*）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.3.8</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，lambda*式について勉強したことを記録しています．
+lambda*式はオプション仮引数やキーワード仮引数を持った手続きを作るためのもので，Guile固有の機能です．これは Common Lisp の機能を真似たものだと思います．
+<p class="sshort"></p>
+
+<li>
+可変個の引数を持つ手続きを実装する場合，
+lambda式は幾つか欠点があります．筆者が理解できる欠点として，
+残りものの実引数からなるリストを作ることや，
+その実引数を利用するためにリスト要素を取り出す操作が必要になることや，
+オプション的な実引数を可変的な仮引数として実装するときに既定値を設定できないことがあります．lambda*式は，これらの欠点を改善した構文形式です．
+さらに，lambda*式はキーワード仮引数を扱うこともできます．
+<p class="sshort"></p>
+
+<li>
+Guileのマニュアル
+<a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Optional-Arguments.html
+   ">[6.7.4 Optional Arguments]
+   </a>
+によれば，Guile 2.0 より前の処理系では lambda* 式は lambda 式を使ったマクロとして実装されていたそうです．しかし，Guile 2.0以降の処理系は，lambda*式をコアシステムの一部として実装しているそうです．このことによって，オプション仮引数やキーワード仮引数の処理は（lambda式の可変的な引数の処理に比べて）高速化されているとのことです．
+<p class="sshort"></p>
+
+<li>
+筆者は Debian 11(bullseye) を使っていて，GuileはDebian 11が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，このノートを作っている時点（2022.3.6）の最新版は 3.0.8 です．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="sshort"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">lambda*式の構文</a>
+<li class="menu"><a class="noline" href="#1">オプション仮引数</a>
+<li class="menu"><a class="noline" href="#2">キーワード仮引数</a>
+<li class="menu"><a class="noline" href="#3">レスト仮引数</a>
+<li class="menu"><a class="noline" href="#4">既定値と仮引数のスコープ</a>
+<li class="menu"><a class="noline" href="#5">define*式</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Optional-Arguments.html
+   ">[6.7.4 Optional Arguments]
+   </a> 
+
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+
+<li> Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="
+   https://small.r7rs.org/attachment/r7rs.pdf
+   ">Revised$^7$ Report on the Algorithmic Language Scheme <br>
+   </a>
+   <li class="menu">
+   <a class="noline" href="
+   http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
+   ">日本語版
+   </a>
+   </ul>
+
+<li> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">lambda*式の構文</h3>
+
+<p></p>
+lmabda* 式は次の文法に沿って記述します．
+<div class="spec">
+(<b>lambda*</b> <span class="mysyn">formals*</span> <span class="mysyn">body</span>) <span class="myright">library syntax</span>
+<pre>
+   <span class="mysyn">formals*</span>    ::=  ([<span class="mysyn">positional</span>] [<span class="mysyn">optional</span>] [<span class="mysyn">keyword</span>] [<span class="mysyn">rest</span>]) 
+   <span class="mysyn">positional</span>  ::=  <span class="mysyn">identifier</span><sup>+</sup>
+   <span class="mysyn">optional</span>    ::=  <b>#:optional</b> <span class="mysyn">param</span><sup>+</sup>
+   <span class="mysyn">keyword</span>     ::=  <b>#:key</b> <span class="mysyn">param</span><sup>*</sup> [#:allow-other-keys]
+   <span class="mysyn">param</span>       ::=  <span class="mysyn">identifier</span>
+                   |  (<span class="mysyn">identifier</span> <span class="mysyn">expression</span>)
+   <span class="mysyn">rest</span>        ::=  <b>#:rest</b> <span class="mysyn">identifier</span>
+                   |  . <span class="mysyn">identifier</span>
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+</div>
+
+<p></p>
+lambda* 式は，構文キーワードの lambda* に続けて，
+仮引数（<span class="mysyn">formals*</span>）と本体（<span class="mysyn">body</span>）から構成されます．
+本体（<span class="mysyn">body</span>）は lambda 式と全く同じです．
+
+<p></p>
+仮引数（<span class="mysyn">formals*</span>）は次のものから構成されます．
+<ul>
+<li> <em>位置仮引数</em>（<span class="mysyn">positional</span>）
+<li> <em>オプション仮引数</em>（<span class="mysyn">optional</span>）
+<li> <em>キーワード仮引数</em>（<span class="mysyn">keyword</span>）
+<li> <em>レスト仮引数</em>（<span class="mysyn">rest</span>）
+</ul>
+それぞれの仮引数は（不要ならば）省略できます．
+構文規則の角括弧は省略可能であることを示しています（仮引数の構文要素ではありません）．
+
+<p></p>
+&rtri;<b>補足：</b>
+lambda 式で記述できることは lambda* 式で記述できます．
+端的にいえば，lambda 式の「lambda」を「lambda*」に置き換えることができます．
+例えば，可変的な仮引数だけを指定した
+   <div class="dstyle">
+   (lambda* $x$ <span class="mysyn">body</span>)
+   </div>
+という構文も使用できます．
+しかし，これは lambda 式を利用すればよいので，上の構文規則から省いています．
+
+<p></p>
+&rtri;<b>注意：</b>
+以下では，次の事項の説明を省略します．
+<ul>
+<li>
+位置仮引数は lambda 式の（位置的な）仮引数とまったく同じものです．
+従って，以下では位置仮引数については何も説明しません．
+
+<li>
+手続きを呼び出しの評価手順（仮引数を束縛することによって環境を拡張して評価すること）は，lambda 式の場合とまったく同じです．
+従って，
+オプション仮引数・キーワード仮引数・レスト仮引数の束縛の仕方だけを説明します．
+</ul>
+
+</section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">オプション仮引数</h3>
+
+
+
+<p></p>
+オプション仮引数の構文を再掲します．
+<div class="spec">
+<pre class="spec">
+   <span class="mysyn">optional</span>    ::=  <b>#:optional</b> <span class="mysyn">param</span><sup>+</sup>
+   <span class="mysyn">param</span>       ::=  <span class="mysyn">identifier</span>
+                   |  (<span class="mysyn">identifier</span> <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+</div>
+
+<p></p>
+<em>#:optional</em> はオプション仮引数を指定するための構文キーワードです．<span class="mysyn">identifier</span> は仮引数として使用する変数を表し，<span class="mysyn">expression</span> はその仮引数の既定値（省略時の値）を求めるための式を表しています．<span class="mysyn">expression</span> には，あらゆる式が指定できます．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">仮引数の束縛</h4>
+オプション仮引数の実引数は，手続き呼び出しの際に省略できます．
+実引数を省略した場合，オプション仮引数は次のように束縛されます．
+<ul>
+<li>
+既定値を指定しないオプション仮引数は #f に束縛されます．
+<li>
+既定値を求める式（<span class="mysyn">expression</span>）を指定したオプション仮引数は，
+その式の評価結果に束縛されます．
+</ul>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">手続き呼び出し</h4>
+手続き呼び出しの際のオプション仮引数と実引数との対応付けは，
+位置引数と同様に，仮引数の位置に基づいて行います．
+そのため，2番目以降のオプション仮引数の実引数を指定するときには，
+それより前のオプション仮引数の実引数も指定しなければなりません．   
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の手続き（disp-args）は，
+位置仮引数の x の値，オプション仮引数の y と z の値を表示するだけのものです．y は既定値を指定していませんが，z は既定値としてシンボル 'Z を指定しています．
+<pre class="list">
+;; disp-args.scm
+(define disp-args
+  (lambda* (x #:optional y (z &apos;Z))
+    (display "  x= ") (display x)
+    (display "  y= ") (display y)
+    (display "  z= ") (display z)
+    (newline)))
+</pre>
+プログラムファイルをロードしたあと，
+適当な実引数に対して上記の手続きを実行してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-args.scm")</span>
+      ...... コンパイルメッセージ ......
+</pre>
+まず，オプション仮引数に対する実引数を省略して上記の手続きを呼び出してみます．
+オプション仮引数の y は #f に束縛され，z は 'Z に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-args 'A)</span>
+  x= A  y= #f  z= Z
+</pre>
+次に，y の実引数を指定して呼び出してみます．z は 'Z に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-args 'A 'B)</span>
+  x= A  y= B  z= Z
+</pre>
+最後に z の実引数を指定して呼び出してみます．
+オプション仮引数と実引数は位置によって対応付けられるので，z の実引数を指定するときには y の実引数も指定しなければなりません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-args 'A 'B 'C)</span>
+  x= A  y= B  z= C
+</pre>
+
+<p></p>
+位置仮引数を省略して，オプション仮引数だけからなる手続きを作ることもできます．
+以下の disp-opt-args 手続きは，上記の disp-args 手続きから位置仮引数の x を省いたもののです．
+<pre class="list">
+;; disp-opt-args.scm
+(define disp-opt-args
+  (lambda* (#:optional y (z &apos;Z))
+    (display "  y= ") (display y)
+    (display "  z= ") (display z)
+    (newline)))
+</pre>
+以下の実行例の内容は，位置仮引数の実引数を指定していない点を除いて，
+上の実行例と同じことをしています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-opt-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(disp-opt-args)</span>
+  y= #f  z= Z
+guile&gt; <span class="mycmd">(disp-opt-args 'B)</span>
+  y= B  z= Z
+guile&gt; <span class="mycmd">(disp-opt-args 'B 'C)</span>
+  y= B  z= C
+</pre>
+
+<p class="long"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の disp-values 手続きは，1引数の数値関数 f，数値の個数 num，
+初期値 init，増分 diff に対して，f(init), f(init+diff), f(init+2*diff), ..., f(init+(num-1)*diff) の値を表示します．init と diff はオプション仮引数としていて，
+それぞれの既定値を 0.0 と 1.0 にしています．
+<pre class="list">
+;; disp-values.scm
+(define disp-values
+  (lambda* (f num #:optional (init 0.0) (diff 1.0))
+    (let loop ((k 0) (x init))
+      (when (&lt; k num)
+        (format #t "f(~A) = ~A\n" x (f x))
+        (loop (1+ k) (+ x diff))))))
+</pre>
+プログラムファイルをロードしたあと，
+指数関数（exp）の値を適当に表示してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-values.scm")</span>
+      ...... コンパイルメッセージ ......
+</pre>
+まず，数値の個数（num）は5個を指定し，
+オプション仮引数を省略して上記の手続きを呼び出してみます．
+この場合，初期値（init）は 0.0 に束縛され，増分（diff）は 1.0 に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-values exp 5)</span>
+f(0.0) = 1.0
+f(1.0) = 2.718281828459045
+f(2.0) = 7.38905609893065
+f(3.0) = 20.085536923187668
+f(4.0) = 54.598150033144236
+</pre>
+次に，初期値（init）を -2.0 に指定して呼び出してみます．
+増分（diff）の実引数は省略します．そのため，増分（diff）は 1.0 に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-values exp 5 -2.0)</span>
+f(-2.0) = 0.1353352832366127
+f(-1.0) = 0.36787944117144233
+f(0.0) = 1.0
+f(1.0) = 2.718281828459045
+f(2.0) = 7.38905609893065
+</pre>
+最後に，増分（diff）を 0.5 に指定して呼び出してみます．
+オプション仮引数と実引数は位置によって対応付けれられるので，
+増分（diff）の実引数を指定するときには初期値（init）の実引数も指定しばければいけません．そこで，今回は初期値（init）を -1.0 に指定してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-values exp 5 -1.0 0.5)</span>
+f(-1.0) = 0.36787944117144233
+f(-0.5) = 0.6065306597126334
+f(0.0) = 1.0
+f(0.5) = 1.6487212707001282
+f(1.0) = 2.718281828459045
+</pre>
+
+</section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="2">キーワード仮引数</h3>
+
+<p></p>
+キーワード仮引数の構文を再掲します．
+<div class="spec">
+<pre class="spec">
+   <span class="mysyn">keyword</span>     ::=  <b>#:key</b> <span class="mysyn">param</span><sup>*</sup> [#:allow-other-keys]
+   <span class="mysyn">param</span>       ::=  <span class="mysyn">identifier</span>
+                   |  (<span class="mysyn">identifier</span> <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+</div>
+
+<p></p>
+<em>#:key</em> はキーワード仮引数を指定するための構文キーワードです．<span class="mysyn">identifier</span> は仮引数として使用する変数を表し，<span class="mysyn">expression</span> はその仮引数の既定値（省略時の値）を求めるための式を表しています．<span class="mysyn">expression</span> には，あらゆる式が指定できます．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">仮引数の束縛</h4>
+キーワード仮引数の実引数は，手続き呼び出しの際に省略できます．実引数を省略した場合，キーワード仮引数は次のように束縛されます．
+<ul>
+<li> 既定値を指定しないキーワード仮引数は #f に束縛されます．
+<li> 既定値を求める式（<span class="mysyn">expression</span>）を指定したキーワード仮引数は，
+その式の評価結果に束縛されます．
+</ul>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">手続き呼び出し</h4>
+キーワード仮引数に対する実引数を指定して手続き呼び出しを行うには，
+キーワード仮引数の変数名をキーとして実引数を指定します．
+一般的には，次のように指定します．
+   <div class="dstyle">
+   (<span class="mysyn">proc</span> ... <em>#:<span class="mysyn">identifier</span> <span class="mysyn">obj</span></em> ... )
+   </div>
+ここで，<span class="mysyn">proc</span> は lambda* 式によって作られた手続きを表し，<span class="mysyn">identifier</span> はキーワード仮引数の変数名を表しています．#:<span class="mysyn">identifier</span> はキーワード仮引数を特定するために，その変数名をキーにしたもので，<span class="mysyn">obj</span> はそのキーワード仮引数に対する実引数です．
+要約すると，上記の構文は，キーワード仮引数の <span class="mysyn">identifier</span> を <span class="mysyn">obj</span> に束縛する，ということを表していると言えます．
+
+<p></p>
+&rtri;<b>順不同：</b>
+上で述べたように，キーワード仮引数と実引数は，
+キー（仮引数の変数名）によって対応付けられます．
+そのため，キーワード仮引数の実引数は順不同で指定できます．
+つまり，lambda* 式の中で宣言した順番を守る必要はありません．
+
+<p></p>
+&rtri;<b>重複指定：</b>
+さらに，1つのキーワード仮引数に対して，
+実引数を2つ以上指定することもできます．
+その場合，キーワード仮引数は最後（もっとも右）の実引数に束縛されます．
+一見すると，どうでもよいように思えるのですが，
+状況によっては役立つこともあるようです．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の手続き（disp-keyword-args）は，位置仮引数の x の値，キーワード仮引数の y と z の値を表示するだけのものです．y は既定値を指定していませんが，z は既定値としてシンボル 'Z を指定しています．
+<pre class="list">
+;; disp-key-args.scm
+(define disp-keyword-args
+  (lambda* (x #:key y (z 'Z))
+    (display "  x= ") (display x)
+    (display "  y= ") (display y)
+    (display "  z= ") (display z)
+    (newline)))
+</pre>
+プログラムファイルをロードしたあと，まず，
+キーワード仮引数の実引数を省略して上記の手続きを呼び出してみます．
+この場合，y は #f に束縛され，z は既定値の 'Z に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-key-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(disp-keyword-args 'A)</span>
+  x= A  y= #f  z= Z
+</pre>
+次に，y の実引数を指定して呼び出してみます．y の実引数は #:y というキーのあとに指定します．なお，z の実引数は省略します．そのため，z は既定値の 'Z に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-keyword-args 'A #:y 'B)</span>
+  x= A  y= B  z= Z
+</pre>
+上とは逆に，z の実引数を指定して， y の実引数は省略して呼び出してみます．z の実引数は #:z というキーのあとに指定します．
+キーワード仮引数と実引数はキーによって対応付けられるので，
+（オプション仮引数の場合とは異なり）lambda* 式の中で宣言した順番を気にすることなく自由自在に実引数を指定したり省略したりできます．なお，y の実引数は省略するので，y は #f に束縛されます．
+<pre class="shell">
+guile> (disp-keyword-args 'A #:z 'C)
+  x= A  y= #f  z= C
+</pre>
+次に，y と z の両方の実引数を指定して呼び出してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-keyword-args 'A #:y 'B #:z 'C)</span>
+  x= A  y= B  z= C
+</pre>
+次に，キーワード仮引数の実引数の順番を逆にして呼び出してみます．
+キーワード仮引数と実引数はキーによって対応付けられるので，
+lambda* 式の中で宣言した順番を守る必要はありません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-keyword-args 'A #:z 'C #:y 'B)</span>
+  x= A  y= B  z= C
+</pre>
+最後に，同一のキーワード仮引数に対して複数の実引数を指定することもできます．
+そういった場合，キーワード仮引数は最後（もっとも右）に指定した実引数に束縛されます．以下の実行例は，キーワード仮引数 y に対して3つの実引数（&apos;B，&apos;BB，&apos;BBB）を指定しています．
+この場合，y は最後（もっとも右）の 'BBB に束縛されます． 
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-keyword-args 'A #:y 'B #:y 'BB #:y 'BBB)</span>
+  x= A  y= BBB  z= Z
+</pre>
+
+
+<p class="long"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の手続き（disp-values）は，オプション仮引数のところで示した同名の手続きを，
+オプション仮引数をキーワード仮引数に変更したものです．
+<pre class="list">
+;; disp-values.scm
+(define disp-values
+  (lambda* (f num #:key (init 0.0) (diff 1.0))
+    (let loop ((k 0) (x init))
+      (when (&lt; k num)
+        (format #t "f(~A) = ~A\n" x (f x))
+        (loop (1+ k) (+ x diff))))))
+</pre>
+以下の実行例は，オプション仮引数のところで示したものとまったく同じことをしています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-values.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(disp-values exp 5)</span>
+f(0.0) = 1.0
+f(1.0) = 2.718281828459045
+f(2.0) = 7.38905609893065
+f(3.0) = 20.085536923187668
+f(4.0) = 54.598150033144236
+guile&gt; <span class="mycmd">(disp-values exp 5 #:init -2.0)</span>
+f(-2.0) = 0.1353352832366127
+f(-1.0) = 0.36787944117144233
+f(0.0) = 1.0
+f(1.0) = 2.718281828459045
+f(2.0) = 7.38905609893065
+guile&gt; <span class="mycmd">(disp-values exp 5 #:init -1.0 #:diff 0.5)</span>
+f(-1.0) = 0.36787944117144233
+f(-0.5) = 0.6065306597126334
+f(0.0) = 1.0
+f(0.5) = 1.6487212707001282
+f(1.0) = 2.718281828459045
+</pre>
+オプション仮引数の場合と異なり，初期値（init）の実引数は省略して，
+増分（diff）の実引数だけを指定して呼び出すこともできます．
+以下はそのような実行例です．初期値（init）の実引数を省略しているので，
+初期値（init）は既定値の 0.0 に束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-values exp 5 #:diff 0.5)</span>
+f(0.0) = 1.0
+f(0.5) = 1.6487212707001282
+f(1.0) = 2.718281828459045
+f(1.5) = 4.4816890703380645
+f(2.0) = 7.38905609893065
+</pre>
+さらに，筆者にはどうでもよいことのように思えるのですが，
+キーワード仮引数に対する実引数の順番を入れ替えて呼び出すこともできます．
+<pre class="shell">
+guile> (disp-values exp 5 #:diff 0.5 #:init -1.0)
+f(-1.0) = 0.36787944117144233
+f(-0.5) = 0.6065306597126334
+f(0.0) = 1.0
+f(0.5) = 1.6487212707001282
+f(1.0) = 2.718281828459045
+</pre>
+
+
+<p class="long"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">#:allow-other-keys</h4>
+<p class="short"></p>
+手続き呼び出しの際にキーワード仮引数の以外のキーを指定するとエラーが発生します．
+以下はそのことを確認するための実行例です．
+この実行例は，上で示した disp-values 手続きをキーワード仮引数以外のキー（#:name）を指定して呼び出したために，「Unrecognized keyword（認識不可能なキーワード）」というエラーが発生しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(disp-values exp 5 #:name "exp")</span>
+;;; &lt;stdin&gt;:9:0: warning: possibly wrong number of arguments to `disp-values'
+ice-9/boot-9.scm:1669:16: In procedure raise-exception:
+<span class="myred">Unrecognized keyword: #:name</span>
+</pre>
+一方，手続きを定義する際に，キーワード仮引数宣言のうしろに <em>#:allow-other-keys</em> という構文キーワードを指定すると，キーワード仮引数以外のキーが指定できるようになります．例えば，disp-values 手続きを次のように定義し直します．
+<pre class="list">
+;; disp-values.scm
+(define disp-values
+  (lambda* (f num #:key (init 0.0) (diff 1.0) <em>#:allow-other-keys</em>)
+    (let loop ((k 0) (x init))
+      (when (&lt; k num)
+        (format #t "f(~A) = ~A\n" x (f x))
+        (loop (1+ k) (+ x diff))))))
+</pre>
+このように定義し直した手続きを再ロードして，
+上と同じ手続き呼び出しを実行してみると，今度はエラーが発生しません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-values.scm")</span>
+      ...... コンパイルメッセージ .....
+guile&gt; <span class="mycmd">(disp-values exp 5 #:name "exp")</span>
+f(0.0) = 1.0
+f(1.0) = 2.718281828459045
+f(2.0) = 7.38905609893065
+f(3.0) = 20.085536923187668
+f(4.0) = 54.598150033144236
+</pre>
+
+<p></p>
+&rtri;<b>補足：</b>
+手続き呼び出しの際に指定したキーと実引数の組み合わせは，
+次節で説明するレスト仮引数を束縛する実引数リストに含まれます．
+その実引数リストを手続き本体の中で解析することによって，
+それぞれのキーに対応する実引数を取り出すことができます．
+従って，レスト仮引数と #:allow-other-keys を組み合わせることによって，
+キーワード仮引数以外のキーに対する実引数を処理することができます．
+ただ，
+Guileのモジュールライブラリを見ても（おそらく）まったく利用していないので，
+これがどの程度有効な機能なのかが筆者にはよく分かりません．
+Common Lisp の具体例を調べてほとんど見当たらないのですが，
+高階関数の関数引数にキー／実引数をそのまま渡すときに利用したり，
+パターンマッチングの一種として利用しているようです．
+Guileにも，キー／実引数をパターンマッチングの一種として処理するための 
+let-keywords や let-keywords* といった構文があります．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="3">レスト仮引数</h3>
+
+<p></p>
+レスト仮引数の構文を再掲します．
+<div class="spec">
+<pre class="spec">
+   <span class="mysyn">rest</span>        ::=  <b>#:rest</b> <span class="mysyn">identifier</span>
+                   |  . <span class="mysyn">identifier</span>
+   <span class="mysyn">identifier</span>  ::=  識別子
+</pre>
+</div>
+
+<p></p>
+<em>#:rest</em> はレスト仮引数を指定するための構文キーワードです．
+<span class="mysyn">identifier</span> はレスト仮引数の変数名を表しています．
+上記の構文は，レスト仮引数を指定するときには，#:rest を使って
+   <div class="dstyle">
+   (lambda* ( …… <em>#:rest <span class="mysyn">ideintifier</span></em>) <span class="mysyn">body</span>)
+   </div>
+と記述してもよいし，lambda 式の場合と同様に，ピリオドを使って
+   <div class="dstyle">
+   (lambda* ( …… <em> . <span class="mysyn">ideintifier</span></em>) <span class="mysyn">body</span>)
+   </div>
+と記述してもよいことを示しています．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">仮引数の束縛</h4>
+レスト仮引数は，位置仮引数とオプション仮引数の実引数を除いて，
+手続き呼び出しの際に実引数として指定したすべてのオブジェクトからなるリストに束縛されます．言い換えると，位置仮引数とオプション仮引数に対応しない「残りもの」からなるリストが作られて，レスト仮引数はそのリストに束縛されます．
+特に，そのリストには，キーワード仮引数に対するキー／実引数も含まれます．
+「残りもの」が何もなければ空リストに束縛されます．
+以下，レスト仮引数を束縛するリストのことを <em>レスト実引数リスト</em> と呼ぶことにします．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+まず，位置仮引数とレスト仮引数だけを指定した具体例を示します．
+<pre class="list">
+;; rest-args.scm
+(define rest-args
+  (lambda* (x #:rest r)
+    (display "  x = ") (display x)
+    (display "  r = ") (display r)
+    (newline)))
+</pre>
+まず，プログラムファイルをロードしたあと，
+位置仮引数（x）の実引数だけを指定して上の手続きを呼び出してみます．
+この場合（つまり「残りもの」がない場合），レスト仮引数は空リストに束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "rest-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(rest-args 'A)</span>
+  x = A  r = ()
+</pre>
+次に，「残りもの」を指定して呼び出してみます．
+以下の1番目の実引数 'A は位置仮引数 x を束縛し，
+「残りもの」の 'B と 'C はレスト実引数リスト &apos;(B C) となり，
+レスト仮引数の r を束縛します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "rest-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(rest-args 'A 'B 'C)</span>
+  x = A  r = (B C)
+</pre>
+
+<p></p>
+次に，オプション仮引数も指定した具体例を示します．
+<pre class="list">
+;; rest-args.scm
+(define rest-args
+  (lambda* (x #:optional y #:rest r)
+    (display "  x = ") (display x)
+    (display "  y = ") (display y)
+    (display "  r = ") (display r)
+    (newline)))
+</pre>
+まず，プログラムファイルをロードしたあと，
+位置仮引数（x）をとオプション仮引数（y）の実引数だけを指定して上の手続きを呼び出してみます．以下の1番目の実引数 'A は位置引数 x を束縛し，2番目の実引数 'B はオプション仮引数 y を束縛します．さらに，レスト仮引数（r）は空リストに束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "rest-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(rest-args 'A 'B)</span>
+  x = A  y = B  r = ()
+</pre>
+次に，「残りもの」を指定して呼び出してみます．
+以下の 'C と 'D はレスト実引数リスト &apos;(C D) となり，レスト仮引数 r を束縛します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(rest-args 'A 'B 'C 'D)</span>
+  x = A  y = B  r = (C D)
+</pre>
+
+<p></p>
+次に，キーワード仮引数も指定した具体例を示します．
+
+<pre class="list">
+;; rest-args.scm
+(define rest-args-with-keys
+  (lambda* (x #:optional y #:key z #:rest r)
+    (display "  x = ") (display x)
+    (display "  y = ") (display y)
+    (display "  z = ") (display z)
+    (display "  r = ") (display r)
+    (newline)))
+</pre>
+以下の1番目の実引数 'A は x を束縛し，2番目の実引数 'B は y を束縛し，
+キー #:z のうしろの実引数 'C は z を束縛します．
+さらに，位置仮引数とオプション仮引数に対応しないすべてのオブジェクト（注：キーも含む）はレスト実引数リスト &apos;(#:z C D E) となり，レスト仮引数 r を束縛します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "rest-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(rest-args-with-keys 'A 'B #:z 'C 'D 'E)</span>
+  x = A  y = B  z = C  r = (#:z C D E)
+</pre>
+さらに，余分な実引数（注：仮引数宣言に明示的に対応しない実引数）とキーワード仮引数に対するキー／実引数は任意の順序で指定できます．以下の実行例では，キーワード仮引数 z の実引数（#:z &apos;C）の前に余分な実引数（&apos;P）を指定しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(rest-args-with-keys 'A 'B 'P #:z 'C 'D 'E)</span>
+  x = A  y = B  z = C  r = (P #:z C D E)
+</pre>
+
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="4">既定値と仮引数のスコープ</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">既定値の評価</h4>
+オプション仮引数とキーワード仮引数の既定値を求める式は，
+必要がない限り評価されません．この点を簡単な実験で確かめてみましょう．
+<pre class="list">
+;; default-exp.scm
+(define default-exp 
+  (lambda* (#:optional (x (begin (display "SET x TO THE DEFAULT\n") 'X))
+            #:key      (y (begin (display "SET y TO THE DEFAULT\n") 'Y)))
+    (display "  x=") (display x)
+    (display "  y=") (display y)
+    (newline)))
+</pre>
+上の手続きは，仮引数の x や y に既定値（&apos;X や &apos;Y）を設定する際にメッセージを表示します．従って，既定値を必要としないときにはメッセージも表示されないはずです．
+実際，その通りになります．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "default-exp.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(default-exp)</span>
+SET x TO THE DEFAULT
+SET y TO THE DEFAULT
+  x=X  y=Y
+guile&gt; <span class="mycmd">(default-exp 'A)</span>
+SET y TO THE DEFAULT
+  x=A  y=Y
+guile&gt; <span class="mycmd">(default-exp 'A #:y 'B)</span>
+  x=A  y=B
+</pre>
+1番目の手続き呼び出しは，x と y の実引数を省略しているので既定値が必要になります．
+そのため両方ともメッセージが表示されます．2番目は，y の既定値だけが必要になるので，y に関するメッセージだけが表示されます．3番目は，x も y も既定値が必要ないので，両方ともメッセージは表示されません．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">仮引数のスコープ</h4>
+lambda* 式の仮引数の束縛は左から右に向かって行われます．
+ただし，例外事項として，レスト仮引数の（レスト実引数リストへの）束縛は，
+オプション仮引数の束縛の直後，キーワード仮引数の束縛の直前に行われます．
+要約すると，仮引数の束縛は，
+   <ul>
+   <li> 位置仮引数，オプション仮引数，レスト仮引数，キーワード仮引数
+   </ul>
+の順に行われます．
+さらに，仮引数のスコープ（有効範囲）は，本体だけでなく，
+その仮引数の「右側」の仮引数宣言も含みます．
+ここで，「右側」とは上記の順序（束縛の順序）における右側のことで，
+同種の仮引数の中では仮引数宣言における右側のことです．
+そのため，例えば，レスト仮引数のスコープは，
+構文的にはキーワード仮引数の右側に宣言するものの，
+キーワード仮引数の宣言を含みます．
+
+<p></p>
+以上に述べたことから，
+既定値を求める式の中で「左側」に位置する仮引数の束縛を利用することができます．
+ここで，「左側」とは束縛の順序における左側のことで，同種の仮引数の中では仮引数宣言における左側のことです．
+このことを簡単な実験で確かめてみましょう．
+<pre class="list">
+;; param-scope.scm
+(define param-scope-test 
+  (lambda* (px
+            #:optional (ox 10) (oy (+ px ox))
+            #:key (kx 100) (ky (+ px ox kx)) (kz rst) 
+            #:rest rst
+            )
+    (display "  px=") (display px)
+    (display "  ox=") (display ox)
+    (display "  oy=") (display oy)
+    (display "  kx=") (display kx)
+    (display "  ky=") (display ky)
+    (display "  kz=") (display kz)
+    (display "  rst=") (display rst)
+    (newline)))
+</pre>
+プログラムファイルをロードしたあと，
+位置仮引数（px）の実引数（1）だけを指定して上の手続きを呼び出してみます．
+この場合，px は1に束縛され，ox は既定値の10に束縛され，oy は既定値の11（=px+ox）に束縛されます．
+さらに，kx は既定値の 100 に束縛され，ky は既定値の111（=px+ox+kx）に束縛され，
+kz はレスト仮引数 rst の値に束縛されます．この呼び出しの場合，rst は空リストに束縛されるので，kz も空リストに束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "param-scope.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(param-scope-test 1)</span>
+  px=1  ox=10  oy=11  kx=100  ky=111  kz=()  rst=()
+</pre>
+次に，適当に実引数を指定して呼び出してみます．以下の実行例では，
+レスト仮引数 rst が '(#:kx 4 5) に束縛されるので，kz も同じリストに束縛されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(param-scope-test 1 2 3 #:kx 4 5)</span>
+  px=1  ox=2  oy=3  kx=4  ky=7  kz=(#:kx 4 5)  rst=(#:kx 4 5)
+</pre>
+．
+
+</section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="5">define*式</h3>
+
+<p></p>
+lambda*式に呼応して，Guileは，define 形式を拡張した define* 形式を用意しています．
+Guileのマニュアル
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/lambda_002a-and-define_002a.html
+">[6.7.4.1 lambda* and define*]</a> は，define* 形式に関して下記の一文のみを示していて，詳しいことは何も述べていません．
+<blockquote>
+Likewise, define* is syntactic sugar for defining procedures using lambda*. 
+</blockquote>
+色々と試してみると，define 形式で出来ることは define* 形式でもできるようです．
+例えば，以下の実行例が示すように，単純な変数定義も出来ます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define* x 10)</span>
+guile&gt; <span class="mycmd">x</span>
+<span>&#36;</span>1 = 10
+</pre>
+define 形式とdefine* 形式の違いは，手続きを定義したときに（lambda式の代わりに）lambda* 式が使われることだけだろうと思います．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+オプション仮引数のところで示した disp-values 手続きは，define* 形式を使って次のように定義できます．
+<pre class="list">
+;; disp-values.scm
+(define* (disp-values f num #:optional (init 0.0) (diff 1.0))
+  (let loop ((k 0) (x init))
+    (when (&lt; k num)
+      (format #t "f(~A) = ~A\n" x (f x))
+      (loop (1+ k) (+ x diff)))))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "disp-values.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(disp-values exp 5 -1.0 0.5)</span>
+f(-1.0) = 0.36787944117144233
+f(-0.5) = 0.6065306597126334
+f(0.0) = 1.0
+f(0.5) = 1.6487212707001282
+f(1.0) = 2.718281828459045
+</pre>
+
+</section>
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

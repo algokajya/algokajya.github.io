@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／ラムダ式（lambda）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="lambda-star.html">[Next]</a> 
+<!-- 
+<span class="nolink">[Next]</span>
+&ensp; 
+-->
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／ラムダ式（lambda）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.3.8</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="abstract">
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，lambda式について勉強したことを記録しています．
+<li>
+筆者は Debian 11(bullseye) を使っていて，GuileはDebian 11が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，このノートを作っている時点（2022.3.6）の最新版は 3.0.8 です．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="sshort"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">lambda式の構文と意味</a>
+<li class="menu"><a class="noline" href="#1">仮引数のパターンと意味</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li> Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="
+   https://small.r7rs.org/attachment/r7rs.pdf
+   ">Revised$^7$ Report on the Algorithmic Language Scheme <br>
+   </a>
+   <li class="menu">
+   <a class="noline" href="
+   http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
+   ">日本語版
+   </a>
+   </ul>
+
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Lambda.html
+   ">[6.7.1 Lambda: Basic Procedure Creation]
+   </a> 
+
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+
+<li> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">lambda式の構文と意味</h3>
+
+<p></p>
+lmabda式は次の文法に沿って記述します．
+<div class="spec">
+(<b>lambda</b> <span class="mysyn">formals</span> <span class="mysyn">body</span>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">formals</span>     ::=  (<span class="mysyn">identifier</span><sup>*</sup>)
+                   |  <span class="mysyn">identifier</span>
+                   |  (<span class="mysyn">identifier</span><sup>+</sup> . <span class="mysyn">identifier</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+</div>
+
+<p></p>
+lambda式は，<span class="mysyn">formals</span> を仮引数とし，<span class="mysyn">body</span> を本体とする手続きを作ります．さらに，lambda式を評価した時点の環境が組み合わされるので，正確にいえばクロージャーを作ります．そのクロージャがlambda式の評価結果になります．
+
+<p></p>
+lambda式そのものを評価した時点では本体（<span class="mysyn">body</span>）は評価されません．
+本体（<span class="mysyn">body</span>）はlambda式によって作り出された手続きを呼び出したときに評価されます．
+手続きの本体の評価は，手続きそのものを実行するまで遅延されると言えます．
+define形式やletrec式やletrec*式によって相互再帰的な手続きが定義可能であるのは，このことに基づいています．
+
+<p></p>
+lambda式によって生成された手続きを実引数を指定して呼び出したとき，仮引数（<span class="mysyn">formals</span>）が実引数に束縛されることによって環境が拡張されます．その拡張された環境のもとで本体（<span class="mysyn">body</span>）が評価されます．最後に評価された式の値が手続き呼び出しの結果（返り値）になります．
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">仮引数のパターンと意味</h3>
+
+
+<p><p>
+<div class="spec">
+(<b>lambda</b> () <span class="mysyn">body</span>)
+</div>
+
+<p></p>
+上記の () は引数がないことを示しています．
+従って，このラムダ式は無引数の手続きを作ります．
+無引数の手続きは次の式によって呼び出します．
+   <div class="dstyle">
+   <span class="myproc">(<span class="mysyn">proc</span>)</span>
+   </div>
+ここで，<span class="mysyn">proc</span> は無引数の手続きを表します．
+この手続き呼び出しを実行すると，Guileは，lambda式を評価したときの環境（つまり，手続きを作り出したときの環境）のもとで <span class="mysyn">body</span> に指定された定義と式を先頭から順に評価していきます．そして，最後に評価した式の値を手続き呼び出しの結果（返り値）として返します．
+
+<p></p>
+無引数の手続きは<span class="mysyn">body</span>の評価を保留（または遅延）していると言えます．
+例えば，
+<div class="dstyle">
+      (lambda () (display "Hello, world!") (newline))
+</div>
+という無引数の手続きは，それが呼び出されるまでdipslayとnewlineの実行を保留（または遅延）していると言えます．無引数の手続きは，実行を保留（遅延）するための構文要素として色々なところで利用されるため，<em>サンク</em>（<em>thunk</em>）と呼ばれています．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下では，無引数の手続き hello を定義したあと，それを呼び出しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define hello (lambda () (display "*** Hello, world! ***") (newline)))</span>
+guile&gt; <span class="mycmd">(hello)</span>
+*** Hello, world! ***
+</pre>
+
+
+<p class="long"><p>
+<div class="spec">
+(<b>lambda</b> ($x_1$ ... $x_n$) <span class="mysyn">body</span>)
+</div>
+
+<p></p>
+このlambda式は，$n$個の引数を持つ手続きを作ります．$x_1$〜$x_n$は仮引数として使用する変数を表していて，それぞれの仮引数は空白で区切りって丸括弧で囲みます．
+
+<p></p>
+このlambda式によって作られた手続きは次の形式で呼び出します．
+   <div class="dstyle">
+   <span class="myproc">(<span class="mysyn">proc</span> $a_1$ ... $a_n$)</span>
+   </div>
+ここで，<span class="mysyn">proc</span> はlambda式によって作られた手続きを示し．$a_1$〜$a_n$ は実引数を表しています．この手続き呼び出しを実行すると，Guileは，$x_1$〜$x_n$ のそれぞれを $a_1$〜$a_n$ に束縛することによってlambda式を評価したときの環境を拡張し，その拡張した環境のもとで <span class="mysyn">body</span> を先頭から順に評価していって，
+最後に評価した式の値を手続き呼び出しの結果（返り値）として返します．
+
+<p></p>
+実引数はちょうど$n$個指定しなければなりません．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下では，1引数の手続き mysqr を定義して，
+それを適当な実引数に対して呼び出しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define mysqr (lambda (x) (* x x)))</span>
+guile&gt; <span class="mycmd">(mysqr 5)</span>
+<span>&#36;</span>1 = 25
+</pre>
+さらに以下では，2引数の手続き addsqr を定義して，
+それを適当な実引数に対して呼び出しています．
+なお，addsqr を定義する際に，上記の mysqr を利用しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define addsqr (lambda (x y) (+ (mysqr x) (mysqr y))))</span>
+guile&gt; <span class="mycmd">(addsqr 3 4)</span>
+<span>&#36;</span>2 = 25
+</pre>
+
+
+<p class="long"><p>
+<div class="spec">
+(<b>lambda</b> $x$ <span class="mysyn">body</span>)
+</div>
+
+<p></p>
+このlambda式は，可変個の実引数を受け取る手続きを作ります．$x$は仮引数として使用する変数を表しています．仮引数を1つだけ指定して，丸括弧で囲みません．
+
+<p></p>
+このlambda式によって作り出された手続きは次のいずれかの式で呼び出します．
+以下の <span class="mysyn">proc</span> はlambda式によって作り出された手続きを表していて，$a_1$〜$a_n$ は実引数を表しています．
+   <ul>
+   <li> <span class="myproc">(<span class="mysyn">proc</span>)</span><br>
+      この手続き呼び出しを実行すると，Guileは，
+      仮引数$x$を空リスト () に束縛することによってlambda式を評価したときの環境を拡張し，その拡張した環境のもとで  <span class="mysyn">body</span> を先頭から順に評価していって，最後に評価した式の値を手続き呼び出しの結果（返り値）として返します．
+   <li> <span class="myproc">(<span class="mysyn">proc</span> $a_1$ ... $a_n$)</span><br> 
+   実引数は幾つでも指定できます．
+   この手続き呼び出しを実行すると，Guileは，
+   まず実引数からなるリスト ($a_1$ ... $a_n$) を新たに作ります．
+   次に，仮引数の$x$をそのリストに束縛することによってlambda式を評価したときの環境を拡張し，その拡張した環境のもとで <span class="mysyn">body</span> を先頭から順に評価していって，最後に評価した式の値を手続き呼び出しの結果（返り値）として返します．
+   </ul>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下では，仮引数（args）を表示するだけの手続き write-args を定義し，
+適当な実引数に対してその手続きを呼び出しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define write-args (lambda args (write args) (newline)))</span>
+guile&gt; <span class="mycmd">(write-args)</span>
+()
+guile&gt; <span class="mycmd">(write-args 1)</span>
+(1)
+guile&gt; <span class="mycmd">(write-args 1 2)</span>
+(1 2)
+guile&gt; <span class="mycmd">(write-args 1 2 3)</span>
+(1 2 3)
+</pre>
+仮引数（args）をそのまま表示しているのですが，
+表示結果はすべて実引数からなるリストになっています．
+これは，Guileが実引数からなるリストを作って，仮引数の args をそのリストに束縛しているためです．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，可変個の数値を受け取って，
+それらの総和を返す手続き sum-args を定義しています．
+<pre class="list">
+;; sum-args.scm
+(define sum-args 
+  (lambda args 
+    (let loop ((xs args) (sum 0))
+      (if (null? xs)
+          sum
+          (loop (cdr xs) (+ sum (car xs)))))))
+</pre>
+以下では，上記の手続きを適当な実引数に対して呼び出しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "sum-args.scm")</span>
+      ...... コンパイルメッセージ ...... 
+guile&gt; <span class="mycmd">(sum-args)</span>
+<span>&#36;</span>1 = 0
+guile&gt; <span class="mycmd">(sum-args 1)</span>
+<span>&#36;</span>2 = 1
+guile&gt; <span class="mycmd">(sum-args 1 2)</span>
+<span>&#36;</span>3 = 3
+guile&gt; <span class="mycmd">(sum-args 1 2 3)</span>
+<span>&#36;</span>4 = 6
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">補足</h4>
+上記の形式の欠点は，実引数からなるリストを新たに作成することと，
+それぞれの実引数を利用するためにリスト要素を取り出す操作が必要になることです．
+上で示した sum-args 手続きのように，
+実引数の最大個数が設定できない場合には（おそらく）上記の形式を使うしかないと思います．しかし，実引数の最大個数が確定しているときには case-lambda 式や lambda* 式のオプション引数を使って実装することを検討してみるとよいでしょう．
+
+
+<p class="long"><p>
+<div class="spec">
+(<b>lambda</b> ($x_1$ ... $x_n$ . $x_{n+1}$) <span class="mysyn">body</span>)
+</div>
+
+<p></p>
+このlambda式は，$n$個以上の引数を持つ手続きを作ります．ただし，$n \geq 1$ です．
+$x_1$〜$x_{n+1}$ は仮引数として使用する変数を示しています．
+$x_1$〜$x_n$ は空白で区切り，最後の $x_{n+1}$ だけピリオド（.）で区切ります．
+ピリオド（.）の前後には空白が必要です．
+また，仮引数全体を丸括弧で囲みます．
+
+<p></p>
+このlambda式によって作り出された手続きは次の式で呼び出します．
+   <div class="dstyle">
+   <span class="myproc">(<span class="mysyn">proc</span> $a_1$ ... $a_{n+m}$)</span>
+   </div>
+ここで，<span class="mysyn">proc</span> はlambda式によって作られた手続きを示し．$a_1$〜$a_{n+m}$ は実引数を表しています．
+この手続き呼び出しを実行すると，Guileは，仮引数 $x_1$〜$x_{n+m}$ を次のように束縛することによってlambda式を評価したときの環境（以下，単に「環境」）を拡張します．
+<ul>
+<li> 
+$m=0$ の場合（つまり，実引数がちょうど$n$個の場合），$x_1$〜$x_n$ のそれぞれを $a_1$〜$a_n$ に束縛し，$x_{n+1}$ を空リスト () に束縛します．
+<li>
+$m>0$ の場合，$x_1$〜$x_n$ のそれぞれを $a_1$〜$a_n$ に束縛します．
+さらに，残りの実引数からなるリスト ($a_{n+1}$ ... $a_{n+m}$) を新たに作り，
+$x_{n+1}$ をそのリストに束縛します．
+</ul>
+次に，Guileは，以上のように拡張した環境のもとで <span class="mysyn">body</span> を先頭から順に評価していって，最後に評価した式の値を手続き呼び出しの結果（返り値）として返します
+．
+
+<p></p>
+実引数は$n$個以上指定しなければなりません．
+ただし，$n$個以上ならば幾つでも指定できます．
+これは，実引数の最小個数が分かっているけれども，
+より多くの実引数を指定できるようにしたいときに使用します．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，2個以上の実引数を受け取って，
+第1引数（x），第2引数(y），第3以降の引数（z）を表示する手続きを定義しています．
+<pre class="list">
+;; write-args.scm
+(define write-args 
+  (lambda (x y . z)
+    (display "  x=") (write x)
+    (display "  y=") (write y)
+    (display "  z=") (write z) 
+    (newline)))
+</pre>
+
+以下では，実引数が2個〜4個の場合の実行結果を示しています．
+それぞれ，仮引数の z には3番目以降の実引数からなるリストが束縛されています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "write-args.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(write-args 'A 'B)</span>
+  x=A  y=B  z=()
+guile&gt; <span class="mycmd">(write-args 'A 'B 'C)</span>
+  x=A  y=B  z=(C)
+guile&gt; <span class="mycmd">(write-args 'A 'B 'C 'D)</span>
+  x=A  y=B  z=(C D)
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">補足</h4>
+上記の形式の欠点は，可変個の引数を使用する場合と同じです．
+つまり，実引数からなるリスト ($a_{n+1}$ ... $a_{n+m}$) を新たに作ることと，
+それらの実引数を利用するためにリスト要素を取り出す操作が必要になることです．
+上記の形式は，引数の最大個数が設定できない場合に使うと言うよりは，
+オプション的な引数を用意したいときに使うことが多いと思います．
+そういった場合には case-lambda 式や lambda* 式のオプション引数を使って実装することを検討してみるとよいでしょう．
+
+
+</section>
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
