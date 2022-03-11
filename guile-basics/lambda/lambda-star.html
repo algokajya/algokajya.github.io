@@ -495,7 +495,7 @@ f(1.0) = 2.718281828459045
 以下はそのような実行例です．
 <pre class="shell">
 guile&gt; <span class="mycmd">(lambda* (x y #:key z) (format #t "x=~A y=~A z=~A\n" x y z))</span>
-<span>&#36;</span>1 = #<procedure 556fb7f41c00 at <unknown port>:1:0 (x y #:key z)>
+<span>&#36;</span>1 = #&lt;procedure 556fb7f41c00 at &lt;unknown port&gt;:1:0 (x y #:key z)&gt;
 guile&gt; <span class="mycmd">(<span>&#36;</span>1 #:z 'A)</span>
 ;;; &lt;stdin&gt;:2:0: warning: possibly wrong number of arguments to `#&lt;procedure 556fb7f41c00 at &lt;unknown port&gt;:1:0 (x y #:key z)&gt;'
 x=#:z y=A z=#f
@@ -560,12 +560,12 @@ x=#:z y=A z=#f
 赤字はエラーメッセージです．
 <pre class="shell">
 guile&gt; <span class="mycmd">(lambda* (x #:optional y z) (format #t "x=~A y=~A z=~A\n" x y z))</span>
-<span>&#36;</span>1 = #<procedure 561be8ea7dd8 at <unknown port>:1:0 (x #:optional y z)>
+<span>&#36;</span>1 = #&lt;procedure 561be8ea7dd8 at &lt;unknown port&gt;:1:0 (x #:optional y z)&gt;
 guile&gt; <span class="mycmd">(<span>&#36;</span>1 'A #:p 'B)</span>
 x=A y=#:p z=B
 <span>&#36;</span>2 = #t
 guile&gt; <span class="mycmd">(lambda* (x #:optional y z #:key p) (format #t "x=~A y=~A z=~A p=~A\n" x y z p))</span>
-<span>&#36;</span>3 = #<procedure 561be8eb4540 at <unknown port>:3:0 (x #:optional y z #:key p)>
+<span>&#36;</span>3 = #&lt;procedure 561be8eb4540 at &lt;unknown port&gt;:3:0 (x #:optional y z #:key p)&gt;
 guile> (<span>&#36;</span>3 'A #:p 'B)
 x=A y=#f z=#f p=B
 <span>&#36;</span>4 = #t
