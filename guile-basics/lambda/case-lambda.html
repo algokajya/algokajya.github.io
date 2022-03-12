@@ -278,27 +278,27 @@ cl-clause-4
   (case-lambda
     ((func num)
      (let loop ((k 0))
-       (when (< k num)
+       (when (&lt; k num)
          (format #t "func()=~A\n" (func))
          (loop (1+ k)))))
     ((func num init-diff-1)
      (let ((init (car init-diff-1)) (diff (cdr init-diff-1)))
        (let loop ((k 0) (x init))
-         (when (< k num)
+         (when (&lt; k num)
            (format #t "func(~A)=~A\n" x (func x))
            (loop (1+ k) (+ x diff))))))
     ((func num init-diff-1 init-diff-2)
      (let ((init-1 (car init-diff-1)) (diff-1 (cdr init-diff-1))
            (init-2 (car init-diff-2)) (diff-2 (cdr init-diff-2)))
        (let loop ((k 0) (x init-1) (y init-2))
-         (when (< k num)
+         (when (&lt; k num)
            (format #t "func(~A,~A)=~A\n" x y (func x y))
            (loop (1+ k) (+ x diff-1) (+ y diff-2))))))
     ((func num . init-diffs)
      (let((inits (map car init-diffs))
           (diffs (map cdr init-diffs)))
        (let loop ((k 0) (xs inits))
-         (when (< k num)
+         (when (&lt; k num)
            (format #t "func(~A)=~A\n" (add-comma xs) (apply func xs))
            (loop (1+ k) (map + xs diffs))))))
     ))
@@ -379,7 +379,7 @@ disp-sub は関数値を表示するための補助手続きです．
 (define* (disp-values fname num #:optional (init 0.0) (diff 1.0))
   (let ((func (eval-string fname)))
     (let loop ((k 0) (x init))
-      (when (< k num)
+      (when (&lt; k num)
         (format #t "~A(~A) = ~A\n" fname x (func x))
         (loop (1+ k) (+ x diff))))))
 </pre>
@@ -409,6 +409,8 @@ map や for-each は case-lambda 式を使った雛形と言えます．
 コアシステムのソースコードを読み込めるほどの力量は筆者にはありませんが．
 漠然と眺めていると，各cl-節を内部的なデータ構造に変換したものを連結リストにしているように感じます．仮引数と実引数のマッチング処理をどのタイミングで行っているのかを知りたいと思ったのですが，たぶん，すべての呼び出しに対してコンパイル時ではなく実行時に行っているのだろうと思います．
 従って，「case-lambda式の評価」で述べたことはウソではないと思われます．
+
+</section>
 
 
 
@@ -576,7 +578,7 @@ Guile は #:kx 以降の実引数はキーと実引数が交互に並んでい�
 
 <p></p>
 Guileは，マッチング処理の条件 2.c. のところでキーワード仮引数とレスト仮引数に関する束縛検査を端折っています．しかし，それを真面目に検査していれば，上の実行例は clause-4 を選ぶことになって無事実行されたはずです．そこで，この点を確認するために，clause-3 を除去した次の手続きを同じ実引数に対して実行してみます．
-<pre class="list"Q>
+<pre class="list">
 (define test-cl*2
   (case-lambda*
    ((x #:optional ox) 
