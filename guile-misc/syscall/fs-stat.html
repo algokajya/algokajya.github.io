@@ -85,9 +85,9 @@ Guile色々／ファイルやディレクトリの属性情報
 <p class="short"></p>
 
 <ul class="menu">
-<li class="menu"><a class="noline" href="#0">属性の取得</a>
-<li class="menu"><a class="noline" href="#1">属性の抽出</a>
-<li class="menu"><a class="noline" href="#2">時間属性の変更</a>
+<li class="menu"><a class="noline" href="#stat-lstat">属性の取得</a>
+<li class="menu"><a class="noline" href="#0">属性の抽出</a>
+<li class="menu"><a class="noline" href="#1">時間属性の変更</a>
 </ul>
 
 
@@ -171,7 +171,7 @@ Manpages
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="0">属性の取得</h3>
+<h3 class="section" id="stat-lstat">属性の取得</h3>
 <p class="short"></p>
 <div class="dstyle">
 <small>
@@ -251,7 +251,7 @@ stat 手続きの処理は，
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="1">属性の抽出</h3>
+<h3 class="section" id="0">属性の抽出</h3>
 <p class="short"></p>
 <div class="dstyle">
 <small>
@@ -418,7 +418,7 @@ guile>
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="2">時間属性の変更</h3>
+<h3 class="section" id="1">時間属性の変更</h3>
 <p class="short"></p>
 <div class="dstyle">
 <small>
@@ -444,9 +444,9 @@ https://manpages.debian.org/bullseye/manpages-dev/utimensat.2.en.html
 &rtri;<span class="myvar">(utime <span class="mysyn">path</span>)</span><br>
 &emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span>)</span><br>
 &emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span>)</span><br>
-&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">adtimens</span>)</span><br>
-&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">adtimens</span> <span class="mysyn">modtimens</span>)</span><br>
-&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">adtimens</span> <span class="mysyn">modtimens</span> <span class="mysyn">flags</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">actimens</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">actimens</span> <span class="mysyn">modtimens</span>)</span><br>
+&emsp;<span class="myvar">(utime <span class="mysyn">path</span> <span class="mysyn">actime</span> <span class="mysyn">modtime</span> <span class="mysyn">actimens</span> <span class="mysyn">modtimens</span> <span class="mysyn">flags</span>)</span><br>
 
 <p class="short"></p>
 この手続きは， <span class="mysyn">path</span> で指定されたファイルの最終アクセス時刻や最終更新時刻を，引数に指定した時刻に設定します．その引数には，
