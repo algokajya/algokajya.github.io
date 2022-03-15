@@ -39,10 +39,7 @@
 &ensp; 
 <a class="noline" href="../index.html">[Up]</a>
 &ensp; 
-<span class="nolink">[Next]</span>
-<!-- 
 <a class="noline" href="case-lambda.html">[Next]</a> 
--->
 &ensp; 
 <a class="noline" href="../../index.html">ホーム</a><br>
 </div>
@@ -59,6 +56,8 @@ Guile基礎／拡張版ラムダ式（lambda*）
 <div id="revise">
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
+<li class="revise">
+<span class="mydate">2022.3.16</span>：Guile 3.0以降，<span class="mysyn">body</span> の構文が拡張（緩和）されていることを追記．
 <li class="revise">
 <span class="mydate">2022.3.11</span>：「位置仮引数」を「必須仮引数」に変更．
 仮引数を束縛するときのキーの扱い方に関する説明を追加．
@@ -119,7 +118,7 @@ Guileのマニュアルは常に最新版を参照しています．やむを得
 <li class="menu"><a class="noline" href="#2">キーワード仮引数</a>
 <li class="menu"><a class="noline" href="#3">レスト仮引数</a>
 <li class="menu"><a class="noline" href="#4">既定値と仮引数のスコープ</a>
-<li class="menu"><a class="noline" href="#5">define*式</a>
+<li class="menu"><a class="noline" href="#define-star">define*式</a>
 </ul>
 
 
@@ -211,6 +210,18 @@ lmabda* 式は次の文法に沿って記述します．
    <span class="mysyn">definition</span>  ::=  定義（define形式など）
    <span class="mysyn">expression</span>  ::=  式
 </pre>
+<b>補足：</b>
+Gule 3.0 以降，lambda* 式の本体は定義と式を交互に記述してもよいことになっています．つまり，以下に示すように，lambda* 式の本体は上記の <span class="mysyn">body</span> を複数指定してよいことになります．
+<p class="sshort"></p>
+(<b>lambda*</b> <span class="mysyn">formals*</span> <span class="mysyn">body</span><sup>+</sup>)
+<p class="short"></p>
+<b>参照：</b>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a> の最後に次の一文があります．
+<blockquote>
+Relatedly, it used to be that internal definitions had to precede all expressions in the body; this restriction was relaxed in Guile 3.0. 
+</blockquote>
 </div>
 
 <p></p>
@@ -990,7 +1001,7 @@ guile&gt; <span class="mycmd">(param-scope-test 1 2 3 #:kx 4 5)</span>
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="5">define*式</h3>
+<h3 class="section" id="define-star">define*式</h3>
 
 <p></p>
 lambda*式に呼応して，Guileは，define 形式を拡張した define* 形式を用意しています．

@@ -60,6 +60,8 @@ Guile基礎／ラムダ式（lambda）
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.3.16</span>：Guile 3.0以降，<span class="mysyn">body</span> の構文が拡張（緩和）されていることを追記．
+<li class="revise">
 <span class="mydate">2022.3.8</span>：初出
 </ul>
 </div>
@@ -174,6 +176,18 @@ lmabda式は次の文法に沿って記述します．
    <span class="mysyn">definition</span>  ::=  定義（define形式など）
    <span class="mysyn">expression</span>  ::=  式
 </pre>
+<b>補足：</b>
+Gule 3.0以降，lambda 式の本体は定義と式を交互に記述してもよいことになっています．つまり，以下に示すように，lambda 式の本体は上記の <span class="mysyn">body</span> を複数指定してよいことになります．
+<p class="sshort"></p>
+(<b>lambda</b> <span class="mysyn">formals</span> <span class="mysyn">body</span><sup>+</sup>)
+<p class="short"></p>
+<b>参照：</b>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a> の最後に次の一文があります．
+<blockquote>
+Relatedly, it used to be that internal definitions had to precede all expressions in the body; this restriction was relaxed in Guile 3.0. 
+</blockquote>
 </div>
 
 <p></p>
@@ -187,6 +201,29 @@ define形式やletrec式やletrec*式によって相互再帰的な手続きが�
 
 <p></p>
 lambda式によって生成された手続きを実引数を指定して呼び出したとき，仮引数（<span class="mysyn">formals</span>）が実引数に束縛されることによって環境が拡張されます．その拡張された環境のもとで本体（<span class="mysyn">body</span>）が評価されます．最後に評価された式の値が手続き呼び出しの結果（返り値）になります．
+
+<p></p>
+<h4 class="hdln">記録</h4>
+上で述べた補足事項（<span class="mysyn">body</span>を複数指定できること）を具体的に確認しておきましょう．
+<pre class="list">
+;; bodys.scm
+(define (bodys-test)
+  (define a 10)
+  (define b 20)
+  (display "a+b=") (display (+ a b)) (newline)
+  (define x 100)
+  (define y 200)
+  (display "x+y=") (display (+ x y)) (newline))
+</pre>
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "bodys.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(bodys-test)</span>
+a+b=30
+x+y=300
+</pre>
+
 
 </section>
 

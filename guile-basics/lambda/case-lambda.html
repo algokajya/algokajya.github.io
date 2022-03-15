@@ -57,6 +57,8 @@ Guile基礎／拡張版ラムダ式（case-lambda と case-lambda*）
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.3.16</span>：Guile 3.0以降，<span class="mysyn">body</span> の構文が拡張（緩和）されていることを追記．
+<li class="revise">
 <span class="mydate">2022.3.12</span>：初出
 </ul>
 </div>
@@ -185,6 +187,19 @@ lmabda式は次の文法に沿って記述します．
    <span class="mysyn">definition</span>  ::=  定義（define形式など）
    <span class="mysyn">expression</span>  ::=  式
 </pre>
+<b>補足：</b>
+Gule 3.0 以降，<span class="mysyn">cl-clause</span>の本体は定義と式を交互に記述してもよいことになっています．つまり，以下に示すように，<span class="mysyn">cl-clause</span>の本体は<span class="mysyn">body</span>を複数指定してよいことになります．
+<pre>
+   <span class="mysyn">cl-clause</span>   ::= (<span class="mysyn">formals</span> <span class="mysyn">body</span><sup>+</sup>)
+</pre>
+<p></p>
+<b>参照：</b>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a> の最後に次の一文があります．
+<blockquote>
+Relatedly, it used to be that internal definitions had to precede all expressions in the body; this restriction was relaxed in Guile 3.0. 
+</blockquote>
 </div>
 
 <p></p>
@@ -441,6 +456,19 @@ lmabda* 式は次の文法に沿って記述します．
    <span class="mysyn">definition</span>     ::=  定義（define形式など）
    <span class="mysyn">expression</span>     ::=  式
 </pre>
+<b>補足：</b>
+Gule 3.0 以降，<span class="mysyn">cl-star-clause</span>の本体は定義と式を交互に記述してもよいことになっています．つまり，以下に示すように，<span class="mysyn">cl-star-clause</span>の本体は<span class="mysyn">body</span>を複数指定してよいことになります．
+<pre>
+   <span class="mysyn">cl-star-clause</span>   ::= (<span class="mysyn">formals*</span> <span class="mysyn">body</span><sup>+</sup>)
+</pre>
+<p></p>
+<b>参照：</b>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a> の最後に次の一文があります．
+<blockquote>
+Relatedly, it used to be that internal definitions had to precede all expressions in the body; this restriction was relaxed in Guile 3.0. 
+</blockquote>
 </div>
 
 <p></p>
