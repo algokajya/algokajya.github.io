@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／ローカル変数の束縛（let 式他）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<!-- 
+<a class="noline" href="regex-proc.html">[Prev]</a> 
+&ensp; 
+-->
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<!-- 
+<span class="nolink">[Next]</span>
+&ensp; 
+-->
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／ローカル変数の束縛（let 式他）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.3.20</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，
+ローカルな変数束縛を生成するための式（let 式他）について勉強したことを記録しています．
+<li>
+let* 式，letrec 式，letrec* 式は let 式を使った式に翻訳することができます．
+従って，let 式の振る舞いを徹底的に理解することが肝要です．
+</ul>
+<ul>
+<li>
+筆者は Debian 11(bullseye) を使っていて，Guile は Debian 11 が配布するパッケージを使っています．Guile のバージョンは 3.0.5 です．
+ちなみに，2022.3.1時点の最新版は 3.0.8 です．
+<li>
+Guileのマニュアルは常に最新版を参照しています．少し困ったことに，バージョン番号の3桁目が変化しただけでも，マニュアルの編成が大きく変化することがあります．実際，3.0.5 と 3.0.8 はかなり違っています．Guile のバージョンが上がることによって，下記のマニュアルの参照（特に，節番号）は古くなるかも知れません．ただ，リンク先の名前に節番号は入っていないので，リンクが途切れることはないだろうと期待します．それから，現在使用中のシステム（例えば，Debian 11 の 3.0.5）については，info形式のオンラインマニュアルが参照できます．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">let 式</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">手続き呼び出しへの翻訳</a>
+   <li class="menu"><a class="noline" href="#2">ローカル変数のスコープ</a>
+   <li class="menu"><a class="noline" href="#3">ネストした let 式</a>
+   </ul>
+<li class="menu"><a class="noline" href="#4">let* 式</a>
+<li class="menu"><a class="noline" href="#5">letrec 式</a>
+<li class="menu"><a class="noline" href="#6">letrec* 式</a>
+<li class="menu"><a class="noline" href="#7">let-values 式と let*-values 式</a>
+<li class="menu"><a class="noline" href="#8">名前付き let 式</a>
+<li class="menu"><a class="noline" href="#9">その他</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#10">let-optional や let-keyword など</a>
+   <li class="menu"><a class="noline" href="#11">and-let*</a>
+   <li class="menu"><a class="noline" href="#12">match-let，match-let*，match-letrec</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Local-Bindings.html
+   ">[6.10.2 Local Variable Bindings]
+   </a> 
+
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+
+<li> Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://small.r7rs.org/
+   ">small.r7rs.org</a>：
+   Revised<sup>7</sup> Report on the Algorithmic Language Scheme（略号：R<sup>7</sup>RS）<br>
+   <a class="noline" href="
+   https://small.r7rs.org/attachment/r7rs.pdf
+   ">英語版</a>
+   <a class="noline" href="
+   http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
+   ">日本語版 </a>
+   <!-- 
+   <li class="menu">
+   Revised<sup>6</sup> Report on the Algorithmic Language Scheme（略号：R<sup>6</sup>RS）<br>
+   <a class="noline" href="http://www.r6rs.org/">英語版</a>  
+   ＊日本語版は<a class="noline" href="http://www7b.biglobe.ne.jp/~saia/scheme.html">
+     プログラミング言語Schemeの解説</a>
+   を参照して下さい．
+   <li class="menu">
+   Revised<sup>5</sup> Report on the Algorithmic Language Scheme（略号：R<sup>5</sup>RS）<br>
+   <a class="noline" href="https://schemers.org/Documents/Standards/R5RS/r5rs.pdf">英語版</a>  
+   ＊日本語版は<a class="noline" href="http://www7b.biglobe.ne.jp/~saia/scheme.html">
+     プログラミング言語Schemeの解説</a>
+   を参照して下さい．
+   -->
+   <li class="menu">
+   R. Kent Dybvig: 
+   <a class="noline" href="
+   ">The Scheme Programming Language, Fourth Edition, 2009.</a>（略号：TSPL）
+   </ul>
+</ul>
+<ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">let 式</h3>
+
+<p></p>
+let 式は次の文法に沿って記述します．
+<div class="spec">
+(<b>let</b> <span class="mysyn">bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">bindings</span>     ::=  (<span class="mysyn">bind</span><sup>*</sup>)
+   <span class="mysyn">bind</span>         ::=  (<span class="mysyn">identifier</span>  <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+<b>注意：</b>
+束縛部（<span class="mysyn">bindings</span>）に現れる変数（<span class="mysyn">identifier</span>）は互いに異なっていなければなりません．
+<p class="short"></p>
+<b>補足：</b>
+R<sup>7</sup>RS に従うと，let 式の本体は <span class="mysyn">body</span> を1つしか記述できません．しかし，Gule 3.0 では，let 式の本体（<span class="mysyn">body</span>）は定義と式を混在して記述できます．言い換えれば，<span class="mysyn">body</span> を複数記述することができます．上記の文法はこれを反映しています．
+（参照：<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a>，
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a>）
+</div>
+
+<p></p>
+let 式はローカルな変数を使った処理を記述するための構文形式です．束縛部（<span class="mysyn">bindings</span>）は，ローカルな変数（<span class="mysyn">identifier</span>）を式（<span class="mysyn">expression</span>）の値に初期設定するためのもので，本体（<span class="mysyn">body</span>）は let 式の処理内容を記述したものです．
+
+Guileは，let 式を次のように評価します．
+<ol>
+<li> まず let 式の実行を開始した時点の環境を次のように拡張します．
+   <ol type="a">
+   <li> 束縛部の中のすべての式を let 式を開始した時点の環境のもとで評価します．
+   <li> 束縛部の中のそれぞれの変数を新たな場所に束縛して，
+   その場所に上で求めた式の値を格納します．
+   </ol>
+<li> 次に，拡張された環境のもとで本体に含まれる定義や式を先頭から順に評価し，
+最後に評価した式の値を返します．
+また，束縛部で生成した束縛をすべて破棄し，
+環境を let 式の実行を開始した時点のものに戻します．
+</ol>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，ローカルな変数 x と y をそれぞれ 10 と 20 に束縛して，
+本体を実行しています． 
+<pre class="list">
+;; let-example.scm
+(let ((x 10) (y 20))
+  (display "x=") (display x) (newline)
+  (display "y=") (display y) (newline)
+  (display "x+y=") (display (+ x y)) (newline)
+  (display "x*y=") (display (* x y)) (newline))
+</pre>
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "let-example.scm")</span>
+      ...... コンパイルメッセージ ......
+x=10
+y=20
+x+y=30
+x*y=200
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+let 式の束縛部において手続きを生成することもできます．
+<pre class="list">
+;; let-example.scm
+(let ((sqr (lambda (x) (* x x)))
+      (a 3) 
+      (b 4))
+  (display "a*a+b*b=") (display (+ (sqr a) (sqr b))) (newline))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "let-example.scm")</span>
+      ...... コンパイルメッセージ ......
+a*a+b*b=25
+</pre>
+ただし，再帰的な手続きは定義できません．
+再帰的な手続きを定義したいときには letrec 式や letrec* 式を利用します．
+
+
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">手続き呼び出しへの翻訳</h4>
+<p class="sshort"></p>
+<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS[7.3. Derived expression types]</a> や
+<a class="noline" href="
+https://www.scheme.com/tspl4/binding.html#./binding:h4
+">TSPL[Section 4.4. Local Binding]</a> によると
+<p class="sshort"></p>
+<div class="dstyle">
+(let (($x_1$ $e_1$) ... ($x_n$ $e_n$)) <span class="mysyn">body</span><sup>+</sup>)
+</div>
+<p class="sshort"></p>
+という let 式は
+<p class="sshort"></p>
+<div class="dstyle">
+((lambda ($x_1$ ... $x_n$) <span class="mysyn">body</span><sup>+</sup>) $e_1$ ... $e_n$)
+</div>
+<p class="sshort"></p>
+という手続き呼び出しに翻訳できます．
+
+
+<p class="short"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+最初の具体例で示した let 式は，以下に示す手続き呼び出しに等価です．
+<pre class="list">
+;; let-example.scm
+((lambda (x y) 
+   (display "x=") (display x) (newline)
+   (display "y=") (display y) (newline)
+   (display "x+y=") (display (+ x y)) (newline)
+   (display "x*y=") (display (* x y)) (newline))
+ 10 20)
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "let-example.scm")</span>
+      ...... コンパイルメッセージ ......
+x=10
+y=20
+x+y=30
+x*y=200
+</pre>
+
+
+<p class="long"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">ローカル変数のスコープ</h4>
+<p></p>
+束縛部の中の変数のスコープ（有効範囲）は let 式の本体だけです．
+束縛部自身は含まれません．もちろん let 式の外側は含まれません．
+従って，初期設定の式を評価するとき，束縛部によって生成される束縛を使うことはできません．端的に言うと，束縛部におけるそれぞれの変数の初期設定は他の変数とは独立して行われます．
+
+<p></p>
+初期設定の式の中で，
+束縛部で生成した変数と同じ名前の変数を利用することはまったく問題ありません．
+ただし，その変数は let 式の外側で定義した変数になります．
+もう少し一般的に言うと，let 式の外側で定義した変数と let 式の束縛部で生成した変数の名前が等しいとき，初期設定の式の中では外側の変数が使用され，let 式の本体では束縛部の変数が使用されます．
+
+
+<p class="short"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+ローカルな変数のスコープについて確認してみましょう．
+<pre class="list">
+;; let-example.scm
+(define x 111)
+(define y 222)
+(let ((x 10) (y x) (z (+ x y)))
+   (display "x=") (display x) (newline)
+   (display "y=") (display y) (newline)
+   (display "z=") (display z) (newline))
+</pre>
+初期設定の式に現れる変数は，すべて，let 式の外側で定義されたものです．
+上の束縛部の場合，y を初期化する x は let 式の外側にある define 形式によって定義された x です．従って，y は外側の x の値（111）に初期設定されます．z についても，それを初期化する x と y は let 式の外側で定義された変数です．従って，z は それらの和（333）に初期設定されます．
+<pre class="shell">
+guile> (load "let-example.scm")
+      ...... コンパイルメッセージ ......
+x=10
+y=111
+z=333
+</pre>
+また，この結果が示すように，let 式の本体における x と y は，let 式の外側で定義された変数ではなく，束縛部によって生成された変数です．
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">ネストした let 式</h4>
+
+<p></p>
+let 式をネストさせることによって，外側の let 式の束縛部で生成した束縛を内側の let 式全体で（特に，束縛部の中で）利用することができます．言い換えると，ネストした let 式によって初期設定を逐次的に行うことができます．
+
+<p class="short"></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+<pre class="list">
+;; let-example.scm
+(define x 111)
+(define y 222)
+(let ((x 10))
+  (let ((y (+ x 20)))
+    (let ((z (+ x y)))
+      (display "x=") (display x) (newline)
+      (display "y=") (display y) (newline)
+      (display "z=") (display z) (newline))))
+</pre>
+内側の let 式の y を初期設定する式 (+ x 20) における x は，外側の let 式の束縛部で生成された x です．define 形式によって定義された x ではありません．従って，y は 30（=10+20）に初期設定されます．同様に，z を初期設定する式における x と y は外側の let 式の束縛部で生成された変数です．define 形式によって定義された変数ではありません．従って，z は 40（=10+30）に初期設定されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "let-example.scm")</span>
+      ...... コンパイルメッセージ ......
+x=10
+y=30
+z=40
+</pre>
+この具体例は，
+ネストした let 式によってローカル変数を逐次的に初期設定できることを示しています．
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="4">let* 式</h3>
+<p></p>
+let* 式の文法は，
+構文キーワードが let* であることを除いて，let 式の文法とまったく同じです．
+<div class="spec">
+(<b>let*</b> <span class="mysyn">bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">bindings</span>     ::=  (<span class="mysyn">bind</span><sup>*</sup>)
+   <span class="mysyn">bind</span>         ::=  (<span class="mysyn">identifier</span>  <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+<p class="short"></p>
+<b>補足：</b>
+束縛部（<span class="mysyn">bindings</span>）の中に現れる変数（<span class="mysyn">identifier</span>）は互いに異なっている必要はありません．
+<p class="short"></p>
+<b>補足：</b>
+R<sup>7</sup>RS に従うと，let* 式の本体は <span class="mysyn">body</span> を1つしか記述できません．しかし，Gule 3.0 では，let* 式の本体（<span class="mysyn">body</span>）は定義と式を混在して記述できます．言い換えれば，<span class="mysyn">body</span> を複数記述することができます．上記の文法はこれを反映しています．
+（参照：<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a>，
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a>）
+</div>
+
+<p></p>
+<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS[7.3. Derived expression types]</a> や
+<a class="noline" href="
+https://www.scheme.com/tspl4/binding.html#./binding:h4
+">TSPL[Section 4.4. Local Binding]</a> を参考にすると，
+let* 式はネストした let 式の糖衣構文と見なすことができます．つまり，
+<p class="sshort"></p>
+<div class="dstyle">
+   (let* (($x_1$ $e_1$) ($x_2$ $e_2$) ... ($x_n$ $e_n$)) <span class="mysyn">body</span><sup>+</sup>)
+</div>
+<p class="sshort"></p>
+という let* 式は，次のようなネストした let 式に等価です．
+<p class="sshort"></p>
+<div class="dstyle">
+(let (($x_1$ $e_1$))<br>
+&emsp;(let (($x_2$ $e_2$))<br>
+&emsp;&emsp; ......<br>
+&emsp;&emsp;&emsp;&emsp;(let (($x_n$ $e_n$)) <span class="mysyn">body</span><sup>+</sup>) ... ))
+</div>
+<p class="sshort"></p>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+前節の最後に示したネストした let 式は次の let* 式に書き換えることができます．
+<pre class="list">
+;; let-example.scm
+(let* ((x 10)
+       (y (+ x 20))
+       (z (+ x y)))
+  (display "x=") (display x) (newline)
+  (display "y=") (display y) (newline)
+  (display "z=") (display z) (newline))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "let-example.scm")</span>
+      ...... コンパイルメッセージ ......
+x=10
+y=30
+z=40
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+束縛部における変数名は互いに異なっていなくてもかまいません．
+以下の let* 式の束縛部では，まず x は 10 に設定され，次に y は 30（=10+20）に設定され，その次に x が 100 に再設定され，最後に z は 130（=100+30）に設定されます．
+<pre class="list">
+;; let-example.scm
+(let* ((x 10)
+       (y (+ x 20))
+       (x 100)
+       (z (+ x y)))
+  (display "x=") (display x) (newline)
+  (display "y=") (display y) (newline)
+  (display "z=") (display z) (newline))
+</pre>
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "let-example.scm")</span>
+      ...... コンパイルメッセージ ......
+x=100
+y=30
+z=130
+</pre>
+この具体例が示すように，let* 式の束縛指定（<span class="mysyn">bind</span>）は先頭から順に評価されていって，初期設定の式や本体を評価するときには各時点の最新の変数の値が使用されます．
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="5">letrec 式</h3>
+<p></p>
+letrec 式の文法は，
+構文キーワードが letrec であることを除いて，let 式の文法とまったく同じです．
+<div class="spec">
+(<b>letrec</b> <span class="mysyn">bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">bindings</span>     ::=  (<span class="mysyn">bind</span><sup>*</sup>)
+   <span class="mysyn">bind</span>         ::=  (<span class="mysyn">identifier</span>  <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+<p class="short"></p>
+<b>注意：</b>
+束縛部（<span class="mysyn">bindings</span>）の中に現れる変数（<span class="mysyn">identifier</span>）は互いに異なっていなければなりません．
+<p class="short"></p>
+<b>補足：</b>
+R<sup>7</sup>RS に従うと，letrec 式の本体は <span class="mysyn">body</span> を1つしか記述できません．しかし，Gule 3.0 では，letrec 式の本体（<span class="mysyn">body</span>）は定義と式を混在して記述できます．言い換えれば，<span class="mysyn">body</span> を複数記述することができます．上記の文法はこれを反映しています．
+（参照：<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a>，
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a>）
+</div>
+
+<p></p>
+<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS[7.3. Derived expression types]</a> や
+<a class="noline" href="
+https://www.scheme.com/tspl4/binding.html#./binding:h4
+">TSPL[Section 4.4. Local Binding]</a> によれば
+<p class="sshort"></p>
+<div class="dstyle">
+(<b>letrec</b> (($x_1$ $e_1$) ... ($x_n$ $e_n$)) <span class="mysyn">body</span>)
+</div>
+<p class="sshort"></p>
+は次のような let 式に翻訳できます．
+<p class="sshort"></p>
+<div class="dstyle">
+(<b>let</b> (($x_1$ $\bot$) ... ($x_n$ $\bot$))<br>
+&emsp;(<b>let</b> (($temp_1$ $e_1$) ... ($temp_n$ $e_n$))<br>
+&emsp;&emsp;(set! $x_1$ $temp_1$)<br>
+&emsp;&emsp;&emsp;......<br>
+&emsp;&emsp;(set! $x_n$ $temp_n$)<br>
+&emsp;&emsp;<span class="mysyn">body</span><sup>+</sup>))
+</div>
+<p class="sshort"></p>
+ここで：
+<ul>
+<li>
+$\bot$ は，SchemeやGuileの構文要素ではなく，
+値が不定であることを表す便宜的な記号です．
+これは，<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS[7.3. Derived expression types]</a> では &lt;undefined&gt; と表されていて，Guileでは #&lt;unspecified&gt; と表示されます．ただし，
+（少なくとも Guile において）ソースコード上で利用可能なリテラルはありません．
+上記の初期設定の式（$e_1$〜$e_n$）や本体（<span class="mysyn">body</span>）の中でこれを参照しようとしたときには動作は不確定である（または，エラーが発生する）とします．
+<li>
+$temp_1$〜$temp_n$はプログラム中のどこにも使われていないまったく新しい変数を表していて，
+初期設定の式（$e_1$〜$e_n$）の評価結果を$x_1$〜$x_n$に渡すためだけの一時的な変数として使用しています．
+<li>
+<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS</a> では，定義は let 式の本体の途中に書くことはできないため，<span class="mysyn">body</span> を翻訳後の let 式の本体にただ単に含めるといったことはできません．
+つまり，上のように翻訳することはできません．そのため，<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS</a> では，上記の（翻訳後の） <span class="mysyn">body</span><sup>+</sup> を次のような let 式に翻訳しています．
+<div class="dstyle">
+(<b>let</b> () <span class="mysyn">body</span>)
+</div>
+一方，Guile 3.0 以降は定義と式を混在して書いても構わないので，<span class="mysyn">body</span><sup>+</sup> を let 式で囲む必要はありません．
+</ul>
+
+
+<p></p>
+上記の外側の let 式は，ローカル変数の$x_1$〜$x_n$を（値は不定のままとりあえず）場所に束縛することによって，内側の let 式全体にわたって$x_1$〜$x_n$を使えるようにしています．従って，不定の値（$\bot$）を参照さえしなければ，$e_1$〜$e_n$の中でも$x_1$〜$x_n$を使用することができます．このことと lambda 式の本体が手続き呼び出し時まで評価されないことによって，letrec 式の束縛部では再帰的（および相互再帰的）な手続きを生成することができます．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">要約</h4>
+上で述べたことを要約しておきます．
+<ul>
+<li>
+let 式で出来ることは letrec 式でも出来ます．
+だた単に，束縛の仕方が複雑になるだけです．
+<li>
+ロカール変数（$x_1$〜$x_n$）のスコープは束縛部も含めた letrec 式の全体です．
+従って，不定の値（$\bot$）を参照さえしなければ，
+本体だけでなく初期設定の式（$e_1$〜$e_n$）の中でもローカル変数（$x_1$〜$x_n$）を使うことができます．逆に，$x_1$〜$x_n$と同じ名前の外部の変数があったとしても，それを使うことはできません．つまり，外部で定義された同名の変数はローカル変数によって遮蔽されます．
+<li>
+ローカル変数（$x_1$〜$x_n$）の値は，初期設定の式（$e_1$〜$e_n$）の評価がすべて完了したあとで使うことができます．
+<li>
+以上の事実と lambda 式の性質から，letrec 式の束縛部は再帰的（有効範囲および相互再帰的）な手続きを生成することができます．
+</ul>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の sum は2つの数値 start と end を受け取って，start〜end の総和を返す（再帰的な）手続きです．ただし，start$>$end の場合には 0 を返します．letrec 式の本体では sum を使って1〜10の総和を求めています．
+<pre class="list">
+;; letrec-example.scm
+(letrec ((sum (lambda (start end)
+                (if (> start end) 
+                    0 
+                    (+ start (sum (1+ start) end))))))
+  (sum 1 10))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "letrec-example.scm")</span>
+      ...... コンパイルメッセージ ......
+<span>&#36;</span>1 = 55
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の isort は，数値からなるリスト lst を小さい順にソートし直したリストを返します．ソーティングのアルゴリズムは挿入ソートを使っています．insert は，数値 x と小さい順にソート済みのリスト lst を受け取って，lst の適切な位置（小さい順に反しない位置）に x を挿入します．letrec 式の本体では，適当なリストに対して isort を実行しています．
+<pre class="list">
+;; letrec-example.scm
+(letrec
+    ((insert (lambda (x lst) 
+               (cond 
+                ((null? lst) (list x))
+                ((&lt;= x (car lst)) (cons x lst))
+                (else (cons (car lst) (insert x (cdr lst)))))))
+     (isort (lambda (lst) 
+              (if (null? lst) 
+                  &apos;()
+                  (insert (car lst) (isort (cdr lst)))))))
+  (isort &apos;(9 1 8 2 7 3 6 4 5)))
+</pre>
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "letrec-example.scm")</span>
+      ...... コンパイルメッセージ ......
+<span>&#36;</span>1 = (1 2 3 4 5 6 7 8 9)
+</pre>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="6">letrec* 式</h3>
+
+<p></p>
+letrec* 式の文法は，
+構文キーワードが letrec* であることを除いて，let 式の文法とまったく同じです．
+<div class="spec">
+(<b>letrec*</b> <span class="mysyn">bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">bindings</span>     ::=  (<span class="mysyn">bind</span><sup>*</sup>)
+   <span class="mysyn">bind</span>         ::=  (<span class="mysyn">identifier</span>  <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+<p class="short"></p>
+<b>注意：</b>
+束縛部（<span class="mysyn">bindings</span>）の中に現れる変数（<span class="mysyn">identifier</span>）は互いに異なっていなければなりません．
+<p class="short"></p>
+<b>補足：</b>
+R<sup>7</sup>RS に従うと，letrec* 式の本体は <span class="mysyn">body</span> を1つしか記述できません．しかし，Gule 3.0 では，letrec* 式の本体（<span class="mysyn">body</span>）は定義と式を混在して記述できます．言い換えれば，<span class="mysyn">body</span> を複数記述することができます．上記の文法はこれを反映しています．
+（参照：<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a>，
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a>）
+</div>
+
+<p></p>
+<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS[7.3. Derived expression types]</a> や
+<a class="noline" href="
+https://www.scheme.com/tspl4/binding.html#./binding:h4
+">TSPL[Section 4.4. Local Binding]</a> によれば
+<p class="sshort"></p>
+<div class="dstyle">
+(<b>letrec*</b> (($x_1$ $e_1$) ... ($x_n$ $e_n$)) <span class="mysyn">body</span>)
+</div>
+<p class="sshort"></p>
+は次のような let 式に翻訳できます．
+<p class="sshort"></p>
+<div class="dstyle">
+(<b>let</b> (($x_1$ $\bot$) ... ($x_n$ $\bot$))<br>
+&emsp;(<b>set!</b> $x_1$ $e_1$)<br>
+&emsp;&emsp;......<br>
+&emsp;(<b>set!</b> $x_n$ $e_n$)<br>
+&emsp;<span class="mysyn">body</span><sup>+</sup>)
+</div>
+<p class="sshort"></p>
+ここで，$\bot$ は letrec 式のところで説明した「不定の値」を表す便宜的な記号です．
+上記の初期設定の式（$e_1$〜$e_n$）や本体（<span class="mysyn">body</span>）の中でこれを参照しようとしたときには動作は不確定である（または，エラーが発生する）とします．それから，letrec 式の場合と同様に，上記の翻訳（<span class="mysyn">body</span><sup>+</sup>を let 式で囲まないこと）は Guile の言語仕様に基づいています．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">要約</h4>
+上記の翻訳が意味するところは次のように要約できます．
+<ul>
+<li>
+let 式，let* 式，letrec 式で出来ることはすべて letrec* 式でもできます．
+<li>
+ロカール変数（$x_1$〜$x_n$）のスコープは束縛部も含めた letrec* 式の全体です．
+つまり，不定の値（$\bot$）を参照さえしなければ，
+本体だけでなく初期設定の式（$e_1$〜$e_n$）の中でもローカル変数（$x_1$〜$x_n$）を使うことができます．逆に，$x_1$〜$x_n$と同じ名前の外部の変数があったとしても，それを使うことはできません．つまり，外部で定義された同名の変数はローカル変数によって遮蔽されます．
+<li>
+初期設定の式 $e_1$〜$e_n$ は先頭から順に逐次的に評価されます．そのため，$e_k$ を評価するときには$e_1$〜$e_{k-1}$の値を（$x_1$〜$x_{k-1}$を通して）使用することができます．これが letrec 式と違っている点です．
+</ul>
+
+<p></p>
+letrec* 式は，再帰的な手続きを定義するとともに束縛部を逐次的に評価したい場合に使用することになります．そういった場合が発生するような自然な状況がなかなか思いつかないのですが，1つだけ言えることは，<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a> を利用した場合，GuileのようなR<sup>6</sup>RSやR<sup>7</sup>RSに準拠しようとしている処理系では，暗黙的に letrec* 式を利用していることになります．
+
+
+</section>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="7">let-values 式と let*-values 式</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">モジュールのロード</h4>
+Guile（少なくとも 3.0.5）において let-values や let*-values を使用するためには，
+以下に示すように (srfi srfi-11) モジュールをロードする必要があります．
+<pre class="list">
+(use-modulets (srfi srf-11))
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">文法</h4>
+let-values 式と let*-values 式は次の文法に沿って記述します．
+<div class="spec">
+(<b>let-values</b> <span class="mysyn">mv-bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span><br>
+(<b>let*-values</b> <span class="mysyn">mv-bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">mv-bindings</span>  ::=  (<span class="mysyn">mv-bind</span><sup>*</sup>)
+   <span class="mysyn">mv-bind</span>      ::=  (<span class="mysyn">formals</span> <span class="mysyn">expression</span>)
+   <span class="mysyn">formals</span>      ::=  (<span class="mysyn">identifier</span><sup>*</sup>)
+                    |  <span class="mysyn">identifier</span>
+                    |  (<span class="mysyn">identifier</span><sup>+</sup> . <span class="mysyn">identifier</span>)
+   <span class="mysyn">identifier</span>   ::=  識別子
+   <span class="mysyn">body</span>         ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>   ::=  定義（define形式など）
+   <span class="mysyn">expression</span>   ::=  式
+</pre>
+<p class="short"></p>
+<b>補足：</b>
+R<sup>7</sup>RS に従うと，let-values 式や let*-values 式の本体は <span class="mysyn">body</span> を1つしか記述できません．しかし，Gule 3.0 では，let-values 式や let*-values 式の本体（<span class="mysyn">body</span>）は定義と式を混在して記述できます．言い換えれば，<span class="mysyn">body</span> を複数記述することができます．上記の文法はこれを反映しています．
+（参照：<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a>，
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a>）
+</div>
+
+<p></p>
+let-values 式 と let*-values 式は，一般に，
+初期設定の式（<span class="mysyn">expresion</span>）が多値を返すとき，
+その多値を分解してローカル変数（<span class="mysyn">identifier</span>）を束縛するための構文形式です．ただし，以下に述べる変数指定のパターンと適合する場合には，初期設定の式は多値ではない普通の値を返す式でもかまいません．
+
+<p></p>
+多値が扱える点を除くと，式全体の評価の仕方は let 式 や let* 式と同じです．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">変数指定のパターンと意味</h4>
+上記の文法における <span class="mysyn">formals</span> はlmbda 式の仮引数と同じ形式のものです．
+従って，束縛指定（<span class="mysyn">mv-bind</span>）は次の3つのパターンがあります．
+以下の $x_k$ や $x$ は変数を表し，$e$ は初期設定の式（多値を返す式）を表しています．
+<ol>
+<li> (($x_1$ ... $x_n$) $e$) <br>
+この場合，$e$はちょうど$n$個の値を返す式でなければいけません．
+そうでない場合，エラーが発生します．
+これは，$e$が返す$n$個の値に$x_1$〜$x_n$を束縛します．
+$n=1$のときには，$e$は普通の値を返す式でもかまいません．
+
+<li> ($x$ $e$) <br>
+これは，$e$が返す多値からなるリストに$x$を束縛します．
+$e$は普通の値を返す式でもかまいません．ただし，その場合であっても，
+$x$は$e$の値からなるリストに束縛されます．
+
+<li> (($x_1$ ... $x_n$ . $x_{n+1}$) $e$) <br>
+この場合，$e$は$n$個以上の値を返す式でなければいけません．
+そうでない場合，エラーが発生します．
+これは，$e$が返す多値のうち，先頭の$n$個の値に$x_1$〜$x_n$を束縛し，
+残りの値からなるリストに$x_{n+1}$を束縛します．
+$n=1$のときには，$e$は普通の値を返す式でもかまいません．
+その場合，$x_1$は$e$の値に束縛され，$x_2$は空リスト '() に束縛されます．
+</ol>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+上記の3つのパターンを試してみます．
+<pre class="list">
+;; letval.scm
+(use-modules (srfi srfi-11))
+(let-values
+    (((a b c) (values 1 2 3))
+     (p (values 11 22 33))
+     ((x y . z) (values 55 66 77 88 99)))
+  (format #t "a=~A b=~A c=~A\n" a b c)
+  (format #t "p=~A\n" p)
+  (format #t "x=~A y=~A z=~A\n" x y z))
+</pre>
+この let-values 式は各ローカル変数を次のように束縛します．
+<ol>
+<li>
+束縛指定の1番目の
+&emsp;
+((a b c) (values 1 2 3))
+&emsp;
+は，上記の1.のパターンです．
+これは，ローカル変数の a,b,c をそれぞれ 1,2,3 に束縛します．
+
+<li>
+2番目の 
+&emsp;
+(p (values 11 22 33))
+&emsp;
+は，上記の2.のパターンです．これは，ローカル変数の p を 11,22,33 からなるリスト (11 22 33) に束縛します．
+
+<li>
+3番目の
+&emsp;
+((x y . z) (values 55 66 77 88 99))
+&emsp;
+は，上記の3.のパターンです．これは，ローカル変数の x と y をそれぞれ 55 と 66 に束縛し，z を残りの値からなるリスト (77 88 99) に束縛します．
+</ol>
+以下は実行結果です．最後の <span>&#36;</span>1 = #t は let-values 式の返り値（最後のformat 式の返り値）を示しています．
+<pre class="shell">
+guile&gt; (<span class="mycmd">load "letval.scm")</span>
+      ...... コンパイルメッセージ ......
+a=1 b=2 c=3
+p=(11 22 33)
+x=55 y=66 z=(77 88 99)
+<span>&#36;</span>1 = #t
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+let*-values 式は let-values 式の let* 版です．つまり，
+束縛指定を先頭から順に逐次的に評価していって，
+それぞれの初期設定の式を評価するときには，それまでに確立したローカル変数の値を利用することができます．以下の具体例では，これを確認してみます．
+<pre class="list">
+;; letval.scm
+(use-modules (srfi srfi-11))
+(let*-values 
+    (((a b) (values 10 20))
+     (p (values (+ a b) (* 2 a) (/ b 4)))
+     ((x y . z) (values (car p) (cadr p) a b p)))
+  (format #t "a=~A b=~A\n" a b) 
+  (format #t "p=~A\n" p)
+  (format #t "x=~A y=~A z=~A\n" x y z))
+</pre>
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "letval.scm")</span>
+      ...... コンパイルメッセージ ......
+a=10 b=20
+p=(30 20 5)
+x=30 y=20 z=(10 20 (30 20 5))
+<span>&#36;</span>1 = #t
+</pre>
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="8">名前付き let 式</h3>
+
+<p></p>
+名前付き let 式（named let expression）は，
+再帰的な手続きの定義と実行を同時に行うことのできる構文です．
+繰り返し処理を記述するために利用することが多いと思います．
+そのため，<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS</a> は，
+名前付き let 式を繰り返し処理の構文として分類しています．
+
+<p></p>
+名前付き let 式は次の文法に沿って記述します．let キーワードの直後に <span class="mysyn">identifier</span> を入れることを除いて，記述形式は let 式と同じです．
+<div class="spec">
+(<b>let</b> <span class="mysyn">identifier</span> <span class="mysyn">bindings</span> <span class="mysyn">body</span><sup>+</sup>) <span class="myright">syntax</span>
+<pre>
+   <span class="mysyn">bindings</span>     ::=  (<span class="mysyn">bind</span><sup>*</sup>)
+   <span class="mysyn">bind</span>         ::=  (<span class="mysyn">identifier</span>  <span class="mysyn">expression</span>)
+   <span class="mysyn">identifier</span>  ::=  識別子
+   <span class="mysyn">body</span>        ::=  <span class="mysyn">definition</span><sup>*</sup> <span class="mysyn">expression</span><sup>+</sup>
+   <span class="mysyn">definition</span>  ::=  定義（define形式など）
+   <span class="mysyn">expression</span>  ::=  式
+</pre>
+<b>注意：</b>
+束縛部（<span class="mysyn">bindings</span>）に現れる変数（<span class="mysyn">identifier</span>）は互いに異なっていなければなりません．
+<p class="short"></p>
+<b>補足：</b>
+R<sup>7</sup>RS に従うと，名前付き let 式の本体は <span class="mysyn">body</span> を1つしか記述できません．しかし，Gule 3.0 では，名前付き let 式の本体（<span class="mysyn">body</span>）は定義と式を混在して記述できます．言い換えれば，<span class="mysyn">body</span> を複数記述することができます．上記の文法はこれを反映しています．
+（参照：<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Internal-Definitions.html
+">Guile[6.10.3 Internal definitions]</a>，
+<a class="noline" href="
+file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-definition
+">define 形式による内部定義</a>）
+</div>
+
+<p></p>
+名前付き let 式 
+<div class="dstyle">
+(<b>let</b> <span class="mysyn">name</span> (($x_1$ $e_1$) ... ($x_n$ $e_n$)) <span class="mysyn">body</span><sup>+</sup>)
+</div>
+は，$x_1$〜$x_n$ を仮引数とし <span class="mysyn">body</span><sup>+</sup> を本体とする手続き，
+つまり，
+<div class="dstyle">
+(lambda ($x_1$ ... $x_n$)  <span class="mysyn">body</span><sup>+</sup>) 
+</div>
+という手続きを生成して，その手続きに <span class="mysyn">name</span> を束縛します．
+さらに，その手続きを$e_1$〜$e_n$を実引数として呼び出します．つまり，
+<div class="dstyle">
+(<span class="mysyn">name</span> $e_1$ ... $e_n$)
+</div>
+という手続き呼び出しを実行します．
+
+<p></p>
+<span class="mysyn">body</span><sup>+</sup> の中で <span class="mysyn">name</span> を使用することができます．そのため，再帰的な手続きを定義することができます．一方，$e_1$〜$e_n$の中では <span class="mysyn">name</span>（の束縛）は使用できません．もし <span class="mysyn">name</span> を使用した場合には，名前付き let 式の外部で定義された値を使用することになります．
+
+ちなみに，<span class="mysyn">body</span><sup>+</sup> の中で <span class="mysyn">name</span> を使用しなかった場合には let 式とまったく同じ処理をします．また，上記の文法が示しているように，束縛部は空でもかまいません．その場合，無引数の手続きを実行することになります．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">基本的な式への翻訳</h4>
+<a class="noline" href="
+https://small.r7rs.org/attachment/r7rs.pdf
+">R<sup>7</sup>RS[7.3. Derived expression types]</a> や
+<a class="noline" href="
+https://www.scheme.com/tspl4/control.html#./control:h4
+">TSPL[Section 5.4. Recursion and Iteration]</a> によれば，上で示した名前付き let 式は，次のような式に翻訳できます．
+<p class="short"></p>
+<div class="dstyle">
+((<b>letrec</b> ((<span class="mysyn">name</span> (<b>lambda</b> ($x_1$ ... $x_n$) <span class="mysyn">body</span><sup>+</sup>))) <span class="mysyn">name</span>) $e_1$ ... $e_n$)
+</div>
+<p class="short"></p>
+ちょっと分かりにくいので，次のように翻訳することもできます．
+翻訳の要点は，$e_1$〜$e_n$の評価を <span class="mysyn">name</span> の束縛とは無関係に行なうことです．
+<p class="short"></p>
+<div class="dstyle">
+(let (($temp_1$ $e_1$) ... ($temp_n$ $e_n$))<br>
+&emsp;(letrec ((<span class="mysyn">name</span> (<b>lambda</b> ($x_1$ ... $x_n$) <span class="mysyn">body</span><sup>+</sup>)))<br>
+&emsp;&emsp;(<span class="mysyn">name</span> $temp_1$ ... $temp_n$)))
+</div>
+<p class="short"></p>
+ここで，$temp_1$〜$temp_n$はプログラム中のどこにも使われていないまったく新しい（一時的な）変数を表していて，$e_1$〜$e_n$の値を手続きの <span class="mysyn">name</span> に渡すためだけに使用しています．$e_1$〜$e_n$が <span class="mysyn">name</span> を含んでいないのであれば，
+外側の let 式を削除して，次のように翻訳できます．
+<p class="short"></p>
+<div class="dstyle">
+(letrec ((<span class="mysyn">name</span> (<b>lambda</b> ($x_1$ ... $x_n$) <span class="mysyn">body</span><sup>+</sup>)))<br>
+&emsp;(<span class="mysyn">name</span> $e_1$ ... $e_n$)))
+</div>
+<p class="short"></p>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下の名前付き let 式は 1〜10 の総和を求める手続き sum を定義して実行します．
+<pre class="list">
+(let sum ((k 1) (s 0))
+  (if (> k 10)
+      s
+      (sum (1+ k) (+ s k))))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "namelet.scm")</span>
+      ...... コンパイルメッセージ ......
+<span>&#36;</span>1 = 55
+</pre>
+上記の名前付き let 式は以下の letrec 式と等価です．
+<pre class="list">
+(letrec ((sum (lambda (k s) (if (> k 10)
+                                s
+                                (sum (1+ k) (+ s k))))))
+  (sum 1 0))
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+名前付き let 式は letrec式と等価なので，
+末尾再帰的な手続きだけでなく，
+一般の再帰的な手続きを定義することもできます．
+以下の名前付き let 式は 10 番目の<a class="noline" href="
+https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A3%E3%83%9C%E3%83%8A%E3%83%83%E3%83%81%E6%95%B0">フィボナッチ数</a>を漸化式の通りに計算する再帰的手続きを定義して実行します．実行例は省略します．
+<pre class="list">
+(let fib ((n 10))
+  (if (&lt;= n 1)
+      n
+      (+ (fib (- n 1)) (fib (- n 2)))))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "namelet.scm")</span>
+      ...... コンパイルメッセージ ......
+<span>&#36;</span>2 = 21
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+これまで説明してきた構文を使って，ちょっとした手続きを定義してみます．
+以下の groups は，リスト lst と正整数 n を受け取って，lst の要素を先頭から n 個ずつのグループ（リスト）に分けたリストを返します．
+ただし，最後のグループは残りものからなるリストになります．
+例えば，lst $=$ '(1 2 3 4 5) と n $=$ 5 に対して groups を適用すると '((1 2) (3 4) (5)) といったリストが返ってきます．
+なお，n に0以下の整数を指定すると無限ループします．
+<p class="short"></p>
+split-at は，リスト lst を先頭から n 個のグループ（リスト）と残りのリストに分割したものを多値として返します．実のところ，(srfi srfi-1) モジュールに同様の手続きがあるのですが，n が lst の長さより大きいときにエラーが発生するので独自に定義しています（それに letrec の使用例になるので）．
+<pre class="list">
+;; groups.scm
+(use-modules (srfi srfi-11))
+(define (groups lst n)
+  (letrec ((split-at 
+            (lambda (lst n acc)
+              (if (or (null? lst) (&lt;= n 0))
+                  (values (reverse! acc) lst)
+                  (split-at (cdr lst) (1- n) (cons (car lst) acc))))))
+    (let grouping ((lst lst) (acc &apos;()))
+      (let-values (((grp rest) (split-at lst n &apos;())))
+        (if (null? rest)
+            (reverse! (cons grp acc))
+            (grouping rest (cons grp acc)))))))
+</pre>
+
+<pre class="shell">
+guile> (load "groups.scm")
+      ...... コンパイルメッセージ ......
+guile> (groups '(1 2 3 4 5 6 7 8 9 10) 3)
+$1 = ((1 2 3) (4 5 6) (7 8 9) (10))
+</pre>
+
+<p><p>
+ちょっとお遊びです．split-at は名前付き let 式を使えば非再帰的な手続きにすることができます．一般に，相互再帰的でさえなければ，名前付き let 式を使えばどんな手続きでも非再帰的に定義できます．非再帰的な手続きは，単なる lambda 式（にたまたま名前が付いているだけ）に過ぎないので，grouping の引数にすることができます．ということで，groups を次のように定義することもできます．
+<pre class="list">
+;; groups.scm
+(use-modules (srfi srfi-11))
+(define (groups lst n)
+  (let grouping ((split-at 
+                  (lambda (lst n)
+                    (let loop ((lst lst) (n n) (acc &apos;()))
+                      (if (or (null? lst) (&lt;= n 0))
+                          (values (reverse! acc) lst)
+                          (loop (cdr lst) (1- n) (cons (car lst) acc))))))
+                 (lst lst)
+                 (acc &apos;()))
+    (let-values (((grp rest) (split-at lst n)))
+      (if (null? rest)
+          (reverse! (cons grp acc))
+          (grouping split-at rest (cons grp acc))))))
+</pre>
+でも，こんなプログラムを作ると怒られるような気がします．
+
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="9">その他</h3>
+
+<p></p>
+let 式に関連するもの（ローカル変数を新たに束縛する式）として，
+以下に示すようなものがあります（他にもあるかも知れません）．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="10">let-optional や let-keyword など</h4>
+
+<p class="short"></p>
+これらは lambda* 式の let 版（ローカル変数版）です．
+詳細は
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/ice_002d9-optargs.html
+">Guile[6.7.4.2 (ice-9 optargs)]</a> を参照して下さい．
+ただ，Guileのライブラリモジュール内を grep コマンドを使って検索してみると，
+lambda* 式はあちらこちらで使われていますが，
+これらはまったく使われていないようです．
+あまり使うことはないように思います．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="11">and-let*</h4>
+
+<p class="short"></p>
+これは and と let* を結合したものだそうです．
+詳細は
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/SRFI_002d2.html
+">Guile[7.5.4 SRFI-2 - and-let*]</a> を参照して下さい．
+マニュアルを読むと，役立ちそうな感じがするのですが，
+Guileのライブラリモジュール内ではほとんど使われていません．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="12">match-let，match-let*，match-letrec</h4>
+
+<p class="short"></p>
+これ（パターンマッチング関連）は独立した話題です．いつか勉強したいと思います．
+詳細は
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Pattern-Matching.html
+">Guile[7.8 Pattern Matching]</a>
+を参照して下さい．
+
+
+</section>
+
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
