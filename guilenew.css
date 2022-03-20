@@ -241,10 +241,12 @@ ol {
      margin-top: 1%;  
      margin-bottom: 1%;  
 }
+
 */
 
 ol li {
-    margin-bottom: 1%; 
+    margin-top: 0.3em; 
+    margin-bottom: 0.3em; 
 }
 
 ol.pnum {
