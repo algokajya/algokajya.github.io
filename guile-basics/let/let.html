@@ -1044,12 +1044,12 @@ guile&gt; <span class="mycmd">(load "namelet.scm")</span>
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln">補足</h4>
-以下の check-pq は，正整数 n と2以上の整数 a,b を受け取って，
+以下の check-ab は，正整数 n と2以上の整数 a,b を受け取って，
 n が a$^i$b$^j$（$i,j \geq 0$）の形をしていたら #t を返し，
 そうでなければ #f を返します．また，途中の計算過程を format を使って表示しています．
 <pre class="list">
-;; check-pq.scm
-(define (check-pq n a b)
+;; check-ab.scm
+(define (check-ab n a b)
   (let loop ((n n))
     (format #t "n=~A\n" n)
     (cond 
@@ -1059,15 +1059,15 @@ n が a$^i$b$^j$（$i,j \geq 0$）の形をしていたら #t を返し，
      (else #f))))
 </pre>
 <pre class="shell">
-guile> (load "check-pq.scm")
+guile> (load "check-ab.scm")
       ...... コンパイルメッセージ ......
-guile&gt; <span class="mycmd">(check-pq 36 3 4)</span>
+guile&gt; <span class="mycmd">(check-ab 36 3 4)</span>
 n=36
 n=12
 n=4
 n=1
 <span>&#36;</span>1 = #t
-guile&gt; <span class="mycmd">(check-pq 60 3 4)</span>
+guile&gt; <span class="mycmd">(check-ab 60 3 4)</span>
 n=60
 n=20
 n=5
@@ -1076,7 +1076,7 @@ n=5
 
 <p class="short"></p>
 上記の名前付き let 式の束縛部に (n n) といった束縛指定があります．
-右側の n は名前付き let 式の外側で定義された変数（つまり，check-pq 手続きの仮引数）を表していて，左側の n は名前付き let 式の内部で使用するローカル変数（というか，loop 手続きの仮引数）を表しています．つまり，この束縛指定は，ローカルな n を check-pq が受け取った正整数で初期設定しています．
+右側の n は名前付き let 式の外側で定義された変数（つまり，check-ab 手続きの仮引数）を表していて，左側の n は名前付き let 式の内部で使用するローカル変数（というか，loop 手続きの仮引数）を表しています．つまり，この束縛指定は，ローカルな n を check-ab が受け取った正整数で初期設定しています．
 <p class="short"></p>
 他の言語，特にC言語から来た人は，スコープをほとんど意識することはないと思われるので，Schemeのようにスコープが入れ子になる言語には戸惑いを感じると思います．
 筆者はそうでした．
