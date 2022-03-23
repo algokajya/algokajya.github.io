@@ -1043,46 +1043,45 @@ guile&gt; <span class="mycmd">(load "namelet.scm")</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln">具体例</h4>
-以下の large は 数値 a と数値からなるリスト lst を受け取って，lst の中の a より大きな数値からなるリストを返します．
+<h4 class="hdln">補足</h4>
+以下の check-pq は，正整数 n と2以上の整数 a,b を受け取って，
+n が a$^i$b$^j$（$i,j \geq 0$）の形をしていたら #t を返し，
+そうでなければ #f を返します．また，途中の計算過程を format を使って表示しています．
 <pre class="list">
-;; larger.scm
-(define (larger a lst)
-  (let loop ((lst lst) (result '()))
-    (cond
-     ((null? lst) result)
-     ((car lst) (lambda (x) (> x a)) 
-      => (lambda (x) (loop (cdr lst) (cons x result))))
-     (else (loop (cdr lst) result)))))
+;; check-pq.scm
+(define (check-pq n a b)
+  (let loop ((n n))
+    (format #t "n=~A\n" n)
+    (cond 
+     ((= n 1) #t)
+     ((= (remainder n a) 0) (loop (/ n a)))
+     ((= (remainder n b) 0) (loop (/ n b)))
+     (else #f))))
 </pre>
 <pre class="shell">
-guile&gt; <span class="mycmd">(load "larger.scm")</span>
+guile> (load "check-pq.scm")
       ...... コンパイルメッセージ ......
-guile&gt; <span class="mycmd">(larger 4 '(8 5 7 1 6 9 4 3 2))</span>
-<span>&#36;</span>1 = (9 6 7 5 8)
+guile&gt; <span class="mycmd">(check-pq 36 3 4)</span>
+n=36
+n=12
+n=4
+n=1
+<span>&#36;</span>1 = #t
+guile&gt; <span class="mycmd">(check-pq 60 3 4)</span>
+n=60
+n=20
+n=5
+<span>&#36;</span>3 = #f
 </pre>
 
-
-<p></p>
-<!-- ===head line================================== -->
-<h4 class="hdln">補足</h4>
-上記の名前付き let 式の束縛部に (lst lst) といった束縛指定があります．
-この右側は名前付き let 式の外側で定義された変数（つまり，larger 手続きの仮引数）を表していて，左側は名前付き let 式の内部で使用するローカル変数（というか，loop 手続きの仮引数）を表しています．つまり，この束縛指定は，ローカルな lst を larger 手続きが受け取ったリストで初期設定しています．
+<p class="short"></p>
+上記の名前付き let 式の束縛部に (n n) といった束縛指定があります．
+右側の n は名前付き let 式の外側で定義された変数（つまり，check-pq 手続きの仮引数）を表していて，左側の n は名前付き let 式の内部で使用するローカル変数（というか，loop 手続きの仮引数）を表しています．つまり，この束縛指定は，ローカルな n を check-pq が受け取った正整数で初期設定しています．
 <p class="short"></p>
 他の言語，特にC言語から来た人は，スコープをほとんど意識することはないと思われるので，Schemeのようにスコープが入れ子になる言語には戸惑いを感じると思います．
 筆者はそうでした．
-上のような束縛指定を初めて見たとき何をしているのかまったく理解できませんでした．
+上のような束縛指定を初めて見たとき，C言語風に「n = n って何だ？」と思ったものです．
 
-
-
-<p></p>
-<!-- ===head line================================== -->
-<h4 class="hdln">余談</h4>
-上記の cond 式の2番目の cond 節はガードを使っています．
-これは，(car lst) を2度評価したくないためです．
-2度評価しないことは簡単な実験で確認しています．
-比較的自然に思えるガードの使用例に初めて遭遇しました．
-条件分岐の利用法に関して少しだけ見識が広がりました．
 
 
 <p></p>
