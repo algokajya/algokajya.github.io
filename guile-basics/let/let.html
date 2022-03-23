@@ -61,6 +61,8 @@ Guile基礎／ローカル変数の束縛（let 式他）
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
+<span class="mydate">2022.3.23</span>：名前付きlet式の具体例と補足事項を追加． 
+<li class="revise">
 <span class="mydate">2022.3.20</span>：初出
 </ul>
 </div>
@@ -955,7 +957,8 @@ file:///home/algo/notebook/github-page/guile-basics/define/define.html#internal-
 <p></p>
 <span class="mysyn">body</span><sup>+</sup> の中で <span class="mysyn">name</span> を使用することができます．そのため，再帰的な手続きを定義することができます．一方，$e_1$〜$e_n$の中では <span class="mysyn">name</span>（の束縛）は使用できません．もし <span class="mysyn">name</span> を使用した場合には，名前付き let 式の外部で定義された値を使用することになります．
 
-ちなみに，<span class="mysyn">body</span><sup>+</sup> の中で <span class="mysyn">name</span> を使用しなかった場合には let 式とまったく同じ処理をします．また，上記の文法が示しているように，束縛部は空でもかまいません．その場合，無引数の手続きを実行することになります．
+ちなみに，<span class="mysyn">body</span><sup>+</sup> の中で <span class="mysyn">name</span> を使用しなかった場合には let 式とまったく同じ処理をします．また，上記の文法が示しているように，束縛部は空でもかまいません．
+その場合，無引数の手続き（あるいは，無束縛のlet式）を実行することになります．
 
 <p></p>
 <!-- ===head line================================== -->
@@ -995,6 +998,7 @@ https://www.scheme.com/tspl4/control.html#./control:h4
 <h4 class="hdln">具体例</h4>
 以下の名前付き let 式は 1〜10 の総和を求める手続き sum を定義して実行します．
 <pre class="list">
+;; namelet.scm
 (let sum ((k 1) (s 0))
   (if (> k 10)
       s
@@ -1014,6 +1018,7 @@ guile&gt; <span class="mycmd">(load "namelet.scm")</span>
 </pre>
 
 
+
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln">具体例</h4>
@@ -1021,8 +1026,9 @@ guile&gt; <span class="mycmd">(load "namelet.scm")</span>
 末尾再帰的な手続きだけでなく，
 一般の再帰的な手続きを定義することもできます．
 以下の名前付き let 式は 10 番目の<a class="noline" href="
-https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A3%E3%83%9C%E3%83%8A%E3%83%83%E3%83%81%E6%95%B0">フィボナッチ数</a>を漸化式の通りに計算する再帰的手続きを定義して実行します．実行例は省略します．
+https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A3%E3%83%9C%E3%83%8A%E3%83%83%E3%83%81%E6%95%B0">フィボナッチ数</a>を漸化式の通りに計算する再帰的手続きを定義して実行します．
 <pre class="list">
+;; namelet.scm
 (let fib ((n 10))
   (if (&lt;= n 1)
       n
@@ -1038,11 +1044,55 @@ guile&gt; <span class="mycmd">(load "namelet.scm")</span>
 <p></p>
 <!-- ===head line================================== -->
 <h4 class="hdln">具体例</h4>
+以下の large は 数値 a と数値からなるリスト lst を受け取って，lst の中の a より大きな数値からなるリストを返します．
+<pre class="list">
+;; larger.scm
+(define (larger a lst)
+  (let loop ((lst lst) (result '()))
+    (cond
+     ((null? lst) result)
+     ((car lst) (lambda (x) (> x a)) 
+      => (lambda (x) (loop (cdr lst) (cons x result))))
+     (else (loop (cdr lst) result)))))
+</pre>
+<pre class="shell">
+guile&gt; <span class="mycmd">(load "larger.scm")</span>
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(larger 4 '(8 5 7 1 6 9 4 3 2))</span>
+<span>&#36;</span>1 = (9 6 7 5 8)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">補足</h4>
+上記の名前付き let 式の束縛部に (lst lst) といった束縛指定があります．
+この右側は名前付き let 式の外側で定義された変数（つまり，larger 手続きの仮引数）を表していて，左側は名前付き let 式の内部で使用するローカル変数（というか，loop 手続きの仮引数）を表しています．つまり，この束縛指定は，ローカルな lst を larger 手続きが受け取ったリストで初期設定しています．
+<p class="short"></p>
+他の言語，特にC言語から来た人は，スコープをほとんど意識することはないと思われるので，Schemeのようにスコープが入れ子になる言語には戸惑いを感じると思います．
+筆者はそうでした．
+上のような束縛指定を初めて見たとき何をしているのかまったく理解できませんでした．
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">余談</h4>
+上記の cond 式の2番目の cond 節はガードを使っています．
+これは，(car lst) を2度評価したくないためです．
+2度評価しないことは簡単な実験で確認しています．
+比較的自然に思えるガードの使用例に初めて遭遇しました．
+条件分岐の利用法に関して少しだけ見識が広がりました．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
 これまで説明してきた構文を使って，ちょっとした手続きを定義してみます．
 以下の groups は，リスト lst と正整数 n を受け取って，lst の要素を先頭から n 個ずつのグループ（リスト）に分けたリストを返します．
 ただし，最後のグループは残りものからなるリストになります．
 例えば，lst $=$ '(1 2 3 4 5) と n $=$ 2 に対して groups を適用すると '((1 2) (3 4) (5)) といったリストが返ってきます．
-なお，n に0以下の整数を指定すると無限ループしてしまいます．
+なお，n は正整数であることを仮定して，n に0以下の整数を指定すると無限ループしてしまいます．
 <p class="short"></p>
 下記の split-at は，リスト lst を先頭から n 個のグループ（リスト）と残りのリストに分割したものを多値として返します．実のところ，(srfi srfi-1) モジュールに同様の手続きがあるのですが，n が lst の長さより大きいときにエラーが発生するので独自に定義しています（それに letrec の使用例になるので）．
 <pre class="list">
