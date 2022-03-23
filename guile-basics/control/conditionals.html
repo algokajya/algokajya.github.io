@@ -323,10 +323,61 @@ cond 式は，おおまかに見ると
 <li>
 <span class="mysyn">guard</span> や <span class="mysyn">recipient</span> は多値を受け取る手続きでもかまいません．
 </ul>
-（個人的印象：このパターンがどういった場面で役に立つのかよく分かりません．）
 
 
 <p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">補足</h4>
+ガードを使ったcond節がどういった場面で役に立つのかよく分からなかったのですが，
+判定式（<span class="mysyn">test$_k$</span>）を2度以上評価したくないときに役立ちそうだということが分かりました．以下にそのような具体例を示します．
+<pre class="list">
+;; use-guard.scm
+(define (check-pq-native n a b)
+  (let loop ((n n))
+    (format #t "n=~A\n" n)
+    (cond 
+     ((= n 1) #t)
+     ((= (remainder n a) 0) (loop (/ n a)))
+     ((= (remainder n b) 0) (loop (/ n b)))
+     (else #f))))
+
+(define (check-pq-guard n a b)
+  (let loop ((n n))
+    (format #t "n=~A\n" n)
+    (cond 
+     ((= n 1) #t)
+     ((/ n a) (lambda (x) (integer? x))
+      => (lambda (x) (loop x)))
+     ((/ n b) (lambda (x) (integer? x)) 
+      => (lambda (x) (loop x)))
+     (else #f))))
+</pre>
+上記の2つの手続きは，いずれも，正整数 n と2以上の整数 a,b を受け取って，
+n が a$^i$b$^j$（$i,j \geq 0$）の形をしていたら #t を返し，そうでなければ #f を返します．check-pq-naive はガードを使わずに素直に実現していて，check-pq-guard はガードを使って実現しています．check-pq-naive では，2番目と3番目のcond節は整数除算を2度行っています（余りと商を求めるため）．一方，ガードを使ったcond節は整数除算を1度しか行いません．これがガードを使っている理由です．以下に実行例を示します．
+<pre class="shell">
+guile> (load "use-guard.scm")
+      ...... コンパイルメッセージ ......
+guile&gt; <span class="mycmd">(check-pq-native 36 3 4)</span>
+n=36
+n=12
+n=4
+n=1
+<span>&#36;</span>1 = #t
+guile&gt; <span class="mycmd">(check-pq-guard 36 3 4)</span>
+n=36
+n=12
+n=4
+n=1
+<span>&#36;</span>2 = #t
+guile&gt; <span class="mycmd">(check-pq-guard 60 3 4)</span>
+n=60
+n=20
+n=5
+<span>&#36;</span>3 = #f
+</pre>
+
+
+<p class="long"></p>
 <!-- ===head line================================== -->
 <h4 class="hdln">具体例</h4>
 <a class="noline" href="https://ja.wikipedia.org/wiki/Fizz_Buzz">FizzBuzz問題</a>のプログラムを作ります．FizzBuzz問題とは，$k=1,2,...$ に対して次のように動作するプログラムを作成せよ，というプログラミングの問題です．
