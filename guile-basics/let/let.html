@@ -104,12 +104,12 @@ Guileのマニュアルは常に最新版を参照しています．少し困っ
 <li class="menu"><a class="noline" href="#5">letrec 式</a>
 <li class="menu"><a class="noline" href="#6">letrec* 式</a>
 <li class="menu"><a class="noline" href="#7">let-values 式と let*-values 式</a>
-<li class="menu"><a class="noline" href="#8">名前付き let 式</a>
-<li class="menu"><a class="noline" href="#9">その他</a>
+<li class="menu"><a class="noline" href="#named-let">名前付き let 式</a>
+<li class="menu"><a class="noline" href="#8">その他</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#10">let-optional や let-keyword など</a>
-   <li class="menu"><a class="noline" href="#11">and-let*</a>
-   <li class="menu"><a class="noline" href="#12">match-let，match-let*，match-letrec</a>
+   <li class="menu"><a class="noline" href="#9">let-optional や let-keyword など</a>
+   <li class="menu"><a class="noline" href="#10">and-let*</a>
+   <li class="menu"><a class="noline" href="#11">match-let，match-let*，match-letrec</a>
    </ul>
 </ul>
 
@@ -154,23 +154,9 @@ Guile
    <a class="noline" href="
    http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
    ">日本語版 </a>
-   <!-- 
-   <li class="menu">
-   Revised<sup>6</sup> Report on the Algorithmic Language Scheme（略号：R<sup>6</sup>RS）<br>
-   <a class="noline" href="http://www.r6rs.org/">英語版</a>  
-   ＊日本語版は<a class="noline" href="http://www7b.biglobe.ne.jp/~saia/scheme.html">
-     プログラミング言語Schemeの解説</a>
-   を参照して下さい．
-   <li class="menu">
-   Revised<sup>5</sup> Report on the Algorithmic Language Scheme（略号：R<sup>5</sup>RS）<br>
-   <a class="noline" href="https://schemers.org/Documents/Standards/R5RS/r5rs.pdf">英語版</a>  
-   ＊日本語版は<a class="noline" href="http://www7b.biglobe.ne.jp/~saia/scheme.html">
-     プログラミング言語Schemeの解説</a>
-   を参照して下さい．
-   -->
    <li class="menu">
    R. Kent Dybvig: 
-   <a class="noline" href="
+   <a class="noline" href="https://www.scheme.com/tspl4/
    ">The Scheme Programming Language, Fourth Edition, 2009.</a>（略号：TSPL）
    </ul>
 </ul>
@@ -913,7 +899,7 @@ x=30 y=20 z=(10 20 (30 20 5))
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="8">名前付き let 式</h3>
+<h3 class="section" id="named-let">名前付き let 式</h3>
 
 <p></p>
 名前付き let 式（named let expression）は，
@@ -1110,7 +1096,7 @@ $1 = ((1 2 3) (4 5 6) (7 8 9) (10))
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <section>
-<h3 class="section" id="9">その他</h3>
+<h3 class="section" id="8">その他</h3>
 
 <p></p>
 let 式に関連するもの（ローカル変数を新たに束縛する式）として，
@@ -1118,7 +1104,7 @@ let 式に関連するもの（ローカル変数を新たに束縛する式）�
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="10">let-optional や let-keyword など</h4>
+<h4 class="hdln" id="9">let-optional や let-keyword など</h4>
 
 <p class="short"></p>
 これらは lambda* 式の let 版（ローカル変数版）です．
@@ -1134,7 +1120,7 @@ lambda* 式はあちらこちらで使われていますが，
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="11">and-let*</h4>
+<h4 class="hdln" id="10">and-let*</h4>
 
 <p class="short"></p>
 これは and と let* を結合したものだそうです．
@@ -1148,7 +1134,7 @@ Guileのライブラリモジュール内ではほとんど使われていませ
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="12">match-let，match-let*，match-letrec</h4>
+<h4 class="hdln" id="11">match-let，match-let*，match-letrec</h4>
 
 <p class="short"></p>
 これ（パターンマッチング関連）は独立した話題です．いつか勉強したいと思います．
