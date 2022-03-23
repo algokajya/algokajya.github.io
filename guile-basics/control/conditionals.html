@@ -332,7 +332,7 @@ cond 式は，おおまかに見ると
 判定式（<span class="mysyn">test$_k$</span>）を2度以上評価したくないときに役立ちそうだということが分かりました．以下にそのような具体例を示します．
 <pre class="list">
 ;; use-guard.scm
-(define (check-pq-native n a b)
+(define (check-ab-native n a b)
   (let loop ((n n))
     (format #t "n=~A\n" n)
     (cond 
@@ -341,7 +341,7 @@ cond 式は，おおまかに見ると
      ((= (remainder n b) 0) (loop (/ n b)))
      (else #f))))
 
-(define (check-pq-guard n a b)
+(define (check-ab-guard n a b)
   (let loop ((n n))
     (format #t "n=~A\n" n)
     (cond 
@@ -353,23 +353,23 @@ cond 式は，おおまかに見ると
      (else #f))))
 </pre>
 上記の2つの手続きは，いずれも，正整数 n と2以上の整数 a,b を受け取って，
-n が a$^i$b$^j$（$i,j \geq 0$）の形をしていたら #t を返し，そうでなければ #f を返します．check-pq-naive はガードを使わずに素直に実現していて，check-pq-guard はガードを使って実現しています．check-pq-naive では，2番目と3番目のcond節は整数除算を2度行っています（余りと商を求めるため）．一方，ガードを使ったcond節は整数除算を1度しか行いません．これがガードを使っている理由です．以下に実行例を示します．
+n が a$^i$b$^j$（$i,j \geq 0$）の形をしていたら #t を返し，そうでなければ #f を返します．check-ab-naive はガードを使わずに素直に実現していて，check-ab-guard はガードを使って実現しています．check-ab-naive では，2番目と3番目のcond節は整数除算を2度行っています（余りと商を求めるため）．一方，ガードを使ったcond節は整数除算を1度しか行いません．これがガードを使っている理由です．以下に実行例を示します．
 <pre class="shell">
 guile> (load "use-guard.scm")
       ...... コンパイルメッセージ ......
-guile&gt; <span class="mycmd">(check-pq-native 36 3 4)</span>
+guile&gt; <span class="mycmd">(check-ab-native 36 3 4)</span>
 n=36
 n=12
 n=4
 n=1
 <span>&#36;</span>1 = #t
-guile&gt; <span class="mycmd">(check-pq-guard 36 3 4)</span>
+guile&gt; <span class="mycmd">(check-ab-guard 36 3 4)</span>
 n=36
 n=12
 n=4
 n=1
 <span>&#36;</span>2 = #t
-guile&gt; <span class="mycmd">(check-pq-guard 60 3 4)</span>
+guile&gt; <span class="mycmd">(check-ab-guard 60 3 4)</span>
 n=60
 n=20
 n=5
