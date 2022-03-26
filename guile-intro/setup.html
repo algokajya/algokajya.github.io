@@ -317,7 +317,7 @@ Deiban 11(bullseye) では，以下のパッケージをインストールすれ
 $ <span class="mycmd">sudo apt -y install elpa-geiser</span>&crarr;
 </pre>
 (参考)
-この方法以外に，<a class="noline" href="https://www.nongnu.org/geiser/">GeiserのWebページ</a> にて，elpa を使う方法を説明しています．こちらでインストールしたほうが，より新しい Geiser が使えるかも知れません．
+<a class="noline" href="https://www.nongnu.org/geiser/">GeiserのWebページ</a> では，elpa を使う方法を説明しています．こちらでインストールしたほうが，より新しい Geiser が使えるかも知れません．
 
 <p></p>
 <span class="hdln" id="geiser-in-emacs">Guile マイナーモード</span>
@@ -414,6 +414,7 @@ C-↓<br>
 <td>
 履歴操作．過去の入力が再利用できます．
 ただし，履歴は巡回的に変化して，最古入力や最新入力で止まることはありません．
+履歴を巡回してみると，現在入力として空白が表示されるので，それによって履歴中の現時点を把握することができます．なお，履歴操作は下記のプロンプトジャンプ（C-c C-p と C-c C-n）とエンターキーを組み合わせても実行できます．
 </td>
 </tr>
 <tr>
@@ -422,7 +423,7 @@ C-c C-k<br>
 C-c C-c
 </td>
 <td>
-処理中の評価に割り込んで，エラーとして中止します．これは必要です．
+処理中の評価に割り込んで，エラーとして中止します．
 なお，Ctrl-C は，Geiserにおける多くのキー操作の接頭辞になっていて Geiser に捕捉されてしまうので，割り込めません．
 </td>
 </tr>
@@ -430,18 +431,16 @@ C-c C-c
 <tr>
 <td>C-c C-p</td>
 <td>
-1つ前のプロンプトにジャンプします．
-<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a>には記載されていませんが，Geiser REPL のプログラム（geiser-repl.el）の中で定義されています．
-（何のための使うのでしょうか？）
+1つ前のプロンプトにジャンプします．<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a> には記載されていませんが，Geiser REPL のプログラム（geiser-repl.el）の中で定義されています．
+プロンプトにジャンプしてエンターキーを押すと，そのプロンプトの入力を引き連れて現在のプロンプトに戻ることができます．
 </td>
 </tr>
 
 <tr>
 <td>C-c C-n</td>
 <td>
-1つあとのプロンプトにジャンプします．
-<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a>には記載されていませんが，Geiser REPL のプログラム（geiser-repl.el）の中で定義されています．
-（何のための使うのでしょうか？）
+1つあとのプロンプトにジャンプします．<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a> には記載されていませんが，Geiser REPL のプログラム（geiser-repl.el）の中で定義されています．
+プロンプトにジャンプしてエンターキーを押すと，そのプロンプトの入力を引き連れて現在のプロンプトに戻ることができます．
 </td>
 </tr>
 
@@ -456,8 +455,22 @@ C-c C-c
 これ以外のキー操作は，<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a> を参照して下さい．
 
 <p></p>
-<b>注意</b>
-キー操作は慎重に．老婆心ながら，実際に使う前にお試し操作を．
+<span class="hdln">REPLの操作に関する注意点</span>
+<p class="short"></p>
+REPLの操作に関して次の点に注意して下さい．
+<ul>
+<li>
+Geiser REPL を C-c C-q や (quit) などで終了せずに Emacs を終了すると，
+そのセッションの履歴は保存されないかも知れません．
+<li>
+REPLの終了（C-c C-q）のつもりで，
+誤って <em>C-x C-q</em> を押してしまことがあります．
+このキー操作はバッファをread-onlyにしてしまって，
+キー入力を受け付けなくしてしまいます．
+もう一度，C-x C-q を押すと元に戻ります．
+
+</ul>
+
 
 
 <p></p>
@@ -477,8 +490,8 @@ Geiser REPL を終了しても，それを実行していたバッファは閉�
 <b>(setq geiser-repl-use-other-window nil)</b><br>
 デフォルトでは（あるいは上記の nil を t に設定すると），
 Geiser REPL は画面分割されて表示されます．
-上記の設定をすると，画面分割されずに，別画面でGeiser REPLが起動されます．
-筆者は，画面分割が好きではないので，この設定は個人的に大切です．
+上記の設定をすると，画面分割されずに別画面で表示されます．
+筆者は，画面分割を好まないので，この設定は個人的に大切です．
 <li>
 <b>(setq geiser-repl-history-no-dups-p nil)</b><br>
 デフォルトでは（あるいは上記の nil を t に設定すると），
@@ -508,10 +521,11 @@ Geiser REPL への新たな入力が過去の入力と重複しているとき�
 &emsp;や&emsp;
 <span class="mycmd">M-x run-geiser</span>
 </div>
-でも上記のGeiser REPL（Guile REPLのエミュレータ）を起動できます．
+でもGeiser REPL（Guile REPLのエミュレータ）を起動できます．
 実は，run-guile は使わずに geiser を使っています．
 ちなみに，これを設定しないで，M-x geiser または M-x run-geiser を実行すると，
-どの処理系をエミュレートするか質問してきます．例えば，そのときに racket と答えると Racket の REPL をエミュレートします．
+どの処理系をエミュレートするか質問してきます．
+そのときに，例えば racket と答えると Racket の REPL をエミュレートします．
 </ul>
 
 
@@ -522,7 +536,7 @@ Geiser REPL への新たな入力が過去の入力と重複しているとき�
 筆者はこれまで Gnome-terminal 上で Guile REPL を動かしてきました．Emacs も Gnome-terminal 上で動かしていて，Gnome-terminal のタブを使うことによって両者を1つの画面で切り替えながら使ってきました．機能的には Geiser REPL のほうが上であることは疑う余地はありません（あとは，安定性が気になるところですが）．特に，ファイル名補完はぜひとも欲しい機能です．rlwrap を使って実現してみようとしたのですが，まことに残念ながら Guile の activate-readline が，その名が示すように，GNU readline ライブラリを使っているようでして，inputrc に何を設定してもすべて activate-readline に捕捉されてしまいます．rlwrap を利用する限り，力技しかなさそうです．
 
 <p></p>
-rlwrap の力技の前に，当面，Geiser を使ってみようと思っています．
+当面，Geiser を使ってみようと思っています．
 ただ，困ったことに，Geiser REPL は Guile REPL の初期設定ファイル（~/.guile ）をうまく処理することができません．その初期設定ファイルの中身によっては，Geiser REPL の応答性能が目に見えて低下してちょっとイライラします．どうも，初期設定の処理として大丈夫なものとダメなものがあるようです．筆者の経験では，Guile REPL のプロンプトを変更する処理はダメなようです．
 
 <p></p>
@@ -589,7 +603,7 @@ rlwrap の力技の前に，当面，Geiser を使ってみようと思ってい
 </ul>
 この設定によって，Geiser REPL の起動時に ~/.guile-init-more.scm がロードされ，
 これに登録した独自の手続きが Geiser REPL において利用できるようになります．
-さらに，Geiser REPL にとって問題のある処理を ~/.guile に残すことによって応答性能を低下させることもありません．一方，ターミナル上で Guile REPL を起動したときには両方のファイルをロードします．
+さらに，Geiser REPL にとって問題のある処理を ~/.guile に残すことによって応答性能を低下させることもありません．一方，ターミナル上で Guile REPL を起動したときには両方のファイルがロードされます．
 
 </section>
 
