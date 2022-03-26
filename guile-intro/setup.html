@@ -42,11 +42,13 @@ Guile入門／Guileの準備
 <h4 class="revise">変更履歴</h4>
 <ul class="revise">
 <li class="revise">
-<span class="mydate">2022.3.8</span>：Guileのバージョンによる変化を（ほんの少し）追記．<br>
+<span class="mydate">2022.3.26</span>：プロンプトを変更するプログラムを少し変更．便利かも知れない設定を追加．Geiserに関する説明を追加．
 <li class="revise">
-<span class="mydate">2022.1.16</span>：本文中の日付が欠落していたので修正．<br>
+<span class="mydate">2022.3.8</span>：Guileのバージョンによる変化を（ほんの少し）追記．
 <li class="revise">
-<span class="mydate">2022.1.6</span>：変更履歴の形式を変更<br>
+<span class="mydate">2022.1.16</span>：本文中の日付が欠落していたので修正．
+<li class="revise">
+<span class="mydate">2022.1.6</span>：変更履歴の形式を変更
 <li class="revise">
 <span class="mydate">2021.11.19</span>：初出
 </ul>
@@ -75,7 +77,18 @@ REPLの履歴機能を設定したり，プロンプトを変更する方法を�
    <ul class="menu">
    <li class="menu"><a class="noline" href="#history">履歴機能の設定</a>
    <li class="menu"><a class="noline" href="#prompt">プロンプトの変更</a>
+   <li class="menu"><a class="noline" href="#misc">その他</a>
    </ul>
+<li class="menu"><a class="noline" href="#geiser">Geiser on Emacs</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#geiser-install">Geiserのインストール</a>
+   <li class="menu"><a class="noline" href="#geiser-in-emacs">Guile マイナーモード</a>
+   <li class="menu"><a class="noline" href="#geiser-repl-startup">Geiser REPL の起動</a>
+   <li class="menu"><a class="noline" href="#geiser-repl">Geiser REPL の操作</a>
+   <li class="menu"><a class="noline" href="#geiser-repl-setup">Geiser REPL の設定</a>
+   <li class="menu"><a class="noline" href="#geiser-vs-guile">Geiser REPL on Emacs vs Guile REPL on Gnome-terminal</a>
+   </ul>
+
 </ul>
 <li>
 参考資料
@@ -88,6 +101,8 @@ GNU Guile Reference Manual（最新版）
 <a class="noline" href="https://github.com/algokajya/Scheme-Guile/blob/Scheme/guile-manual-3.0.5.pdf">
 GNU Guile Reference Manual（Edition 3.0.5, revision 1）
 </a>
+<li class="menu"> 
+<a class="noline" href="https://www.nongnu.org/geiser/">Geiser</a>
 </ul>
 </ul>
 </div>
@@ -116,12 +131,14 @@ $ <span class="mycmd">sudo apt install guile-3.0 guile-3.0-doc guile-3.0-dev</sp
 は，Guileを利用しているソフトウェアをコンパイルするときなどに必要になります．おそらく，C言語と連携するときにも必要になるだろうと思います．
 </ul>
 <p class="sshort"></p>
+<div style="line-height:1.2em">
 <small>
 (追記:2022.3.8）
 Guile 3.0.6 をリリースしたときにマニュアルの編成を変更したようです．
 筆者が気づいた限りでは，3.0.5 の「6.7 Foreign Objects」と「6.8 Smobs」が，最新版のマニュアルでは「6.20 Foreign Objects」と「6.21 Smobs」に変わっています．
 ついでに言うと，僅かなバージョン番号の違いとはいえ，バグ修正だけでなく機能追加も行われています．筆者が勉強していて気づいた限りで，例えば call-with-port は 3.0.5 では実装されていなかったのですが，3.0.6 以降では実装されています．
 </small>
+</div>
 </section>
 
 
@@ -200,15 +217,19 @@ scheme@(guile-user)&gt; <span class="mycmd">,q</span> &crarr;
 初期化ファイル（~/.guile）に次のコードを保存すると，REPLのプロンプトを変えることができます．
 <pre class="list">
 (use-modules (system repl common))
-(repl-default-prompt-set! 
-   (lambda (repl)
-    (format #f "guile~A&gt; " 
+(define my-prompt
+   (lambda (repl)   ;; need to be a procedure??
+    (format #f "guile~A> " 
       (let ((level (length (cond
-                            ((fluid-ref *repl-stack*) =&gt; cdr)
+                            ((fluid-ref *repl-stack*) => cdr)
                             (else '())))))
         (if (zero? level) "" (format #f " [~a]" level))))))
+
+(repl-default-option-set! 'prompt my-prompt)
+;; または (repl-default-prompt-set! my-prompt)
 </pre>
-これを設定すると，以下のように，REPLのプロンプトが <em>guile&gt;</em> に変わります．
+これを設定すると，
+以下のように，REPLのプロンプトが <em>guile&gt;</em> に変わります．
 <pre class="shell">
 $ <span class="mycmd">guile</span> &crarr;
 GNU Guile 3.0.5
@@ -239,7 +260,338 @@ guile&gt;
 「<a class="noline" href="repl.html">REPLによるプログラムの実行</a>」
 を参照して下さい．
 </ul>
+
+<p></p>
+<span class="hdln" id="misc">その他</span>
+<ul>
+<li>
+端末で利用しているコマンドをREPLの中でも利用できれば便利だと思って，
+筆者は ~/.guile の中に次のような定義を登録しています．
+<pre class="list">
+(define (myload filename)
+  (let* ((homedir (passwd:dir (getpwuid (getuid))))
+         (fname (if (char=? (string-ref filename 0) #\~)
+                    (string-append homedir (substring filename 1))
+                    filename)))
+    (primitive-load fname)))
+
+(define pwd getcwd)
+
+(define cd chdir)
+
+(define* (ls #:optional arg)
+  (system (string-append "ls " (if arg arg ""))))
+
+(define (less filename) 
+  (system (string-append "less -X " filename)))      
+</pre>
+myload 手続きは，ファイル名（filename）の先頭がティルダ（~）だったとき，
+それをホームディレクトリに変更してファイルをロードします．その他のものは，
+端末上で使えるコマンドをREPLでも使えるようにしたものです．system 手続きを使えば，
+色々なコマンドを簡単にREPLでも使えるようになります．
+
+</ul>
+
 </section>
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section id="geiser">
+<h3 class="section">Geiser on Emacs</h3>
+<a class="noline" href="https://www.nongnu.org/geiser/">Geiser</a> はEmacs専用のパッケージです．Schemeのプログラムを編集する際に処理系依存のマイナーモードを設定したり，ファイル名補完機能を持ったREPLがEmacs上で利用できたりします．
+<a class="noline" href="https://www.gnu.org/software/guile/manual/html_node/Using-Guile-in-Emacs.html">Guile[4.5 Using Guile in Emacs]</a> でも検討事項の1つとして紹介しています．
+
+<p></p>
+以下，筆者が試した範囲で，Geiser について説明します．
+お試し程度の内容ですが，手がかりにはなると思います．
+
+
+<p></p>
+<span class="hdln" id="geiser-install">Geiserのインストール</span>
+<p class="short"></p>
+Deiban 11(bullseye) では，以下のパッケージをインストールすれば，
+直ちに Geiser が使えるようになります．
+<pre class="shell">
+$ <span class="mycmd">sudo apt -y install elpa-geiser</span>&crarr;
+</pre>
+(参考)
+この方法以外に，<a class="noline" href="https://www.nongnu.org/geiser/">GeiserのWebページ</a> にて，elpa を使う方法を説明しています．こちらでインストールしたほうが，より新しい Geiser が使えるかも知れません．
+
+<p></p>
+<span class="hdln" id="geiser-in-emacs">Guile マイナーモード</span>
+<p class="short"></p>
+後述する設定をいっさい行わずに，
+Emacsを起動してSchemeのプログラムファイルを開いてみると，「Guile」がマイナーモードに設定されています（下図参照）．
+
+<p class="short"></p>
+<div style="text-align:center">
+<img src="emacs-geiser-edit.gif" alt="Guile-minor-mode" width="620">
+</div>
+
+<p></p>
+Geiser のデフォルトの設定では，拡張子が .scm のファイルを開くと，
+従来の Scheme モード（メジャー）に加えて Guile モード（マイナー）を設定するようです．筆者が経験した限りでは，Guile Scheme に固有の幾つかの構文キーワード（lambda* や let*-values など）がハイライトされます．
+
+<p class="short"></p>
+それから，「Guile/A」の /A は autodoc モードというものを表しているようなのですが，プログラム編集中にそれがどのように機能するのかは分かりません．
+
+
+<p></p>
+<span class="hdln" id="geiser-repl-startup">Geiser REPL の起動</span>
+<p class="short"></p>
+Emacs上でREPLを起動するには，Emacsのミニバッファで下図のコマンド（M-x run-guile）を実行します．
+
+<p class="short"></p>
+<div style="text-align:center">
+<img src="emacs-geiser-repl-1.gif" alt="M-x run-guile" width="620">
+</div>
+
+<p></p>
+これを実行すると，REPLが画面分割されて表示されます（下図）．
+以後，このREPLをGuileのREPLと同様に操作できます．
+
+<p class="short"></p>
+<div style="text-align:center">
+<img src="emacs-geiser-repl-2.gif" alt="Geiser RELP on Emacs" width="620">
+</div>
+
+<p></p>
+<b>注意</b>
+Geiser REPLは，Guile の REPL をエミュレートするために，Emacs Lispを使って開発されたREPLです．そのため，Guile REPL に対して利用可能な機能が使えないこともあります．
+例えば，プロンプトを変えることは難しそうです．また，Cntr-D は使えません．
+
+<p></p>
+<b>利点</b>
+筆者が思いつく範囲で，Geiser REPL は，Guile REPL に比べて次のような利点があります．
+<ul>
+<li>
+ファイル名補完ができます．これは大きい利点だと思います．
+<li>
+REPLのセッション全体をテキストデータとして保存できます．
+<li>
+手続きや変数に関するinfoドキュメントを簡単なキー操作で参照できます．
+マニュアルは頻繁に参照するので，これは便利かも知れません．
+</ul>
+
+
+<p></p>
+<span class="hdln" id="geiser-repl">Geiser REPL の操作</span>
+<p class="short"></p>
+最低限のキー操作を以下に示します．
+
+<table class="symbol">
+<tr>
+<th>キー</th>
+<th>意味</th>
+</tr>
+<tr>
+<td>TAB</td>
+<td>
+定義済みの手続き名や変数名，およびファイル名の補完．
+</td>
+</tr>
+<tr>
+<td>C-c C-q<br>
+</td>
+<td>
+Geiser REPL を終了します．ただし，バッファは閉じません．<br>
+<b>,q</b> や <b>(exit)</b> や <b>(quit)</b> でも終了できます．
+</td>
+</tr>
+<tr>
+<td>C-c C-z</td>
+<td>
+REPLを再開します．
+</td>
+</tr>
+<tr>
+<td>
+C-↑<br>
+C-↓<br>
+</td>
+<td>
+履歴操作．過去の入力が再利用できます．
+ただし，履歴は巡回的に変化して，最古入力や最新入力で止まることはありません．
+</td>
+</tr>
+<tr>
+<td>
+C-c C-k<br>
+C-c C-c
+</td>
+<td>
+処理中の評価に割り込んで，エラーとして中止します．これは必要です．
+なお，Ctrl-C は，Geiserにおける多くのキー操作の接頭辞になっていて Geiser に捕捉されてしまうので，割り込めません．
+</td>
+</tr>
+
+<tr>
+<td>C-c C-p</td>
+<td>
+1つ前のプロンプトにジャンプします．
+<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a>には記載されていませんが，Geiser REPL のプログラム（geiser-repl.el）の中で定義されています．
+（何のための使うのでしょうか？）
+</td>
+</tr>
+
+<tr>
+<td>C-c C-n</td>
+<td>
+1つあとのプロンプトにジャンプします．
+<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a>には記載されていませんが，Geiser REPL のプログラム（geiser-repl.el）の中で定義されています．
+（何のための使うのでしょうか？）
+</td>
+</tr>
+
+<tr>
+<td>C-c C-d C-i</td>
+<td>
+手続きや変数に関するinfoドキュメントを表示します．
+マニュアルは頻繁に参照するので，これは便利かも知れません．
+</td>
+</tr>
+</table>
+これ以外のキー操作は，<a class="noline" href="https://www.nongnu.org/geiser/geiser_5.html#Cheat-sheet">Geiser:Cheat sheet</a> を参照して下さい．
+
+<p></p>
+<b>注意</b>
+キー操作は慎重に．老婆心ながら，実際に使う前にお試し操作を．
+
+
+<p></p>
+<span class="hdln" id="geiser-repl-setup">Geiser REPL の設定</span>
+<p class="short"></p>
+
+Emacsの初期設定ファイル（init.el）にて，個人的には，以下の設定を行っています．
+<ul>
+<li>
+<b>(setq geiser-repl-query-on-kill-p nil)</b><br>
+Geiser REPL を終了しても，それを実行していたバッファは閉じずに残ります．
+そのため，デフォルトでは（あるいは上記の nil を t にすると），Emacs は，
+終了時に Geiser REPL セッションの内容をすべて捨ててよいかどうか質問してきます．
+上記の設定をすると，Emacs は質問せずに終了します．
+
+<li>
+<b>(setq geiser-repl-use-other-window nil)</b><br>
+デフォルトでは（あるいは上記の nil を t に設定すると），
+Geiser REPL は画面分割されて表示されます．
+上記の設定をすると，画面分割されずに，別画面でGeiser REPLが起動されます．
+筆者は，画面分割が好きではないので，この設定は個人的に大切です．
+<li>
+<b>(setq geiser-repl-history-no-dups-p nil)</b><br>
+デフォルトでは（あるいは上記の nil を t に設定すると），
+Geiser REPL への新たな入力が過去の入力と重複しているとき，
+新たな入力は履歴ファイルに記録されません．
+でもそれだと，時系列変化といった履歴の重要な性質が失われてしまいます．
+上記の設定をすると，すべての入力が履歴に記録されます．
+
+<li>
+<b>(setq geiser-repl-history-filename "~/.emacs.d/geiser-history.guile")</b><br>
+これは履歴ファイルを指定しています．これを指定しなかった場合，
+どこに保存されるのかよく分かりません．
+
+<li>
+<b>(setq geiser-active-implementations '(guile))</b><br>
+これは特に必要ありません．この設定は気休めにすぎません．
+分かってはいるのですが，これを設定すると，
+<div class="dstyle">
+<span class="mycmd">M-x run-guile</span>
+</div>
+以外にも
+<div class="dstyle">
+<span class="mycmd">M-x geiser</span>
+&emsp;や&emsp;
+<span class="mycmd">M-x run-geiser</span>
+</div>
+でも上記のGeiser REPL（Guile REPLのエミュレータ）を起動できます．
+実は，run-guile は使わずに geiser を使っています．
+ちなみに，これを設定しないで，M-x geiser または M-x run-geiser を実行すると，
+どの処理系をエミュレートするか質問してきます．例えば，そのときに racket と答えると Racket の REPL をエミュレートします．
+</ul>
+
+
+<p></p>
+<span class="hdln" id="geiser-vs-guile">Geiser REPL on Emacs vs Guile REPL on Gnome-terminal</span>
+<p class="short"></p>
+
+筆者はこれまで Gnome-terminal 上で Guile REPL を動かしてきました．Emacs も Gnome-terminal 上で動かしていて，Gnome-terminal のタブを使うことによって両者を1つの画面で切り替えながら使ってきました．機能的には Geiser REPL のほうが上であることは疑う余地はありません（あとは，安定性が気になるところですが）．特に，ファイル名補完はぜひとも欲しい機能です．rlwrap を使って実現してみようとしたのですが，まことに残念ながら Guile の activate-readline が，その名が示すように，GNU readline ライブラリを使っているようでして，inputrc に何を設定してもすべて activate-readline に捕捉されてしまいます．rlwrap を利用する限り，力技しかなさそうです．
+
+<p></p>
+rlwrap の力技の前に，当面，Geiser を使ってみようと思っています．
+ただ，困ったことに，Geiser REPL は Guile REPL の初期設定ファイル（~/.guile ）をうまく処理することができません．その初期設定ファイルの中身によっては，Geiser REPL の応答性能が目に見えて低下してちょっとイライラします．どうも，初期設定の処理として大丈夫なものとダメなものがあるようです．筆者の経験では，Guile REPL のプロンプトを変更する処理はダメなようです．
+
+<p></p>
+そこで，~/.guile の内容を次の2つのファイルに分けることにしました．
+
+<pre class="list">
+;;
+;; ~/.guile
+
+(use-modules (ice-9 readline))
+(activate-readline)
+
+(use-modules (system repl common))
+
+(repl-default-option-set! 'on-error 'report)
+;;  'debug or 'backtrace is available instead of 'report. 
+
+(define my-prompt
+   (lambda (repl)   ;; need to be a procedure??
+    (format #f "guile~A> " 
+      (let ((level (length (cond
+                            ((fluid-ref *repl-stack*) => cdr)
+                            (else '())))))
+        (if (zero? level) "" (format #f " [~a]" level))))))
+
+(repl-default-option-set! 'prompt my-prompt)
+;; (repl-default-prompt-set! my-prompt)  is also possible 
+
+;;
+;; load original procedures
+
+(let ((homedir (passwd:dir (getpwuid (getuid)))))
+  (primitive-load (string-append homedir "/.guile-init-more.scm")))
+</pre>
+下記のファイルはREPLの中で手軽に使いたい手続きを独自に定義しています．
+<pre class="list">
+;;
+;; ~/.guile-init-more.scm
+
+;;
+;; original procedures
+;;
+
+(define (myload filename)
+  (let* ((homedir (passwd:dir (getpwuid (getuid))))
+         (fname (if (char=? (string-ref filename 0) #\~)
+                    (string-append homedir (substring filename 1))
+                    filename)))
+    (primitive-load fname)))
+
+(define pwd getcwd)
+
+(define cd chdir)
+
+(define* (ls #:optional arg)
+  (system (string-append "ls " (if arg arg ""))))
+
+(define (less filename) 
+  (system (string-append "less -X " filename)))      
+</pre>
+このように分割した上で，Emacsの初期設定ファイル（init.el）に次の設定を追加します．
+<ul>
+<li><b>(setq geiser-guile-init-file "~/.guile-init-more.scm")</b><br>
+</ul>
+この設定によって，Geiser REPL の起動時に ~/.guile-init-more.scm がロードされ，
+これに登録した独自の手続きが Geiser REPL において利用できるようになります．
+さらに，Geiser REPL にとって問題のある処理を ~/.guile に残すことによって応答性能を低下させることもありません．一方，ターミナル上で Guile REPL を起動したときには両方のファイルをロードします．
+
+</section>
+
+
+
 
 </div> <!-- END of main division -->
 

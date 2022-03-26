@@ -107,7 +107,7 @@ ul.revise {
 }
 
 ul li.revise {
-    line-height: 110%;
+    line-height: 120%;
     padding: 0px;
 }
 
@@ -295,3 +295,40 @@ span.mydate {
     color: darkviolet; 
 }
 
+table.symbol {
+    /* width: 95%; */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-collapse: collapse; 
+    border: none;
+/*    border-top: solid 1px #404040; */
+    border-top: 1px solid #aaaaaa;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+table.symbol tr:nth-child(odd) {
+    background-color:  #f2f2f2;
+}
+
+table.symbol th {
+    text-align: left;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: none;
+    /* border-top: solid 1px #404040; */
+    border-bottom: solid 1px #aaaaaa;
+}
+
+
+table.symbol td {
+    vertical-align: top;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: none;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+}
+
+table.symbol td:nth-child(1) {
+    white-space:nowrap;
+}
