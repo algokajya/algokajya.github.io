@@ -488,9 +488,12 @@ Geiser REPL への新たな入力が過去の入力と重複しているとき�
 上記の設定をすると，すべての入力が履歴に記録されます．
 
 <li>
-<b>(setq geiser-repl-history-filename "~/.emacs.d/geiser-history.guile")</b><br>
-これは履歴ファイルを指定しています．これを指定しなかった場合，
-どこに保存されるのかよく分かりません．
+<b>(setq geiser-repl-history-filename "~/.emacs.d/geiser-history")</b><br>
+これは履歴ファイルを指定しています．
+これを指定しなかった場合，どこに保存されるのかよく分かりません．
+実際の履歴ファイルは <em>.guile</em> といった拡張子が付くようです．
+おそらく拡張子は処理系の名前を表していると思います．従って，
+例えば Racket REPL をエミュレートとしたときには .racket といった拡張子が付くものと予想されます．
 
 <li>
 <b>(setq geiser-active-implementations '(guile))</b><br>
