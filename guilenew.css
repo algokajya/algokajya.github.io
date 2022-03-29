@@ -149,8 +149,8 @@ h4.item {
     font-weight: bold;
     margin-right: 5px; 
     margin-top: 0px; 
-    margin-bottom: 5px;   
-    background: linear-gradient(transparent 88%, #98fb98 12%);
+    margin-bottom: 0px;   
+    background: linear-gradient(transparent 85%, #94f794 15%);
     display: inline-block;
 }
 
@@ -305,13 +305,13 @@ pre.shell {
 }
 
 pre.grammar { 
-    line-height: 130%;
+/*    line-height: 130%; */
 /*    background-color: #f8f8e0; */
     background-color: #fafafa;
     font-family: monospace;
     padding-top: 5px; 
     padding-bottom: 5px; 
-    padding-left: 5px; 
+    padding-left: 10px; 
     /* width: 90%; */
     margin-top: 8px;
     margin-bottom: 8px;
@@ -323,16 +323,32 @@ pre.grammar {
 pre.other { 
     line-height: 130%;
 /*    background-color: #f8f8e0; */
-    background-color: #fafafa;
+    background-color: #f8f8f8;
     font-family: monospace;
-    padding-top: 5px; 
-    padding-bottom: 5px; 
-    padding-left: 5px; 
+    padding-top: 10px; 
+    padding-bottom: 10px; 
+    padding-left: 10px; 
     /* width: 90%; */
     margin-top: 8px;
     margin-bottom: 8px;
 /*    border: 1px solid #cccccc;  */
-    border: 1px outset #cccccc;  
+    border-left: 2px outset #cccccc;  
+    overflow: auto; 
+}
+
+pre.param { 
+/*    line-height: 130%; */
+/*    background-color: #f8f8e0; */
+/*    background-color: #f8f8f8; */
+    font-family: monospace;
+    padding-top: 10px; 
+    padding-bottom: 10px; 
+    padding-left: 10px; 
+    /* width: 90%; */
+    margin-top: 8px;
+    margin-bottom: 8px;
+/*    border: 0px solid #cccccc;  */
+/*    border-left: 2px outset #cccccc;  */
     overflow: auto; 
 }
 
@@ -593,20 +609,20 @@ span.mydate {
 }
 
 myvar { 
-    /* font-weight: bold; */
+    font-weight: bold;
     color: darkviolet; 
 }
 span.myvar { 
-    /* font-weight: bold; */
+    font-weight: bold;
     color: darkviolet; 
 }
 
 myproc { 
-    /* font-weight: bold; */
+    font-weight: bold; 
     color: darkviolet; 
 }
 span.myproc { 
-    /* font-weight: bold; */
+    font-weight: bold;
     color: darkviolet; 
 }
 
