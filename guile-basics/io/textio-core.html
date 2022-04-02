@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／テキストファイルの入出力（コア）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<!-- <a class="noline" href="regex-proc.html">[Prev]</a>  -->
+<div id="header">
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／テキストファイルの入出力（コア）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.4.3</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，入出力手続きのうち，コアモジュールが提供するものについて勉強したことを記録しています．
+<li>
+筆者は Debian 11(bullseye) を使っていて，Guile は Debian 11 が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，2022.3.1時点の最新版は 3.0.8 です．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">write，display，newline，simple-format(format)</a>
+<li class="menu"><a class="noline" href="#end-of-file">end-of-file オブジェクト</a>
+<li class="menu"><a class="noline" href="#1">read</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Scheme-Read.html
+   ">[6.16.2 Reading Scheme Code]
+   </a><br> 
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Scheme-Write.html
+   ">[6.16.4 Writing Scheme Values]
+   </a><br> 
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Venerable-Port-Interfaces.html
+   ">[6.12.11 Venerable Port Interfaces]
+   </a><br>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+<div style="line-height:1.2em">
+<small>
+（注）Guileのマニュアルは常に最新版を参照しています．少し困ったことに，バージョン番号の3桁目が変化しただけでも，マニュアルの編成が大きく変化することがあります．実際，3.0.5 と 3.0.8 はかなり違っています．Guile のバージョンが上がることによって，上記のマニュアルの参照（特に，節番号）は古くなるかも知れません．ただ，リンク先の名前に節番号は入っていないので，リンクが途切れることはないだろうと期待します．それから，現在使用中のシステム（例えば，Debian 11 の 3.0.5）については，info形式のオンラインマニュアルが参照できます．
+</small>
+</div>
+</ul>
+
+<ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="0">write，display，newline，simple-format(format)</h3>
+
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>write</b> <span class="mysyn">obj</span> [<span class="mysyn">port</span>])
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>任意のオブジェクト</td>
+</tr>
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>出力ポート．省略時はカレント出力ポートに出力する．</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>unspecifed</td>
+</tr>
+</table>
+<p class="sshort"></p>
+<b>注意</b>
+上記の角括弧 [ ... ] は省略可能であることを示しています．
+手続き呼び出しの構文要素ではありません．
+</div>
+
+<p class="short"></p>
+この手続きは，<span class="mysyn">obj</span> の外部表現を <span class="mysyn">port</span> に出力します．<span class="mysyn">port</span> が省略されたときにはカレント出力ポートに出力します．
+
+<p class="short"></p>
+<span class="mysyn">obj</span> の外部表現は，read 手続きが読み取り可能な形式になります．
+例えば，文字列はダブルクォートで囲まれた形式で出力され，
+文字列内のエスケープ文字はそのまま出力されます（エスケープ文字は機能しません）．
+また，文字は #\ が付いた形式で出力されます．以下に，簡単な実行例を示します．
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(write #\a) (newline)</span>
+#\a
+guile&gt; <span class="mycmd">(write "abc\tABC\n") (newline)</span>
+"abc\tABC\n"
+guile&gt; <span class="mycmd">(write 'symbol) (newline)</span>
+symbol
+guile&gt; <span class="mycmd">(write 123.456) (newline)</span>
+123.456
+guile&gt; <span class="mycmd">(write '(a "a" #\a)) (newline)</span>
+(a "a" #\a)
+</pre>
+
+
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>display</b> <span class="mysyn">obj</span> [<span class="mysyn">port</span>])
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>任意のオブジェクト</td>
+</tr>
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>出力ポート．省略時はカレント出力ポートに出力する．</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>unspecified</td>
+</tr>
+</table>
+<p class="sshort"></p>
+<b>注意</b>
+上記の角括弧 [ ... ] は省略可能であることを示しています．
+手続き呼び出しの構文要素ではありません．
+</div>
+
+<p class="short"></p>
+この手続きは，<span class="mysyn">obj</span> の表現を <span class="mysyn">port</span> に出力します．<span class="mysyn">port</span> が省略されたときにはカレント出力ポートに出力します．
+
+<p class="short"></p>
+<span class="mysyn">obj</span> の表現は，人間が自然に読める形式で出力されます．
+例えば，文字列はダブルクォートなしで出力され，
+文字列内のエスケープ文字は機能を発揮します．
+また，文字は #\ のない形式（つまり，文字だけ）が出力されます．
+以下に，簡単な実行例を示します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(display #\a) (newline)</span>
+a
+guile&gt; <span class="mycmd">(display "abc\tABC\n") (newline)</span>
+abc	ABC
+
+guile&gt; <span class="mycmd">(display 'symbol) (newline)</span>
+symbol
+guile&gt; <span class="mycmd">(display 123.456) (newline)</span>
+123.456
+guile&gt; <span class="mycmd">(display '(a "a" #\a)) (newline)</span>
+(a a a)
+</pre>
+上の2番目の文字列（"abc\tABC\n"）を出力する例では，タブ文字（\t）と改行文字（\n）が，出力の際に機能を発揮しています．abc と ABC が離れているのはタブ文字（\t）が機能したためです．また，出力結果の直後が空行になっているのは改行文字（\n）が機能して，さらに newline を実行したためです．さらに，最後の結果を見ると，シンボルの 'a と文字列の "a" と文字の #\a の出力結果は見分けが付きません．
+
+
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>newline</b> [<span class="mysyn">port</span>])
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>出力ポート．省略時はカレント出力ポートに出力する．</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>unspecified</td>
+</tr>
+</table>
+<p class="sshort"></p>
+<b>注意</b>
+上記の角括弧 [ ... ] は省略可能であることを示しています．
+手続き呼び出しの構文要素ではありません．
+</div>
+
+<p class="short"></p>
+この手続きは，改行文字を <span class="mysyn">port</span> に出力します．<span class="mysyn">port</span> が省略されたときにはカレント出力ポートに出力します．
+
+
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>simple-format</b> <span class="mysyn">port</span> <span class="mysyn">fmt</span> <span class="mysyn">obj</span><sup>*</sup>)
+(<b>format</b> <span class="mysyn">port</span> <span class="mysyn">fmt</span> <span class="mysyn">obj</span><sup>*</sup>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>出力ポート または ブール値</td>
+</tr>
+<tr>
+<td><span class="mysyn">fmt</span></td> 
+<td>文字列（書式指定）</td>
+</tr>
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>任意のオブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>ブール値または文字列</td>
+</tr>
+</table>
+<b>備考</b>
+format 手続きについて，下記の補足を参照して下さい．
+</div>
+
+<p class="short"></p>
+これらの手続きは，オブジェクトの列 <span class="mysyn">obj</span><sup>*</sup> を書式指定 <span class="mysyn">fmt</span> に沿って <span class="mysyn">port</span> に出力します．<span class="mysyn">port</span> に #t を指定した場合，カレント出力ポートに出力します．一方，#f を指定した場合，
+書式指定に沿った出力を文字列として返します．出力を行った場合，出力が成功したら #t を返します．出力に失敗したら #f を返すだろうと推測されますが，たいていエラーが発生します．これまでのところ #f が返ってくるのを経験したことはありません．
+
+<p class="short"></p>
+書式指定の文字列は，\n や \t などのような文字列データとしてのエスケープ文字に加えて，<span class="mysyn">obj</span> を表示するための書式指定用のエスケープ（下表）を含むことができます．
+
+<table class="symbol">
+<tr>
+<th>エスケープ</th>
+<th>意味</th>
+</tr>
+<tr>
+<td> ~A <br> ~a </td>
+<td>
+対応する <span class="mysyn">obj</span> を display 手続きと同じ形式で表示します．
+</td>
+</tr>
+<tr>
+<td> ~S <br> ~s </td>
+<td>
+対応する <span class="mysyn">obj</span> を write 手続きと同じ形式で表示します．
+</td>
+</tr>
+<tr>
+<td> ~% </td>
+<td>
+改行を表示します（文字列エスケープの \n と同じです）．
+</td>
+</tr>
+<tr>
+<td> ~~ </td>
+<td>
+ティルダ（~）を表示します．
+</td>
+</tr>
+</table>
+
+<p class="short"></p>
+書式指定文字列の中の ~A と ~S の個数と <span class="mysyn">obj</span> の個数は一致していなければいけません．そうでないとエラーが発生します．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下では，数値，文字，文字列，シンボルに関して ~A と ~S の違いを示しています．
+文字と文字列以外には出力形式に違いはないように思います．
+<pre class="shell">
+guile&gt; <span class="mycmd">(simple-format #t "~A ~S\n" 123.45 123.45)</span>
+123.45 123.45
+guile&gt; <span class="mycmd">(simple-format #t "~A ~S\n" #\a #\a)</span>
+a #\a
+guile&gt; <span class="mycmd">(simple-format #t "~a ~s\n" "Guile" "Guile")</span>
+Guile "Guile"
+guile&gt; <span class="mycmd">(simple-format #t "~a ~s\n" 'Guile 'Guile)</span>
+Guile Guile
+</pre>
+<p class="short"></p>
+以下では，<span class="mysyn">port</span> に #f を指定した場合の結果を示します．
+#f を指定した場合，書式指定に沿った出力が文字列として返ってきます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(simple-format #f "~A ~S\n" 123.45 123.45)</span>
+<span>&#36;</span>1 = "123.45 123.45\n"
+guile&gt; <span class="mycmd">(simple-format #f "~A ~S\n" #\a #\a)</span>
+<span>&#36;</span>2 = "a #\\a\n"
+guile&gt; <span class="mycmd">(simple-format #f "~a ~s\n" "Guile" "Guile")</span>
+<span>&#36;</span>3 = "Guile \"Guile\"\n"
+guile&gt; <span class="mycmd">(simple-format #f "~a ~s\n" 'Guile 'Guile)</span>
+<span>&#36;</span>4 = "Guile Guile\n"
+</pre>
+なお，format 手続きでも同じことができます．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">補足</h4>
+Guileの起動時に実行される boot-9.scm の中で format は simple-format に束縛されます．ところが，
+システム起動直後から (ice-9 format) モジュールで定義されている高機能版の
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Formatted-Output.html
+">format手続き
+</a> 
+が利用できます．この点を確認するため，以下では，REPLの起動直後に，
+浮動小数点数の表示を simple-format と format で試してみています．simple-format はその機能がないので失敗しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(simple-format #t "~f\n" 123.45)</span>
+<span class="myred">;;; &lt;stdin&gt;:1:0: warning: "~f\\n": unsupported format option ~f, use (ice-9 format) instead
+In procedure simple-format: FORMAT: Unsupported format option ~f - use (ice-9 format) instead</span>
+guile&gt; <span class="mycmd">(format #t "~f\n" 123.45)</span>
+123.45
+$1 = #t
+</pre>
+つまり，Guileを起動する際のどこかのタイミングで format を再束縛しているものと思われます．(ice-9 format) モジュールの最後の行に
+<div class="dstyle">
+(module-set! the-root-module 'format format)
+</div>
+という式があって，これが関係しているのかも知れません．
+
+<p class="short"></p>
+simple-format は，boot-9.scm の中で（formatと名前を変えて）使われています．
+これから考えて，おそらく起動時のメッセージ表示のために作ったものだろうと推測します．simple-format の format に対する利点は，たぶん，速いことだけです．
+
+</section>
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="end-of-file">end-of-file オブジェクト</h3>
+<p></p>
+このあとに示す read 手続きなどの入力用の手続きは，
+ファイルの終端（end of file）に到達したら <em>end-of-file オブジェクト</em> を返します．入力用手続きの返り値が end-of-file オブジェクトか否かを判定するためには次の手続きを使用します．
+
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>eof-object?</b> <span class="mysyn">obj</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>任意のオブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>ブール値</td>
+</tr>
+</table>
+</div>
+
+<p class="short"></p>
+この手続きは，<span class="mysyn">obj</span> が end-of-file オブジェクトのとき #t を返し，
+そうでないとき #f を返します．
+
+
+</section>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<section>
+<h3 class="section" id="1">read</h3>
+
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>read</b> [<span class="mysyn">port</span>])
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート．省略時はカレント入力ポートから入力する．</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>データ（datum）</td>
+</tr>
+</table>
+<p class="sshort"></p>
+<b>注意</b>
+上記の角括弧 [ ... ] は省略可能であることを示しています．
+手続き呼び出しの構文要素ではありません．
+</div>
+
+<p class="short"></p>
+Guileデータの外部表現を <span class="mysyn">port</span> から入力して，
+それが表現するデータそのものを返します．
+<span class="mysyn">port</span> が省略されたときには，カレント入力ポート（current input port）から入力します．
+
+<p class="short"></p>
+例えば，文字データの外部表現 #\\$c$ を入力したときには文字データを返し，
+文字列データの外部表現 " ... " を入力したときには文字列データを返し，
+リストデータの外部表現 ( ... ) を入力したときにはリストデータを返します．
+その他にも，Guileが扱うデータで外部表現を持つものはすべて入力できるはずです．
+
+<p class="short"></p>
+外部表現を入力したあと，入力した外部表現の直後までファイルポインタを移動します．
+ただし，入力時点でファイルの終端に到達していたときには enf of file オブジェクトを返します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，コマンドライン引数に指定されたファイル（filename）からGuileデータの外部表現を入力して，そのデータを型とともに表示します．(srfi srfi-1) モジュールは，<a class="noline" href="https://srfi.schemers.org/srfi-1/srfi-1.html#Searching">SRFI-1[Searching]</a> で定義されている any 手続きを使うためにロードしています．
+<pre class="list">
+;; show-type.scm
+(use-modules (srfi srfi-1))
+
+(define *type-list* 
+  (list number? char? string? symbol? keyword? list? pair? vector?))
+
+(define (check-type datum) 
+  (lambda (type?) (and (type? datum) (procedure-name type?))))
+
+(let ((filename (cadr (command-line))))
+  (call-with-input-file filename
+    (lambda (port)
+      (let loop ((datum (read port)))
+        (unless (eof-object? datum)
+          (format #t "~A: ~A\n" 
+                  datum 
+                  (or (any (check-type datum) *type-list*) "other type"))
+          (loop (read port)))))))
+</pre>
+以下の実行例は，Guileデータを適当に含んだファイル（data.txt）に対して上記のプログラムを実行しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+123.456  #\あ  "ガイル"  Guile  #:kwd  (a . b)  (1 2 3 4)  #(1 2 3)  #*0011
+<span>&#36;</span> <span class="mycmd">guile -s show-type.scm data.txt </span>
+      ...... コンパイルメッセージ ......
+123.456: number?
+あ: char?
+ガイル: string?
+Guile: symbol?
+#:kwd: keyword?
+(a . b): pair?
+(1 2 3 4): list?
+#(1 2 3): vector?
+#*0011: other type
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">補足</h4>
+標準入力に対して read を実行したとき，Ctrl-D を押下すると read は end of file オブジェクトを返します．以下は，REPLにおいて実行した read に対して Ctrl-D を押下した場合を示しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(read)</span>
+ （ここで Ctrl-D を押下しています）
+<span>&#36;</span>1 = #&lt;eof&gt;
+</pre>
+
+</section>
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
