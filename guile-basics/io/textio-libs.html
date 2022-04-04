@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／テキストファイルの入出力（ライブラリ）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<!-- <a class="noline" href="regex-proc.html">[Prev]</a>  -->
+<div id="header">
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／テキストファイルの入出力（ライブラリ）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.4.4</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，入出力手続きのうち，(ice-9 textual-ports) モジュールが提供するものについて勉強したことを記録しています．
+テキストファイルに対しては，文字単位の入出力，文字列単位の入出力，
+行単位の入出力があります．以下では，この順に説明します．
+<li>
+筆者は Debian 11(bullseye) を使っていて，Guile は Debian 11 が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，2022.3.1時点の最新版は 3.0.8 です．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">end-of-file オブジェクト</a>
+<li class="menu"><a class="noline" href="#1">モジュールのロード</a>
+<li class="menu"><a class="noline" href="#2">文字単位の入出力</a>
+<li class="menu"><a class="noline" href="#3">文字列単位の入出力</a>
+<li class="menu"><a class="noline" href="#4">行単位の入出力</a>
+<li class="menu"><a class="noline" href="#5">ファイルポインタの位置情報の取得と設定</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Scheme-Read.html
+   ">[6.16.2 Reading Scheme Code]
+   </a><br> 
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Scheme-Write.html
+   ">[6.16.4 Writing Scheme Values]
+   </a><br> 
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Venerable-Port-Interfaces.html
+   ">[6.12.11 Venerable Port Interfaces]
+   </a><br>
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+<div style="line-height:1.2em">
+<small>
+（注）Guileのマニュアルは常に最新版を参照しています．少し困ったことに，バージョン番号の3桁目が変化しただけでも，マニュアルの編成が大きく変化することがあります．実際，3.0.5 と 3.0.8 はかなり違っています．Guile のバージョンが上がることによって，上記のマニュアルの参照（特に，節番号）は古くなるかも知れません．ただ，リンク先の名前に節番号は入っていないので，リンクが途切れることはないだろうと期待します．それから，現在使用中のシステム（例えば，Debian 11 の 3.0.5）については，info形式のオンラインマニュアルが参照できます．
+</small>
+</div>
+</ul>
+
+<ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">end-of-file オブジェクト</h3>
+
+<p></p>
+以下に示す入力用手続きは，ファイルの終端（end of file）に到達したら <em>end-of-file オブジェクト</em> を返します．入力用手続きの返り値が end-of-file オブジェクトか否かを判定するためには次の手続きを使用します．この手続きはコアモジュールで定義されています．
+
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>eof-object?</b> <span class="mysyn">obj</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>任意のオブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>ブール値</td>
+</tr>
+<tr>
+<td>備考</td>
+<td>コアモジュール</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，<span class="mysyn">obj</span> が end-of-file オブジェクトのとき #t を返し，
+そうでないとき #f を返します．
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="1">モジュールのロード</h3>
+<p></p>
+以下に説明する手続きを利用するためには，<em>(ice-9 textual-ports)</em> モジュールをロードしなければなりません．
+<pre class="list">
+(use-modules (ice-9 textual-ports))
+</pre>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="2">文字単位の入出力</h3>
+
+<!-- ****** procedire or syntax ********************** -->
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>get-char</b> <span class="mysyn">port</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>文字または end-of-file オブジェクト</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，<span class="mysyn">port</span>から1文字を取得し，
+ファイルポインタを1文字分進めたあと，取得した文字を返します．
+ただし，ファイルの終端に到達していたときには end-of-file オブジェクトを返します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，コマンドライン引数からファイル名（filename）を取得して，
+そのファイルから1文字ずつ読み込んで，各文字にスラッシュ（/）を付けて表示します．
+<pre class="list">
+;; input-chars.scm
+
+(use-modules (ice-9 textual-ports))
+
+(let ((filename (cadr (command-line))))
+  (call-with-input-file filename 
+    (lambda (port)
+      (let loop ((ch (get-char port)))
+        (unless (eof-object? ch) 
+          (format #t "~A/" ch)
+          (loop (get-char port))))
+      (newline))))
+</pre>
+以下では適当なテキストファイルに対して実行しています．
+表示結果の最後にスラッシュだけが表示されています．
+これはテキストファイルの行末にある改行文字にスラッシュを付けて表示しているためです．改行文字は1行目の最後（o/の直後）に表示されています（見えませんけど）．
+つまり，get-char 手続きは改行文字も1つの文字として読み込みます．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+あaいiうuえeおo
+<span>&#36;</span> <span class="mycmd">guile -s input-chars.scm data.txt</span>
+あ/a/い/i/う/u/え/e/お/o/
+/
+</pre>
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>lookahead-char</b> <span class="mysyn">port</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>文字または end-of-file オブジェクト</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，<span class="mysyn">port</span>から1文字を取得し，取得した文字を返します．
+ファイルポインタは同じ文字のところに留まって先に進みません．
+ファイルの終端に到達していたときには end-of-file オブジェクトを返します．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，テキストファイル（filename）から lookahead-char を使って1文字を読み込み，それと同じ文字を get-char を使ってもう一度読み込んで，それら2つの文字を星印（*）で繋いだものにスラッシュを付けて表示しています．
+<pre class="list">
+;; input-chars.scm
+
+(use-modules (ice-9 textual-ports))
+
+(let ((filename (cadr (command-line))))
+  (call-with-input-file filename 
+    (lambda (port)
+      (let loop ((ch (lookahead-char port)))
+        (unless (eof-object? ch) 
+          (format #t "~A*~A/" ch (get-char port))
+          (loop (lookahead-char port))))
+      (newline))))
+</pre>
+最後の2行は改行文字を2文字分表示していることによります．1行目の最後（o*o/の直後）に
+ lookahead-char で読み込んだ改行文字を表示し（そのため改行し），星印（*）を表示したあと get-char で読み込んだ改行文字を表示し（そのため改行し），最後にスラッシュを表示しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+あaいiうuえeおo
+<span>&#36;</span> <span class="mycmd">guile -s input-chars.scm data.txt</span>
+あ*あ/a*a/い*い/i*i/う*う/u*u/え*え/e*e/お*お/o*o/
+*
+/
+</pre>
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>unget-char</b> <span class="mysyn">port</span> <span class="mysyn">char</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">char</span></td> 
+<td>文字</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td> <span class="mysyn">char</span>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，
+文字（<span class="mysyn">char</span>）を入力ポート（<span class="mysyn">port</span>）に押し戻します．
+実際には，入力ポート（<span class="mysyn">port</span>）が使用しているバッファに保存し直します．
+筆者が調査した限りでは，必要に応じてバッファを拡張するようなので，
+何文字でも押し戻せると思います．押し戻した文字に対して get-char などを使って取り出したとき，押し戻した順とは逆順（いわゆる，last-in first-out の順）に取り出すことになります．返り値は第2引数に指定した文字（<span class="mysyn">char</span>）そのものです．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">注意</h4>
+標準入力に対してはうまく機能しません．バッファを持っていないためです（参照：<a class="noline" href="https://www.gnu.org/software/guile/manual/html_node/Default-Ports.html#Default-Ports">Guile[6.12.9 Default Ports for Input, Output and Errors]</a>）．
+
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>put-char</b> <span class="mysyn">port</span> <span class="mysyn">char</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>出力ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">char</span></td> 
+<td>文字</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td> unspecified
+</tr>
+</table>
+</div>
+
+<p class="short"></p>
+この手続きは，
+文字（<span class="mysyn">char</span>）を出力ポート（<span class="mysyn">port</span>）に出力します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下のプログラムは，カレント出力ポート（標準出力）に，
+文字コード（UTF-8）で #x3042〜 #x304f の文字を出力します．
+なお，#x3042 は「あ」の文字コード（UTF-8）です．
+<pre class="list">
+;; output-chars.scm
+(use-modules (ice-9 textual-ports))
+(let loop ((ch #x3042))
+  (when (&lt; ch #x3050)
+    (put-char (current-output-port) (integer->char ch))
+    (loop (1+ ch))))
+(newline)
+</pre>
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile -s output-chars.scm</span>
+      ...... コンパイルメッセージ ......
+あぃいぅうぇえぉおかがきぎく
+</pre>
+
+
+
+
+<p class="long"></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="3">文字列単位の入出力</h3>
+
+<!-- ****** procedire or syntax ********************** -->
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>get-string-n</b> <span class="mysyn">port</span> <span class="mysyn">count</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">count</span></td> 
+<td>非負整数値（文字数）</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>文字列または end-of-file オブジェクト</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，入力ポート（<span class="mysyn">port</span>）から <span class="mysyn">count</span> で指定された文字数分の文字を読み込んで，それらの文字からなる文字列を返します．
+テキストファイルの終端に到達するまえに1文字以上は残っているけれども <span class="mysyn">count</span> 数分の文字がない場合，残っている文字すべてからなる文字列を返します．1文字もないときには end-of-file オブジェクトを返します．
+文字を読み込んだときには，読み込んだ文字数分だけファイルポインタを進めます．
+以下に簡単な実行例を示します．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+あaいiうuえeおo
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define port (open-input-file "data.txt"))</span>
+guile&gt; <span class="mycmd">(get-string-n port 5)</span>
+<span>&#36;</span>1 = "あaいiう"
+guile&gt; <span class="mycmd">(close-port port)</span>
+<span>&#36;</span>2 = #t
+</pre>
+
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>get-string-all</b> <span class="mysyn">port</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>文字列または end-of-file オブジェクト</td>
+</tr>
+</table>
+</div>
+
+<p class="short"></p>
+この手続きは，入力ポート（<span class="mysyn">port</span>）からすべての文字を読み込んで，
+それらの文字からなる文字列を返します．1文字もないときには end-of-file オブジェクトを返します．以下に簡単な実行例を示します．
+
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+あaいiうuえeおo
+kaかkiきkuくkeけkoこ
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define port (open-input-file "data.txt"))</span>
+guile&gt; <span class="mycmd">(get-string-all port)</span>
+<span>&#36;</span>1 = "あaいiうuえeおo\nkaかkiきkuくkeけkoこ\n"
+guile&gt; <span class="mycmd">(close-port port)</span>
+<span>&#36;</span>2 = #t
+</pre>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">注意</h4>
+上の実行例を見ると分かるように，
+各行の行末にある改行文字（\n）も返り値の一部になっています．
+これは，後述する行単位の入力と対照的です．
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>get-string-n!</b> <span class="mysyn">port</span> <span class="mysyn">string</span> <span class="mysyn">start</span> <span class="mysyn">count</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">string</span></td> 
+<td>文字列オブジェクト</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>非負整数値（文字位置）</td>
+</tr>
+<tr>
+<td><span class="mysyn">count</span></td> 
+<td>非負整数値（文字数）</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>整数（文字数）または end-of-file オブジェクト</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，<span class="mysyn">count</span>で指定された文字数分の文字を入力ポート（<span class="mysyn">port</span>）から読み込んで，それらの文字からなる文字列を文字列オブジェクト（<span class="mysyn">string</span>）の<span class="mysyn">start</span>から始まる位置に格納します．また，ファイルポインタを読み込んだ文字数だけ進めます．
+
+<p></p>
+テキストファイルに残っている文字数が <span class="mysyn">count</span> 以上のときには，
+上の通りの処理を行って <span class="mysyn">count</span> を返り値として返します．
+残っっている文字数が <span class="mysyn">count</span> より小さいときには，残っている文字をすべて読み込んで上で述べたように <span class="mysyn">string</span> に格納して，読み込んだ文字数を返します．1文字も残っていないときには end-of-file オブジェクトを返します．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">注意</h4>
+<ul>
+<li>
+文字列オブジェクト（<span class="mysyn">string</span>）は <span class="mysyn">start</span>$+$<span class="mysyn">count</span> 以上の長さを持っていなければいけません．
+<li>
+文字列定数（" ... "）に対して，変更はできません．
+</ul>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+あaいiうuえeおo
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define port (open-input-file "data.txt"))</span>
+guile&gt; <span class="mycmd">(define str (make-string 10 #\x))</span>
+guile&gt; <span class="mycmd">str</span>
+<span>&#36;</span>1 = "xxxxxxxxxx"
+guile&gt; <span class="mycmd">(get-string-n! port str 4 5)</span>
+<span>&#36;</span>2 = 5
+guile&gt; <span class="mycmd">str</span>
+<span>&#36;</span>3 = "xxxxあaいiうx"
+</pre>
+文字列定数に対しては変更できません．以下はそのような実行例です．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define strc "0123456789")</span>
+guile&gt; <span class="mycmd">strc</span>
+<span>&#36;</span>4 = "0123456789"
+guile&gt; <span class="mycmd">(get-string-n! port strc 4 5)</span>
+<span class="myred">string is read-only: "0123456789"</span>
+</pre>
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>unget-string</b> <span class="mysyn">port</span> <span class="mysyn">string</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">string</span></td> 
+<td>文字列オブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td> <span class="mysyn">string</span></td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，文字列（<span class="mysyn">string</span>）を入力ポート（のバッファ）に押し戻します．そのあとで入力ポートから入力すると押し戻した文字列の先頭から読み込まれます．
+複数の文字列を押し戻した場合，文字列自体は押し戻した順とは逆順に読み込まれます．
+返り値は，押し戻した文字列そのものです．以下に簡単な実行例を示します．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt </span>
+あaいiうuえeおo
+kaかkiきkuくkeけkoこ
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define port (open-input-file "data.txt"))</span>
+guile&gt; <span class="mycmd">(unget-string port "ガイル")</span>
+<span>&#36;</span>1 = "ガイル"
+guile&gt; <span class="mycmd">(get-char port)</span>
+<span>&#36;</span>2 = #\ガ
+guile&gt; <span class="mycmd">(get-line port)</span>
+<span>&#36;</span>3 = "イルあaいiうuえeおo"
+guile&gt; <span class="mycmd">(unget-string port "Guile Scheme\n")</span>
+<span>&#36;</span>4 = "Guile Scheme\n"
+guile&gt; <span class="mycmd">(get-line port)</span>
+<span>&#36;</span>5 = "Guile Scheme"
+guile&gt; <span class="mycmd">(close-port port)</span>
+<span>&#36;</span>6 = #t
+</pre>
+
+
+
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>put-string</b> <span class="mysyn">port</span> <span class="mysyn">string</span>)
+(<b>put-string</b> <span class="mysyn">port</span> <span class="mysyn">string</span> <span class="mysyn">start</span>)
+(<b>put-string</b> <span class="mysyn">port</span> <span class="mysyn">string</span> <span class="mysyn">start</span> <span class="mysyn">count</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>出力ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">string</span></td> 
+<td>文字列オブジェクト</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>非負整数値（文字位置）．省略時は0が設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">count</span></td> 
+<td>非負整数値（文字数）．省略時は，「文字列（<span class="mysyn">string</span>）の長さ $-$ <span class="mysyn">start</span>」（つまり，<span class="mysyn">start</span>以降末尾までの長さ）が設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，文字列（<span class="mysyn">string</span>）を出力ポート（<span class="mysyn">port</span>）に出力します．<span class="mysyn">start</span> が指定されたときには <span class="mysyn">start</span> 以降末尾までの部分文字列を出力します．さらに，<span class="mysyn">count</span> が指定されたときには <span class="mysyn">start</span> 以降の <span class="mysyn">count</span> 分の文字を出力します．
+以下に簡単な実行例を示します．
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define str "0123456789")</span>
+guile&gt; <span class="mycmd">(put-string (current-output-port) str) (newline)</span>
+0123456789
+guile&gt; <span class="mycmd">(put-string (current-output-port) str 3) (newline)</span>
+3456789
+guile&gt; <span class="mycmd">(put-string (current-output-port) str 3 5) (newline)</span>
+34567
+</pre>
+
+
+
+<p class="long"></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="4">行単位の入出力</h3>
+
+<!-- ****** procedire or syntax ********************** -->
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>get-line</b> <span class="mysyn">port</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>入力ポート</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>文字列または end-of-file オブジェクト</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，入力ポート（<span class="mysyn">port</span>）から1行分の文字列を読み込んで返します．さらに，ファイルポインタを次の行の先頭に進めます．
+ファイルの終端に到達していたら end-of-file オブジェクトを返します．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">注意</h4>
+<ul>
+<li>
+返り値の文字列に改行文字は含まれません．
+<li>
+ファイルの最後の行が改行文字を含まずに終端していたとしても，
+最後の行の文字列が返ってきます．
+</ul>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt </span>
+あaいiうuえeおo
+kaかkiきkuくkeけkoこ
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ...... 
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define port (open-input-file "data.txt"))</span>
+guile&gt; <span class="mycmd">(get-line port)</span>
+<span>&#36;</span>1 = "あaいiうuえeおo"
+guile&gt; <span class="mycmd">(get-line port)</span>
+<span>&#36;</span>2 = "kaかkiきkuくkeけkoこ"
+guile&gt; <span class="mycmd">(get-line port)</span>
+<span>&#36;</span>3 = #&lt;eof&gt;
+guile&gt; <span class="mycmd">(close-port port)</span>
+<span>&#36;</span>4 = #t
+</pre> 
+
+
+
+
+<p class="long"></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="5">ファイルポインタの位置情報の取得と設定</h3>
+
+<!-- ****** procedire or syntax ********************** -->
+<p></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>port-line</b> <span class="mysyn">port</span>)
+(<b>port-column</b> <span class="mysyn">port</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>ポート</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>整数値（行番号または列番号）</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これらの手続きは，ファイルポインタが位置する行番号や列番号を返します．
+なお，行番号も列番号もともに 0 から始まります．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln">具体例</h4>
+以下は，2行からなるファイル（data.txt）に対して，第0行を get-line を使って読み飛ばし，続けて第1行の先頭から5文字を get-string-n を使って読み飛ばした状態で，port-line と port-column を実行しています．
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">cat data.txt</span>
+あaいiうuえeおo
+kaかkiきkuくkeけkoこ
+<span>&#36;</span> <span class="mycmd">guile</span>
+GNU Guile 3.0.5
+      ...... 起動メッセージ ......
+guile&gt; <span class="mycmd">(use-modules (ice-9 textual-ports))</span>
+guile&gt; <span class="mycmd">(define port (open-input-file "data.txt"))</span>
+guile&gt; <span class="mycmd">(get-line port)</span>
+<span>&#36;</span>1 = "あaいiうuえeおo"
+guile&gt; <span class="mycmd">(get-string-n port 5)</span>
+<span>&#36;</span>2 = "kaかki"
+guile&gt; <span class="mycmd">(port-line port)</span>
+<span>&#36;</span>3 = 1
+guile&gt; <span class="mycmd">(port-column port)</span>
+<span>&#36;</span>4 = 5
+</pre>
+
+
+<!-- ****** procedire or syntax ********************** -->
+<p class="long"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>set-port-line!</b> <span class="mysyn">port</span> <span class="mysyn">line</span>)
+(<b>set-port-column!</b> <span class="mysyn">port</span> <span class="mysyn">column</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">port</span></td> 
+<td>ポート</td>
+</tr>
+<tr>
+<td><span class="mysyn">line</span></td> 
+<td>行番号</td>
+</tr>
+<tr>
+<td><span class="mysyn">column</span></td> 
+<td>列番号</td>
+</tr>
+<tr>
+<td>返り値</td>
+<td>整数値（行位置または列位置）</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+ポート（<span class="mysyn">port</span>）の行番号や列番号を設定します．
+ただ，ファイルポインタを移動するわけではないようです．
+例えば，ファイルの終端に到達したあとに上の手続きを（適当に）を実行しても，
+ファイルポインタは終端から動きません．
+（何のために使用するのでしょうか？）．
+
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
