@@ -1,8 +1,8 @@
 
 body {
     line-height: 145%;
-    width: 90%; 
-    padding-left: 5%;
+    width: 90%;  
+    padding-left: 5%; 
 }
 
 #header {
@@ -402,6 +402,12 @@ div.spec {
   /*  overflow: auto; */
 }
 
+div.grammar {
+    background-color: #fafafa;
+    border: 1px outset #cccccc;  
+    overflow: auto; 
+}
+
 pre.spec {
     margin-top: 0px;
 }
@@ -417,6 +423,26 @@ table.param td {
     padding-left: 10px;
     padding-right: 10px;
     border: none;
+}
+
+table.grammar {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 10px;
+/*    border: 1px outset #cccccc;  
+    background-color: #fafafa;
+    overflow: auto;  */
+}
+
+table.grammar td {
+    vertical-align: top;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: none;
+}
+
+td.right {
+    text-align: right; 
 }
 
 
@@ -647,3 +673,23 @@ span.right {
     float: right;
 }
 */
+
+myhead {
+    font-weight: bold;
+    margin-right: 10px; 
+    /* background: linear-gradient(transparent 70%, #a8eaff 30%); */
+    /* background: linear-gradient(transparent 85%, #94f794 15%); */
+    text-decoration: underline;
+}
+span.myhead {
+    font-weight: bold;
+    margin-right: 10px; 
+    /* background: linear-gradient(transparent 70%, #a8eaff 30%); */
+    /* background: linear-gradient(transparent 85%, #94f794 15%); */
+    text-decoration: underline;
+}
+
+
+
+
+
