@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／ベクタ（コアモジュール）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<!-- 
+<a class="noline" href="regex-proc.html">[Prev]</a> 
+&ensp; 
+-->
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<!-- 
+<span class="nolink">[Next]</span>
+&ensp; 
+-->
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／ベクタ（コアモジュール）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.4.18</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，ベクタについて勉強したことを記録しています．
+ベクタに関する手続きはコアモジュールと (srfi srfi-43) モジュールによって提供されています．このノートはコアモジュールが提供する機能について説明します．
+<li>
+ベクタはリストとともにSchemeの基本的なデータ型です．
+リストに比べて，
+ベクタ作成時の長さ（成分数）を変更できないといったデメリットはありますが，
+各要素が定数時間でアクセスできるといったメリットもあります．一般に，
+長さが変化しない列データはベクタとして実現することを検討してみるとよいでしょう．
+例えば，Guileのコアシステムでは，ファイルの属性情報，ユーザー情報，
+成分別時刻（broken-down time）などはベクタとして実現されています．
+</ul>
+
+<ul>
+<li>
+筆者は Debian 11(bullseye) を使っていて，Guile は Debian 11 が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，2022.3.1時点の最新版は 3.0.8 です．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ベクタの作成</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">ベクタ定数</a>
+   <li class="menu"><a class="noline" href="#2">vector ― 要素を指定して作る</a>
+   <li class="menu"><a class="noline" href="#3">make-vector ― 長さを指定して作る</a>
+   <li class="menu"><a class="noline" href="#4">list &lt;--&gt; vector ― リストとベクタの相互変換</a>
+   </ul>
+<li class="menu"><a class="noline" href="#5">ベクタの操作</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#6">vector? ― ベクタ型の検査</a>
+   <li class="menu"><a class="noline" href="#7">vector-length ― ベクタの長さ（成分数）</a>
+   <li class="menu"><a class="noline" href="#8">vector-ref ― 成分の抽出</a>
+   <li class="menu"><a class="noline" href="#9">vector-set! ― 成分の変更</a>
+   <li class="menu"><a class="noline" href="#10">vector-fill! ― 全成分の変更</a>
+   <li class="menu"><a class="noline" href="#vector-copy">vector-copy ― ベクタのコピー</a>
+   <li class="menu"><a class="noline" href="#vector-copy-x">vector-copy! ― ベクタの転写</a>
+   <li class="menu"><a class="noline" href="#11">vector-move-{left!,right!} ― ベクタの転写</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Vectors.html
+   ">[6.6.10 Vectors]
+   </a><br> 
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/SRFI_002d43.html
+   ">[7.5.30 SRFI-43 - Vector Library]
+   </a> 
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+<div style="line-height:1.2em">
+<small>
+（注）Guileのマニュアルは常に最新版を参照しています．少し困ったことに，バージョン番号の3桁目が変化しただけでも，マニュアルの編成が大きく変化することがあります．実際，3.0.5 と 3.0.8 はかなり違っています．Guile のバージョンが上がることによって，上記のマニュアルの参照（特に，節番号）は古くなるかも知れません．ただ，リンク先の名前に節番号は入っていないので，リンクが途切れることはないだろうと期待します．それから，現在使用中のシステム（例えば，Debian 11 の 3.0.5）については，info形式のオンラインマニュアルが参照できます．
+</small>
+</div>
+
+<li> Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://small.r7rs.org/
+   ">small.r7rs.org</a>:
+   Revised<sup>7</sup> Report on the Algorithmic Language Scheme（R<sup>7</sup>RS）<br>
+   <a class="noline" href="
+   https://small.r7rs.org/attachment/r7rs.pdf
+   ">英語版</a>
+   <a class="noline" href="
+   http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
+   ">日本語版 </a>
+   <li class="menu">
+   <a class="noline" href="
+   http://www.r6rs.org/
+   ">www.r6rs.org:
+   </a>Revised<sup>6</sup> Report on the Algorithmic Language Scheme
+（R<sup>6</sup>RS）<br>
+   <a class="noline" href="http://www.r6rs.org/final/r6rs.pdf">英語版</a>
+   <a class="noline" href="
+   http://practical-scheme.net/wiliki/wiliki.cgi?R6RS%3a%E7%BF%BB%E8%A8%B3
+   ">日本語版 </a>
+   <li class="menu">
+   R. Kent Dybvig: 
+   <a class="noline" href="https://www.scheme.com/tspl4/
+   ">The Scheme Programming Language, Fourth Edition, 2009.</a>（TSPL）
+   </ul>
+</ul>
+<ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">ベクタの作成</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">ベクタ定数</h4>
+<p class="short"></p>
+<div class="spec">
+literal:
+<pre class="grammar">
+<b>#(</b><span class="mysyn">datum</span> ... <b>)</b>
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">datum</span></td> 
+<td>データ（の外部表現）</td>
+</tr>
+</table>
+</div>
+
+<p class="short"></p>
+この式は <span class="mysyn">datum</span> を成分とするベクタを作ります．
+<span class="mysyn">datum</span> は何でも指定できます．ただし，次の点に注意して下さい．
+   <ul>
+   <li>
+   ベクタ定数は self-evaluating なので，式の先頭にクォート（&apos;）を付けたり，
+   qoute 式で囲む必要はありません．
+   <li> <span class="mysyn">datum</span> は評価されません．self-evaluating な <span class="mysyn">datum</span>（ブール値，数値，文字，文字列，ベクタ，バイトベクタ） は，それが表現するデータとして処理され，self-evaluating でない <span class="mysyn">datum</span> はシンボルやリストとして処理されます．
+   <li>
+   ベクタ定数は変更不可能（immutable）です．各成分の値は変更できません.
+   </ul>
+
+<p></p>
+<span class="myhead">具体例</span>
+以下の1番目の式は，
+数値（10と20），文字（#\a と #\b），文字列（"Guile"），シンボル（Scheme）からなるベクタ定数を作っています．2番目の式は数値リスト定数，文字列リスト定数，シンボルリスト定数からなるベクタ定数を作っています．
+<pre class="shell">
+guile&gt; <span class="mycmd">#(10 20 #\a #\b "Guile" Scheme)</span>
+<span>&#36;</span>1 = #(10 20 #\a #\b "Guile" Scheme)
+guile&gt; <span class="mycmd">#((1 2 3) ("a" "b" "c") (a b c))</span>
+<span>&#36;</span>2 = #((1 2 3) ("a" "b" "c") (a b c))
+</pre>
+なお，&apos;Scheme といったようにシンボルにクォート（&apos;）をつけると，
+以下に示すようにクォート（quote）もデータの一部になってしまいます．
+リスト定数の場合と同様に，ベクタの成分は評価されないので，
+各成分にクォートを付ける必要はありません．
+<pre class="shell">
+guile&gt; <span class="mycmd">#(10 20 #\a #\b "Guile" 'Scheme)</span>
+<span>&#36;</span>3 = #(10 20 #\a #\b "Guile" (quote Scheme))
+</pre>
+
+<p></p>
+ベクタ定数の各成分（<span class="mysyn">datum</span> ）は評価されません．
+例えば，以下の算術式は評価されることはなく，
+シンボルとしての演算記号，シンボルとしての変数記号（x と y），数値定数からなるリスト定数として処理されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">#((+ x 20) (- 10 y) (* 10 20))</span>
+<span>&#36;</span>4 = #((+ x 20) (- 10 y) (* 10 20))
+</pre>
+
+<p></p>
+ベクタ定数（によって生成したベクタデータ）は変更不可能（immutable）なので，
+その成分を変更しようとするとエラーが発生します．以下の実行例では，10,20,30 の3つの成分からなるベクタ定数の第0成分（先頭の成分）を vector-set! を使って 99 に変更しようとして，エラーが発生しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec #(10 20 30))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(10 20 30)
+guile&gt; <span class="mycmd">(vector-set! vec 0 99)</span>
+In procedure vector-set!: <span class="myred">Wrong type argument in position 1 (expecting mutable vector): #(10 20 30)</span>
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">vector ― 要素を指定して作る</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector</b> <span class="mysyn">obj</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>オブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p class="short"></p>
+この手続きは，<span class="mysyn">obj</span> ... からなるベクタを作って返します．
+vector 手続きによって作成したベクタは変更可能（mutable）です．
+つまり，各成分の値を変更することができます．
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector 1 2 3)</span>
+<span>&#36;</span>1 = #(1 2 3)
+guile&gt; <span class="mycmd">(vector 10 #\a "Guile" 'Scheme)</span>
+<span>&#36;</span>2 = #(10 #\a "Guile" Scheme)
+guile&gt; <span class="mycmd">(vector (+ 10 20) (- 10 20) (* 10 20))</span>
+<span>&#36;</span>3 = #(30 -10 200)
+</pre>
+
+<p class="short"></p>
+vector 手続きで生成したベクタは変更可能（mutable）なので，
+その成分を変更しようとしてもエラーにはなりません．
+以下の実行例は，ベクタ定数の実行例の中でエラーが発生した変更操作を行っています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec (vector 10 20 30))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(10 20 30)
+guile&gt; <span class="mycmd">(vector-set! vec 0 99)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(99 20 30)
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">make-vector ― 長さを指定して作る</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>make-vector</b> <span class="mysyn">len</span>)
+(<b>make-vector</b> <span class="mysyn">len</span> <span class="mysyn">obj</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">len</span></td> 
+<td>長さ（成分数）を表す整数値</td>
+</tr>
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>オブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p class="short"></p>
+この手続きは，<span class="mysyn">len</span> で指定された長さ（成分数）のベクトルを作って返します．<span class="mysyn">obj</span> を指定した場合，各成分を <span class="mysyn">obj</span> に初期設定します．<span class="mysyn">obj</span> を省略した場合，各成分の値は unspecified です．
+この手続きで作成したベクタは変更可能（mutable）です．
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(make-vector 3)</span>
+<span>&#36;</span>1 = #(#&lt;unspecified&gt; #&lt;unspecified&gt; #&lt;unspecified&gt;)
+guile&gt; <span class="mycmd">(make-vector 5 0)</span>
+<span>&#36;</span>2 = #(0 0 0 0 0)
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">list &lt;--&gt; vector ― リストとベクタの相互変換</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>list->vector</b> <span class="mysyn">lst</span>)
+(<b>vector->list</b> <span class="mysyn">vec</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">lst</span></td> 
+<td>リスト</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>list->vector はベクタを返し，vector->list はリストを返す．</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+list->vector はリスト（<span class="mysyn">lst</span>）をベクタに変換して返します．
+逆に，vector->list はベクタ（<span class="mysyn">vec</span>）をリストに変換して返します．
+返り値のベクタやリストは変更可能（mutable）です．
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(list->vector '(10 20 30))</span>
+<span>&#36;</span>1 = #(10 20 30)
+guile&gt; <span class="mycmd">(vector->list #(10 20 30))</span>
+<span>&#36;</span>2 = (10 20 30)
+</pre>
+
+<p></p>
+<span class="myhead">補足</span>
+(srfi srfi-43) モジュールをロードすると，機能拡張された同名の手続きを使うことができます．その手続きは，変換対象の部分列が指定できるようになっています．
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="5">ベクタの操作</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="6">vector? ― ベクタ型の検査</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector?</b> <span class="mysyn">obj</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>オブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ブール値</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これは，<span class="mysyn">obj</span> がベクタならば #t を返し，
+そうでなければ #f を返します．
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector? #(10 20 30))</span>
+<span>&#36;</span>1 = #t
+guile&gt; <span class="mycmd">(vector? '(10 20 30))</span>
+<span>&#36;</span>2 = #f
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="7">vector-length ― ベクタの長さ（成分数）</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-length</b> <span class="mysyn">vec</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタの長さ（成分数）</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これは <span class="mysyn">vec</span> の長さ（成分数）を返します．
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-length #(10 20))</span>
+<span>&#36;</span>1 = 2
+guile&gt; <span class="mycmd">(vector-length #(10 20 30))</span>
+<span>&#36;</span>2 = 3
+guile&gt; <span class="mycmd">(vector-length #(10 20 30 40))</span>
+<span>&#36;</span>3 = 4
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="8">vector-ref ― 成分の抽出</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-ref</b> <span class="mysyn">vec</span> <span class="mysyn">idx</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">idx</span></td> 
+<td>添字（成分の番号）</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>成分の値</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これは <span class="mysyn">vec</span> の <span class="mysyn">idx</span> 番目の成分を返します．
+次の点に注意して下さい．
+<ul>
+<li>
+最初の成分の添字は 0 で，
+<span class="mysyn">vec</span>の長さを $\ell$ とするとき，
+最後の成分の添字は $\ell-1$ です．
+この範囲以外の添字を指定したときにはエラーが発生します．
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-ref #(10 20 30 40) 0)</span>
+<span>&#36;</span>1 = 10
+guile&gt; <span class="mycmd">(vector-ref #(10 20 30 40) 1)</span>
+<span>&#36;</span>2 = 20
+guile&gt; <span class="mycmd">(vector-ref #(10 20 30 40) 2)</span>
+<span>&#36;</span>3 = 30
+guile&gt; <span class="mycmd">(vector-ref #(10 20 30 40) 3)</span>
+<span>&#36;</span>4 = 40
+</pre>
+ベクタの長さを $\ell$ とするとき，添字（<span class="mysyn">idx</span>）は
+$0 \leq$ <span class="mysyn">idx</span> $\leq \ell-1$ を満たさなければいけません．
+この範囲以外の添字を指定したときにはエラーが発生します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-ref #(10 20 30 40) 4)</span>
+In procedure vector-ref: <span class="myred">Argument 2 out of range: 4</span>
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="9">vector-set! ― 成分の変更</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-set!</b> <span class="mysyn">vec</span> <span class="mysyn">idx</span> <span class="mysyn">obj</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">idx</span></td> 
+<td>添字（成分の番号）</td>
+</tr>
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>オブジェクト</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これは，ベクタ（<span class="mysyn">vec</span>）の <span class="mysyn">idx</span> 番目の成分を <span class="mysyn">obj</span> に変更します．次の点に注意して下さい．
+<ul>
+<li>
+ベクタの長さを $\ell$ とするとき，添字（<span class="mysyn">idx</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">idx</span> $\leq \ell-1$
+</div>
+を満たさなければいけません．
+<li>
+<span class="mysyn">vec</span> は変更可能（mutable）なベクタでなければいけません．
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec (make-vector 4 'x))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(x x x x)
+guile&gt; <span class="mycmd">(vector-set! vec 0 'A)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(A x x x)
+guile&gt; <span class="mycmd">(vector-set! vec 2 (+ 10 20))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>3 = #(A x 30 x)
+</pre>
+ベクタが変更可能（mutable）でないときエラーが発生します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec #(x x x x))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(x x x x)
+guile&gt; <span class="mycmd">(vector-set! vec 0 'A)</span>
+In procedure vector-set!: <span class="myred">Wrong type argument in position 1 (expecting mutable vector): #(x x x x)</span>
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="10">vector-fill! ― 全成分の変更</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-fill!</b> <span class="mysyn">vec</span> <span class="mysyn">obj</span>)
+(<b>vector-fill!</b> <span class="mysyn">vec</span> <span class="mysyn">obj</span> <span class="mysyn">start</span>)
+(<b>vector-fill!</b> <span class="mysyn">vec</span> <span class="mysyn">obj</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>オブジェクト</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>変更を開始する位置．省略時は0に設定される．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>変更を終了する位置．省略時はベクタ（<span class="mysyn">vec</span>）の長さに設定される．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これは，ベクタ（<span class="mysyn">vec</span>）の <span class="mysyn">start</span> 番目から <span class="mysyn">end</span>$\,-1$ 番目までの成分を <span class="mysyn">obj</span> に変更します．これら以外の成分は変更しません．<span class="mysyn">start</span> を省略したときには 0 に設定されます．<span class="mysyn">end</span> を省略したときにはベクタ（<span class="mysyn">vec</span>）の長さ（成分数）に設定されます．
+次の点に注意して下さい．
+<ul>
+<li>
+ベクタの長さを $\ell$ とするとき，
+開始位置（<span class="mysyn">start</span>）と
+終了位置（<span class="mysyn">end</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">start</span> $\leq$ <span class="mysyn">end</span> $\leq \ell$
+</div>
+を満たさなければいけません．
+<li>
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> の場合，
+何も変更しません（エラーは発生しません）．
+<span class="mysyn">start</span>が成分数の場合でもエラーは発生しません．
+<li>
+<span class="mysyn">vec</span> は変更可能（mutable）なベクタでなければいけません．
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec (make-vector 4 'x))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(x x x x)
+guile&gt; <span class="mycmd">(vector-fill! vec 'A)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(A A A A)
+guile&gt; <span class="mycmd">(vector-fill! vec (+ 10 20) 1 3)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>3 = #(A 30 30 A)
+</pre>
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> の場合，何も変更しません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-fill! vec 'Guile 0 0)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>4 = #(A 30 30 A)
+guile&gt; <span class="mycmd">(vector-fill! vec 'Guile 1 1)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>5 = #(A 30 30 A)
+</pre>
+<span class="mysyn">start</span>（と<span class="mysyn">end</span>）が成分数の場合でもエラーは発生しません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-fill! vec 'Guile 4)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>6 = #(A 30 30 A)
+guile&gt; <span class="mycmd">(vector-fill! vec 'Guile 4 4)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>7 = #(A 30 30 A)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="vector-copy">vector-copy ― ベクタのコピー</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-copy</b> <span class="mysyn">vec</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>コピーを開始する位置．省略時は0に設定される．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>コピーを終了する位置．省略時はベクタ（<span class="mysyn">vec</span>）の長さに設定される．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+<b>注意</b>
+<ul>
+<li>
+Debian 11のパッケージが提供する Guile 3.0.5 では，<span class="mysyn">start</span> と <span class="mysyn">end</span> は指定できません．<span class="mysyn">start</span> と <span class="mysyn">end</span> が指定可能な手続きは Guile 3.0.8 になってコアシステムに組み込まれたようです．Guile 3.0.7 以前では，それは (srfi srfi-43) モジュールの中で定義されています．従って，それを使うには同モジュールをロードする必要があります．
+</ul>
+</div>
+
+<p></p>
+ベクタ（<span class="mysyn">vec</span>）の <span class="mysyn">start</span> 番目から <span class="mysyn">end</span>$\,-1$ 番目までの成分からなるベクタを新たに作成して返します．<span class="mysyn">start</span> を省略したときには 0 に設定されます．<span class="mysyn">end</span> を省略したときにはベクタ（<span class="mysyn">vec</span>）の長さ（成分数）に設定されます．
+次の点に注意して下さい．
+<ul>
+<li>
+ベクタの長さを $\ell$ とするとき，
+開始位置（<span class="mysyn">start</span>）と
+終了位置（<span class="mysyn">end</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">start</span> $\leq \ell$
+&nbsp;かつ&nbsp; 
+<span class="mysyn">start</span> $\leq$ <span class="mysyn">end</span> 
+</div>
+を満たさなければいけません．
+<li>
+<span class="mysyn">end</span> は $\ell$ より大きくてもかまいません．
+その場合，<span class="mysyn">end</span> $-$ <span class="mysyn">start</span> の長さのベクタが生成され，
+その先頭部分はコピー元の成分がコピーされ，
+残りの成分は unspecified になります．
+正確に言うと，コピー元のベクタを oldvec とおき，
+新たに生成されるベクタを newvec とおくとき：
+<ul>
+<li> $i=0,1,$ ... $\ell - 1 -$ <span class="mysyn">start</span> に対して newvec[$i$] は oldvec[$i$+<span class="mysyn">start</span>] に設定され，
+<li>
+$i=\ell -\,$<span class="mysyn">start</span>, ..., <span class="mysyn">end</span>$\,-\,$<span class="mysyn">start</span>$\,-1$ に対して newvec[$i$] は unspecified になります．
+</ul>
+
+<li>
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> だったり <span class="mysyn">start</span> がベクタ（<span class="mysyn">vec</span>）の長さに等しい場合，空ベクタを生成します．エラーは発生しません．
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+以下では，変更不可能（immutable）なベクタ（vec1）を定義して，そのコピー（vec2）を作っています．さらに，vec1 と vec2 が異なるオブジェクトであることを（適当に）確認しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec1 #(10 20 30 40))</span>
+guile&gt; <span class="mycmd">vec1</span>
+<span>&#36;</span>1 = #(10 20 30 40)
+guile&gt; <span class="mycmd">(define vec2 (vector-copy vec1))</span>
+guile&gt; <span class="mycmd">vec2</span>
+<span>&#36;</span>2 = #(10 20 30 40)
+guile&gt; <span class="mycmd">(vector-set! vec2 0 99)</span>
+guile&gt; <span class="mycmd">vec2</span>
+<span>&#36;</span>3 = #(99 20 30 40)
+guile&gt; <span class="mycmd">vec1</span>
+<span>&#36;</span>4 = #(10 20 30 40)
+</pre>
+Guile 3.0.7 以前では，(srfi srfi-43) モジュールをロードすれば <span class="mysyn">start</span> や <span class="mysyn">end</span> も指定できる手続きが使えます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(0 10 20 30 40 50))</span>
+guile> <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 10 20 30 40 50)
+guile&gt; <span class="mycmd">(vector-copy vec 2 5)</span>
+<span>&#36;</span>2 = #(20 30 40)
+</pre>
+<span class="mysyn">end</span> がベクタ（<span class="mysyn">vec</span>）の長さより大きい場合，
+エラーは発生せずに <span class="mysyn">start</span>$\,-\,$<span class="mysyn">end</span> の長さのベクタが生成され，コピー元から必要なコピーを行った残りの成分は unspecified になります．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-copy vec 3 10)</span>
+<span>&#36;</span>3 = #(30 40 50 #&lt;unspecified&gt; #&lt;unspecified&gt; #&lt;unspecified&gt; #&lt;unspecified&gt;)
+</pre>
+
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> だったり，
+<span class="mysyn">start</span> がベクタの長さだった場合，空ベクタが作成されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-copy vec 2 2)</span>
+<span>&#36;</span>4 = #()
+guile&gt; <span class="mycmd">(vector-copy vec 6 6)</span>
+<span>&#36;</span>5 = #()
+guile&gt; <span class="mycmd">(vector-copy vec 6)</span>
+<span>&#36;</span>6 = #()
+</pre>
+
+<p class="short"></p>
+<span class="myhead">参考</span>
+Guile 3.0.7 以前では，この手続きは (srfi srfi-43) モジュールの中で次のように定義されています．以下の guile-vector-copy はコアモジュールのコピー手続きです．それから，vector-move-left! はコアモジュールが提供する別種のコピー手続きです．これについては後述する説明を参照して下さい．
+<pre class="list">
+(define vector-copy
+  (case-lambda*
+   ((v) (guile-vector-copy v))
+   ((v start)
+    (assert-vector v &apos;vector-copy)
+    (let ((len (vector-length v)))
+      (assert-valid-start start len &apos;vector-copy)
+      (let ((result (make-vector (- len start))))
+        (vector-move-left! v start len result 0)
+        result)))
+   ((v start end #:optional (fill *unspecified*))
+    (assert-vector v &apos;vector-copy)
+    (let ((len (vector-length v)))
+      (unless (and (exact-integer? start)
+                   (exact-integer? end)
+                   (&lt;= 0 start end))
+        (error-from &apos;vector-copy "invalid index range" start end))
+      (let ((result (make-vector (- end start) fill)))
+        (vector-move-left! v start (min end len) result 0)
+        result)))))
+</pre>
+この定義を見ると，<span class="mysyn">end</span> がベクタ（<span class="mysyn">vec</span>）の長さより大きい場合の unspcified をオプション引数として任意の値に設定できるようです．実際，次のようになります．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-copy vec 3 10 'X)</span>
+<span>&#36;</span>7 = #(30 40 50 X X X X)
+</pre>
+
+<p></p>
+<span class="myhead">補足</span>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/Vector-Accessors.html
+">Guile[6.6.10.3 Accessing and Modifying Vector Contents]</a>
+によれば，Guile 3.0.8 のコアモジュールが提供する vector-copy は上述のオプション引数を指定できません．従って，Guile 3.0.8 でも，オプション引数を指定したい場合には (srfi srfi-43) モジュールをロードする必要があります．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="vector-copy-x">vector-copy! ― ベクタの転写</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-copy!</b> <span class="mysyn">dst</span> <span class="mysyn">at</span> <span class="mysyn">src</span>)
+(<b>vector-copy!</b> <span class="mysyn">dst</span> <span class="mysyn">at</span> <span class="mysyn">src</span> <span class="mysyn">start</span>)
+(<b>vector-copy!</b> <span class="mysyn">dst</span> <span class="mysyn">at</span> <span class="mysyn">src</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">dst</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">at</span></td> 
+<td>ベクタ（<span class="mysyn">dst</span>）の添字．コピーを保存する先頭の位置．</td>
+</tr>
+<tr>
+<td><span class="mysyn">src</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>ベクタ（<span class="mysyn">src</span>）の添字．コピ―を開始する位置．省略時は0に設定される．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>ベクタ（<span class="mysyn">src</span>）の添字．コピーを終了する位置．省略時はベクタ（<span class="mysyn">src</span>）の長さに設定される．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+<b>注意</b>
+<ul>
+<li>
+この手続きは Guile 3.0.8 になってコアシステムに組み込まれたようです．
+Guile 3.0.7 以前では，この手続きは (srfi srfi-43) モジュールの中で定義されています．従って，これを使うには同モジュールをロードする必要があります．
+</ul>
+</div>
+
+<p></p>
+これは，コピー元のベクタ（<span class="mysyn">src</span>）の <span class="mysyn">start</span> 番目から <span class="mysyn">end</span>$\,-1$ 番目までの成分を，コピー先のベクタ（<span class="mysyn">dst</span>）の <span class="mysyn">at</span> 番目以降の成分に保存（転写）します．次の点に注意して下さい．
+<ul>
+<li>
+ベクタ（<span class="mysyn">src</span>）の長さを $\ell_1$ とするとき，
+開始位置（<span class="mysyn">start</span>）と
+終了位置（<span class="mysyn">end</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">start</span> $\leq$ <span class="mysyn">end</span> $\leq \ell_1$
+</div>
+を満たさなければいけません．
+さらに，<span class="mysyn">at</span> は 0 以上でなければいけません．
+<li>
+ベクタ（<span class="mysyn">dst</span>）の長さを $\ell_2$ とするとき，
+<div class="dstyle">
+<span class="mysyn">at</span> $+$  <span class="mysyn">end</span> $-$ <span class="mysyn">start</span> $\leq$ $\ell_2$
+</div>
+を満たさなければいけません．
+つまり，<span class="mysyn">at</span> 以降に転写できるだけの十分な成分がなければいけません．
+<li>
+<span class="mysyn">dst</span> は変更可能（mutable）なベクタでなければいけません．
+<li>
+マニュアルによれば，各成分をコピーする順序は不定（unspecified）だそうです．
+<li>
+<span class="mysyn">dst</span> と <span class="mysyn">src</span> は同じベクタでもかまいません．
+この場合には，コピーする部分をいったん他の一時的なベクタにコピーして，
+それをコピー先に保存するかのように処理するのだそうです．これは，
+コピーして保存した成分を再びコピーすることはないことを述べたいのだと思います．
+この点については，次項の vector-move-{left!,right!}を参照して下さい． 
+</ul>
+
+<p class="short"></p>
+<span class="myhead">補足</span>
+この手続きはライブラリ関数の memmove を使って実装しています．カーネルソースの中にある memmove 関数のソースコードを見ると，上で述べたような余計な作業領域を使用しません．上記の説明はあくまで便宜的なものです．
+
+
+<p></p>
+<span class="myhead">具体例</span>
+Guile 3.0.7 以前では，(srfi srfi-43) モジュールをロードすれば vector-copy! 手続きが使えます．
+以下では，1つのベクタ（vec）の中で，2番目から5番目の成分（下記の20,30,40,50）を左側（1番目以降の成分）にコピー（転写）する場合を実行してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec (vector 0 10 20 30 40 50 60 70))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 10 20 30 40 50 60 70)
+guile&gt; <span class="mycmd">(vector-copy! vec 1 vec 2 6)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(0 20 30 40 50 50 60 70)
+</pre>
+今度は1番目から4番目の成分（下記の10,20,30,40）を右側（2番目以降の成分）にコピー（転写）する場合を実行してみます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec (vector 0 10 20 30 40 50 60 70))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>3 = #(0 10 20 30 40 50 60 70)
+guile&gt; <span class="mycmd">(vector-copy! vec 2 vec 1 5)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>4 = #(0 10 10 20 30 40 60 70)
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="11">vector-move-{left!,right!} ― ベクタの転写</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-move-left!</b> <span class="mysyn">vec1</span> <span class="mysyn">start1</span> <span class="mysyn">end1</span> <span class="mysyn">vec2</span> <span class="mysyn">start2</span>)
+(<b>vector-move-right!</b> <span class="mysyn">vec1</span> <span class="mysyn">start1</span> <span class="mysyn">end1</span> <span class="mysyn">vec2</span> <span class="mysyn">start2</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec1</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start1</span></td> 
+<td>ベクタ（<span class="mysyn">vec1</span>）の添字．コピ―を開始する位置．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end1</span></td> 
+<td>ベクタ（<span class="mysyn">vec1</span>）の添字．コピーを終了する位置．</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec2</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start2</span></td> 
+<td>ベクタ（<span class="mysyn">vec2</span>）の添字．コピーを保存する先頭の位置．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これらは，
+コピー元のベクタ（<span class="mysyn">vec1</span>）の <span class="mysyn">start1</span> 番目から <span class="mysyn">end1</span>$\,-1$ 番目までの成分を，コピー先のベクタ（<span class="mysyn">vec2</span>）の <span class="mysyn">start2</span> 番目以降の成分に保存（転写）します．
+
+<p></p>
+vector-move-left! は，<span class="mysyn">vec1</span> の添字の小さいほうから順に（直観的に言うと，左側の成分から順に）コピーします．vector-move-right! は，<span class="mysyn">vec1</span> の添字の大きいほうから順に（直感的に言うと，右側の成分から順に）コピーします．これらの違いが影響するのは，<span class="mysyn">vec1</span> と <span class="mysyn">vec2</span> が同じ場合です．2つのベクタが異なる場合には，どちらを使っても結果は同じです．
+
+<p></p>
+次の点に注意して下さい．
+<ul>
+<li>
+ベクタ（<span class="mysyn">vec1</span>）の長さを $\ell_1$ とするとき，
+開始位置（<span class="mysyn">start</span>）と
+終了位置（<span class="mysyn">end</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">start1</span> $\leq$ <span class="mysyn">end1</span> $\leq \ell_1$
+</div>
+を満たさなければいけません．
+さらに，<span class="mysyn">start2</span> は 0 以上でなければいけません．
+<li>
+ベクタ（<span class="mysyn">vec2</span>）の長さを $\ell_2$ とするとき，
+<div class="dstyle">
+<span class="mysyn">start2</span> $+$  <span class="mysyn">end1</span> $-$ <span class="mysyn">start1</span> $\leq$ $\ell_2$
+</div>
+を満たさなければいけません．
+つまり，<span class="mysyn">start2</span> 以降に転写できるだけの十分な成分がなければいけません．
+<li>
+<span class="mysyn">vec2</span> は変更可能（mutable）なベクタでなければいけません．
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+コピー元とコピー先が同じベクタの場合にコピーがどのように行われるかを試してみます．
+以下では，ベクタ vec を適当に作って，vector-move-left! を使って，vec[2]〜vec[5] を vec[0]〜vec[3] にコピーしてみます．これは
+<div class="dstyle">
+   vec[2] $\rightarrow$ vec[0]，
+   vec[3] $\rightarrow$ vec[1]， 
+   vec[4] $\rightarrow$ vec[2]， 
+   vec[5] $\rightarrow$ vec[3] 
+</div>
+の順にコピーを行います．以下の実行例を見ると，vec[2]〜vec[5] の値である 20〜50 がそのまま vec[0]〜vec[3] にコピーされています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec (vector 0 10 20 30 40 50 60 70))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 10 20 30 40 50 60 70)
+guile&gt; <span class="mycmd">(vector-move-left! vec 2 6 vec 0)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(20 30 40 50 40 50 60 70)
+guile> 
+</pre>
+
+<p class="sshort"></p>
+次に，ベクタ vec を作り直したあと，vector-move-left! を使って vec[2]〜vec[5] を vec[4]〜vec[7] にコピーしてみます．これは
+<div class="dstyle">
+   vec[2] $\rightarrow$ vec[4]，
+   vec[3] $\rightarrow$ vec[5]， 
+   vec[4] $\rightarrow$ vec[6]， 
+   vec[5] $\rightarrow$ vec[7] 
+</div>
+の順にコピーを行います．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec (vector 0 10 20 30 40 50 60 70))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 10 20 30 40 50 60 70)
+guile&gt; <span class="mycmd">(vector-move-left! vec 2 6 vec 4)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(0 10 20 30 20 30 20 30)
+</pre>
+この結果を見ると，vec[4] $\rightarrow$ vec[6]，vec[5] $\rightarrow$ vec[7] のコピーを行うときの vec[4] と vec[5] はコピー後の値が使われていることが分かります．
+
+
+<p></p>
+<span class="myhead">補足</span>
+1つのベクタに対して vector-move-left! を使ってコピーする場合で，
+コピー元とコピー先の成分が重なっていて，コピー先がコピー元より右側にある場合，
+重なっている成分に関してコピー後の値が再びコピーされます．一方，
+コピー先がコピー元より左側にある場合にはコピー後の値が再びコピーされることはありません．
+
+<p class="short"></p>
+このことは vector-move-right! についても同じが言えます．つまり，
+1つのベクタに対して vector-move-right! を使ってコピーする場合で，
+コピー元とコピー先の成分が重なっていて，コピー先がコピー元より左側にある場合，
+重なっている成分に関してコピー後の値が再びコピーされます．一方，
+コピー先がコピー元より右側にある場合にはコピー後の値が再びコピーされることはありません．
+
+<p class="short"></p>
+以上から，1つのベクタの中でコピー（転写）を行う場合，
+左側にコピーするときには vector-move-left! を使い，
+右側にコピーするときには vector-move-right! を使うのが一般的と言えます．
+「left」と「right」はコピーする方向を示していると言ってもよいでしょう．
+
+<p class="short"></p>
+でも，vector-copy! を使えば「正しく」コピーできるので，
+これらの手続きを使うことはないように感じます．
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
