@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／ベクタ（SRFI-43）</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<!-- 
+<a class="noline" href="regex-proc.html">[Prev]</a> 
+&ensp; 
+-->
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<!-- 
+<span class="nolink">[Next]</span>
+&ensp; 
+-->
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／ベクタ（SRFI-43）
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.4.20</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+このノートは，ベクタについて勉強したことを記録しています．
+ベクタに関する手続きはコアモジュールと (srfi srfi-43) モジュールによって提供されています．このノートは (srfi srfi-43) モジュールが提供する機能について説明します．
+<li>
+コアモジュールと重複している以下の手続きは省略しています．
+<div class="dstyle">
+make-vector，vector， vector?，vector-ref，vector-set!，<br>
+vector-length，vector-fill!，vector-copy!
+</div>
+<li>
+次の手続きはコアモジュールのものを機能的に拡張しています．
+<div class="dstyle">
+vector-copy，list->vector，vector->list
+</div>
+</ul>
+
+<ul>
+<li>
+筆者は Debian 11(bullseye) を使っていて，Guile は Debian 11 が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，2022.3.1時点の最新版は 3.0.8 です．
+</ul>
+</div>
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">ベクタの作成</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">vector-unfold ― ベクタの展開生成（left-to-right）</a>
+   <li class="menu"><a class="noline" href="#2">vector-unfold-right ― ベクタの展開生成（right-to-left）</a>
+   <li class="menu"><a class="noline" href="#3">vector-copy ― ベクタのコピー</a>
+   <li class="menu"><a class="noline" href="#4">vector-reverse-copy ― ベクタの逆順コピー</a>
+   <li class="menu"><a class="noline" href="#5">vector-append ― ベクタの連結</a>
+   <li class="menu"><a class="noline" href="#6">vector-concatenate ― ベクタの連結</a>
+   </ul>
+<li class="menu"><a class="noline" href="#7">ベクタの検査</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#8">vector-empty? ― 空ベクタの検査</a>
+   <li class="menu"><a class="noline" href="#9">vector= ― ベクタの同等性判定</a>
+   </ul>
+<li class="menu"><a class="noline" href="#10">ベクタに対する繰り返し</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#11">vector-fold ― ベクタの畳み込み（left fold）</a>
+   <li class="menu"><a class="noline" href="#12">vector-fold-right ― ベクタの畳み込み（right fold）</a>
+   <li class="menu"><a class="noline" href="#13">vector-map ― ベクタの変換</a>
+   <li class="menu"><a class="noline" href="#14">vector-map! ― ベクタの改変</a>
+   <li class="menu"><a class="noline" href="#15">vector-for-each ― ベクタに関する繰り返し</a>
+   <li class="menu"><a class="noline" href="#16">vector-count ― 成分のカウント</a>
+   </ul>
+<li class="menu"><a class="noline" href="#17">ベクタの探索</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#18">vector-index{-right}，vector-skip{-right} ― 添字を探索</a>
+   <li class="menu"><a class="noline" href="#19">vector-any，vector-every ― ベクタ版の or 形式と and 形式</a>
+   <li class="menu"><a class="noline" href="#20">vector-binary-search ― ベクタの二分探索</a>
+   </ul>
+<li class="menu"><a class="noline" href="#21">ベクタの改変</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#22">vector-swap! ― 成分の交換</a>
+   <li class="menu"><a class="noline" href="#23">vector-reverse! ― ベクタの反転</a>
+   <li class="menu"><a class="noline" href="#24">vector-reverse-copy! ― ベクタの反転</a>
+   </ul>
+<li class="menu"><a class="noline" href="#25">ベクターリスト変換</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#26">vector->list，reverse-vector->list ― ベクタからとリストへの変換</a>
+   <li class="menu"><a class="noline" href="#27">list->vector，reverse-list->vector ― リストからベクタへの変換</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Vectors.html
+   ">[6.6.10 Vectors]
+   </a><br> 
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/SRFI_002d43.html
+   ">[7.5.30 SRFI-43 - Vector Library]
+   </a> 
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+<div style="line-height:1.2em">
+<small>
+（注）Guileのマニュアルは常に最新版を参照しています．少し困ったことに，バージョン番号の3桁目が変化しただけでも，マニュアルの編成が大きく変化することがあります．実際，3.0.5 と 3.0.8 はかなり違っています．Guile のバージョンが上がることによって，上記のマニュアルの参照（特に，節番号）は古くなるかも知れません．ただ，リンク先の名前に節番号は入っていないので，リンクが途切れることはないだろうと期待します．それから，現在使用中のシステム（例えば，Debian 11 の 3.0.5）については，info形式のオンラインマニュアルが参照できます．
+</small>
+</div>
+
+<li> Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://small.r7rs.org/
+   ">small.r7rs.org</a>:
+   Revised<sup>7</sup> Report on the Algorithmic Language Scheme（R<sup>7</sup>RS）<br>
+   <a class="noline" href="
+   https://small.r7rs.org/attachment/r7rs.pdf
+   ">英語版</a>
+   <a class="noline" href="
+   http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
+   ">日本語版 </a>
+   <li class="menu">
+   <a class="noline" href="
+   http://www.r6rs.org/
+   ">www.r6rs.org:
+   </a>Revised<sup>6</sup> Report on the Algorithmic Language Scheme
+（R<sup>6</sup>RS）<br>
+   <a class="noline" href="http://www.r6rs.org/final/r6rs.pdf">英語版</a>
+   <a class="noline" href="
+   http://practical-scheme.net/wiliki/wiliki.cgi?R6RS%3a%E7%BF%BB%E8%A8%B3
+   ">日本語版 </a>
+   <li class="menu">
+   R. Kent Dybvig: 
+   <a class="noline" href="https://www.scheme.com/tspl4/
+   ">The Scheme Programming Language, Fourth Edition, 2009.</a>（TSPL）
+   </ul>
+</ul>
+<ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">ベクタの作成</h3>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">vector-unfold ― ベクタの展開生成（left-to-right）</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-unfold</b> <span class="mysyn">proc</span> <span class="mysyn">len</span> <span class="mysyn">seed</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">proc</span></td> 
+<td>手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">len</span></td> 
+<td>ベクタの長さ（成分数）を表す整数値</td>
+</tr>
+<tr>
+<td><span class="mysyn">seed</span></td> 
+<td>成分を生成するための種</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，手続き <span class="mysyn">proc</span> と <span class="mysyn">seed</span> ... を使って長さが <span class="mysyn">len</span> のベクタを作成して返します．
+この手続きの呼び出しは次のいずれかの形式をしています．
+<div class="dstyle">
+   (a)&emsp;(vector-unfold $f$ $\ell$)
+</div>
+<div class="dstyle">
+   (b)&emsp;(vector-unfold $f$ $\ell$ $s_1$ ... $s_n$)
+</div>
+ここで，$f$ は <span class="mysyn">proc</span> を， $\ell$ は <span class="mysyn">len</span> を，$s_1$,...,$s_n$ は <span class="mysyn">seed</span> ... をそれぞれ表しています．
+
+<p class="short"></p>
+(a) の場合，$f$ はベクタの添字 $i$ を引数とする1引数の手続きでなければいけません．(a) の呼び出しは $f(0)$，$f(1)$，..., $f(\ell-1)$ を成分とするベクタを返します．
+
+<p class="short"></p>
+(b) の場合，$f$ は $n+1$ 個の値を引数として受け取り，$n+1$ 個の値を返す手続きでなければいけません．
+その第1引数にはベクタの添字が渡され，残りの引数にはベクタの成分を生成するための種となる値が渡されます．$n+1$ 個の返り値のうち，その第1の値はベクタの成分として使われ，残りの $n$ 個の値は次の成分を生成するための種として使われます．
+
+<p class="short"></p>
+(b) の呼び出しは，次のように定義される $v_0$,...,$v_{\ell-1}$ を成分とするベクタを返します．
+
+<div class="dstyle">
+\(
+   \begin{array}{lcl}
+   (v_0,s_{1}^{(1)},...,s_{n}^{(1)}) & = & f(0,s_1,...,s_n) \\
+   (v_1,s_{1}^{(2)},...,s_{n}^{(2)}) & = & f(1,s_{1}^{(1)},...,s_{n}^{(1)}) \\
+   (v_2,s_{1}^{(3)},...,s_{n}^{(3)}) & = & f(2,s_{1}^{(2)},...,s_{n}^{(2)}) \\
+   &...& \\
+   (v_i,s_{1}^{(i+1)},...,s_{n}^{(i+1)}) & = & f(i,s_{1}^{(i)},...,s_{n}^{(i)}) \\
+   &...& \\
+   (v_{\ell-1},s_{1}^{(\ell)},...,s_{n}^{(\ell)}) & = & f(\ell-1,s_{1}^{(\ell-1)},...,s_{n}^{(\ell-1)}) \\
+   \end{array}
+\)
+
+</div>
+
+<p></p>
+<span class="myhead">具体例</span>
+以下では，添字 $i$ の2乗 $i^2$ を成分とする長さ5のベクタを生成しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(vector-unfold (lambda (i) (* i i)) 5)</span>
+<span>&#36;</span>1 = #(0 1 4 9 16)
+</pre>
+
+<p></p>
+<span class="myhead">具体例</span>
+以下の実行例では，
+フィボナッチ数を成分とするベクタを生成しています．<a class="noline" href="https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A3%E3%83%9C%E3%83%8A%E3%83%83%E3%83%81%E6%95%B0">Wikpedia[フィボナッチ数]</a>によれば，フィボナッチ数 $F_i$ は次の漸化式で定義されます．
+<div class="dstyle">
+   $F_0 = 0$, &nbsp; $F_1 = 1$, &nbsp; $F_{n+2} = F_{n+1} + F_n$ $(n \geq 0)$
+</div>
+以下の fib は
+<div class="dstyle">
+$fib(i,F_i,F_{i+1}) = (F_i,F_{i+1},F_{i+2})$ $(i \geq 0)$
+</div>
+という条件を満たす多値関数 $fib$ を計算しています．
+下記の vector-unfold 手続きに渡されている第3引数の 0 は $F_0$ のことであり，
+第4引数の 1 は $F_1$ のことです．
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(define (fib i a b) (values a b (+ a b)))</span>
+guile&gt; <span class="mycmd">(vector-unfold fib 10 0 1)</span>
+<span>&#36;</span>2 = #(0 1 1 2 3 5 8 13 21 34)
+</pre>
+
+<p></p>
+<span class="myhead">具体例</span>
+以下の suffix-vector 手続きは，文字列 str の接尾辞（第$i$文字目から末尾までの部分列）からなるベクタを返します．
+<pre class="list">
+;; srfi-43.scm
+(use-modules (srfi srfi-43))
+(define (suffix-vector str)
+  (vector-unfold (lambda (i s) (values s (substring s 1)))
+                 (string-length str)
+                 str))
+</pre>
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile -l srfi-43.scm</span>
+      ...... コンパイルメッセージや起動メッセージ ...... 
+guile&gt; <span class="mycmd">(suffix-vector "abcdef")</span>
+<span>&#36;</span>1 = #("abcdef" "bcdef" "cdef" "def" "ef" "f")
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">vector-unfold-right ― ベクタの展開生成（right-to-left）</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-unfold-right</b> <span class="mysyn">proc</span> <span class="mysyn">len</span> <span class="mysyn">seed</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">proc</span></td> 
+<td>手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">len</span></td> 
+<td>ベクタの長さ（成分数）を表す整数値</td>
+</tr>
+<tr>
+<td><span class="mysyn">seed</span></td> 
+<td>成分を生成するための種</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+
+<p></p>
+この手続きは vector-unfold と同じように動作しますが，最後の成分から先頭の成分に向かってベクタを構成します．この手続きの呼び出しは次のいずれかの形式をしています．
+<div class="dstyle">
+   (a)&emsp;(vector-unfold-right $f$ $\ell$)
+</div>
+<div class="dstyle">
+   (b)&emsp;(vector-unfold-right $f$ $\ell$ $s_1$ ... $s_n$)
+</div>
+ここで，$f$ は <span class="mysyn">proc</span> を， $\ell$ は <span class="mysyn">len</span> を，$s_1$,...,$s_n$ は <span class="mysyn">seed</span> ... をそれぞれ表しています．
+
+<p class="short"></p>
+(a) の場合，$f$ はベクタの添字 $i$ を引数とする1引数の手続きでなければいけません．(a) の呼び出しは $f(\ell-1)$，$f(\ell-2)$，..., $f(0)$ の順にベクタの成分を構成します．ただし，ベクタの成分は添字$i$の通りになります．つまり，
+<div class="dstyle">
+   (vector $f(0)$ $f(1)$ ... $f(\ell-1)$) 
+</div>
+というベクタを返します．$f$の計算が副作用を伴わないときには vector-unfold と同じ結果になります．
+
+<p class="short"></p>
+(b) の場合，$f$ は $n+1$ 個の値を引数として受け取り，$n+1$ 個の値を返す手続きでなければいけません．
+その第1引数にはベクタの添字が渡され，残りの引数にはベクタの成分を生成するための種となる値が渡されます．$n+1$ 個の返り値のうち，その第1の値はベクタの成分として使われ，残りの $n$ 個の値は次の成分を生成するための種として使われます．
+
+<p class="short"></p>
+(b) の呼び出しは，次のように定義される $v_{\ell-1}$,...,$v_0$ をこの順に計算して，
+<div class="dstyle">
+   (vector $v_0$ $v_1$ ... $v_{\ell-1}$)
+</div>
+というベクタを返します．
+
+<div class="dstyle">
+\(
+   \begin{array}{lcl}
+   (v_{\ell-1},s_{1}^{(1)},...,s_{n}^{(1)}) & = & f(\ell-1,s_1,...,s_n) \\
+   (v_{\ell-2},s_{1}^{(2)},...,s_{n}^{(2)}) & = & f(\ell-2,s_1^{(1)},...,s_n^{(1)}) \\
+   &...& \\
+   (v_{\ell-i},s_{1}^{(i)},...,s_{n}^{(i)}) & = & f(\ell-i,s_{1}^{(i-1)},...,s_{n}^{(i-1)}) \\
+   &...& \\
+   (v_0,s_{1}^{(\ell)},...,s_{n}^{(\ell)}) & = & f(0,s_{1}^{(\ell-1)},...,s_{n}^{(\ell-1)}) \\
+   \end{array}
+\)
+
+</div>
+
+<p></p>
+<span class="myhead">具体例</span>
+vector-unfold と vector-unfold-right の評価順序の違いを確認しておきましょう．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(vector-unfold (lambda (i) (display i) (newline) i) 5)</span>
+0
+1
+2
+3
+4
+<span>&#36;</span>1 = #(0 1 2 3 4)
+guile&gt; <span class="mycmd">(vector-unfold-right (lambda (i) (display i) (newline) i) 5)</span>
+4
+3
+2
+1
+0
+<span>&#36;</span>2 = #(0 1 2 3 4)
+</pre>
+(a)の場合，両者は各成分の評価順序が異なるだけで，<span class="mysyn">proc</span>が副作用を伴わない限り，返り値のベクタは同じになります．そこで，<span class="mysyn">proc</span>が副作用を伴うような具体例を示します．以下では，変数 x を定義する前に proc を定義しているのでwarningメッセージが出ていますが，そのあとの計算には影響ありません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define (proc i) (let ((temp x)) (set! x (1+ x)) temp))</span>
+;;; &lt;stdin&gt;:2:17: warning: possibly unbound variable `x'
+guile&gt; <span class="mycmd">(define x 10)</span>
+guile&gt; <span class="mycmd">(vector-unfold proc 5)</span>
+<span>&#36;</span>3 = #(10 11 12 13 14)
+guile&gt; <span class="mycmd">(define x 10)</span>
+guile&gt; <span class="mycmd">(vector-unfold-right proc 5)</span>
+<span>&#36;</span>4 = #(14 13 12 11 10)
+</pre>
+
+<p></p>
+<span class="myhead">具体例</span>
+vector-unfold について示した具体例を vector-unfold-right に変更すると成分が逆順に並んだベクタが生成されます．以下はフィボナッチ数を成分とするベクタを生成しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define (fib i a b) (values a b (+ a b)))</span>
+guile&gt; <span class="mycmd">(vector-unfold-right fib 10 0 1)</span>
+<span>&#36;</span>1 = #(34 21 13 8 5 3 2 1 1 0)
+</pre>
+以下のプログラムは，接尾辞からなるベクタを生成するプログラムを vector-unfold-right に変更しています．
+<pre class="list">
+;; srfi-43.scm
+(use-modules (srfi srfi-43))
+(define (suffix-vector str)
+  (vector-unfold-right (lambda (i s) (values s (substring s 1)))
+                 (string-length str)
+                 str))
+</pre>
+<pre class="shell">
+<span>&#36;</span> <span class="mycmd">guile -l srfi-43.scm</span>
+      ...... コンパイルメッセージや起動メッセージ ...... 
+guile&gt; <span class="mycmd">(suffix-vector "abcdef")</span>
+<span>&#36;</span>1 = #("f" "ef" "def" "cdef" "bcdef" "abcdef")
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">vector-copy ― ベクタのコピー</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-copy</b> <span class="mysyn">vec</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span> <span class="mysyn">obj</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>コピーを開始する位置．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>コピーを終了する位置．省略時はベクタ（<span class="mysyn">vec</span>）の長さに設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">obj</span></td> 
+<td>オブジェクト．省略時は unspecified になります．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+<b>注意</b>
+<ul>
+<li>
+コアモジュールが提供する vector-copy は <span class="mysyn">obj</span> が指定できません．この辺りの事情はもう少し込み入っています．<a class="noline" href="vector.html#vector-copy">ベクタ（コアモジュール）[vector-copy]</a>を参照して下さい．
+</ul>
+</div>
+
+<p></p>
+ベクタ（<span class="mysyn">vec</span>）の <span class="mysyn">start</span> 番目から <span class="mysyn">end</span>$\,-1$ 番目までの成分からなるベクタを新たに作成して返します．<span class="mysyn">start</span> を省略したときには 0 に設定され，<span class="mysyn">end</span> を省略したときにはベクタ（<span class="mysyn">vec</span>）の長さ（成分数）に設定されます．
+次の点に注意して下さい．
+<ul>
+<li>
+ベクタの長さを $\ell$ とするとき，
+開始位置（<span class="mysyn">start</span>）と
+終了位置（<span class="mysyn">end</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">start</span> $\leq \ell$
+&nbsp;かつ&nbsp; 
+<span class="mysyn">start</span> $\leq$ <span class="mysyn">end</span> 
+</div>
+を満たさなければいけません．
+<li>
+<span class="mysyn">end</span> は $\ell$ より大きくてもかまいません．
+その場合，<span class="mysyn">end</span> $-$ <span class="mysyn">start</span> の長さのベクタが生成され，
+その先頭部分はコピー元の成分がコピーされ，
+残りの成分は，<span class="mysyn">obj</span> を指定した場合には <span class="mysyn">obj</span> に設定され，省略した場合には unscpecified になります． 
+正確に言うと，コピー元のベクタを oldvec とおき，
+新たに生成されるベクタを newvec とおくとき：
+<ul>
+<li> $i=0,1,$ ... $\ell - 1 -$ <span class="mysyn">start</span> に対して newvec[$i$] は oldvec[$i$+<span class="mysyn">start</span>] に設定され，
+<li>
+$i=\ell -\,$<span class="mysyn">start</span>, ..., <span class="mysyn">end</span>$\,-\,$<span class="mysyn">start</span>$\,-1$ に対して newvec[$i$] は，<span class="mysyn">obj</span> を指定した場合には <span class="mysyn">obj</span> に設定され，省略した場合には unscpecified になります．
+</ul>
+
+<li>
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> だったり <span class="mysyn">start</span> がベクタ（<span class="mysyn">vec</span>）の長さに等しい場合，空ベクタを生成します．エラーは発生しません．
+
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(0 10 20 30 40 50))</span>
+guile> <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 10 20 30 40 50)
+guile&gt; <span class="mycmd">(vector-copy vec 2 5)</span>
+<span>&#36;</span>2 = #(20 30 40)
+</pre>
+<span class="mysyn">end</span> がベクタ（<span class="mysyn">vec</span>）の長さより大きい場合，
+エラーは発生せずに <span class="mysyn">start</span>$\,-\,$<span class="mysyn">end</span> の長さのベクタが生成され，コピー元から必要なコピーを行った残りの成分は，<span class="mysyn">obj</span> を指定した場合には <span class="mysyn">obj</span> が設定され，省略した場合には unspecified になります．
+<pre class="shell">
+guile&gt; (vector-copy vec 3 10 'X)
+<span>&#36;</span>3 = #(30 40 50 X X X X)
+guile&gt; <span class="mycmd">(vector-copy vec 3 10)</span>
+<span>&#36;</span>4 = #(30 40 50 #&lt;unspecified&gt; #&lt;unspecified&gt; #&lt;unspecified&gt; #&lt;unspecified&gt;)
+</pre>
+
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> だったり，
+<span class="mysyn">start</span> がベクタの長さだった場合，空ベクタが作成されます．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-copy vec 2 2)</span>
+<span>&#36;</span>5 = #()
+guile&gt; <span class="mycmd">(vector-copy vec 6 6)</span>
+<span>&#36;</span>6 = #()
+guile&gt; <span class="mycmd">(vector-copy vec 6)</span>
+<span>&#36;</span>7 = #()
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="4">vector-reverse-copy ― ベクタの逆順コピー</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-reverse-copy</b> <span class="mysyn">vec</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span>)
+(<b>vector-copy</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>コピーを開始する位置．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>コピーを終了する位置．省略時はベクタ（<span class="mysyn">vec</span>）の長さに設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，
+ベクタ（<span class="mysyn">vec</span>）の <span class="mysyn">start</span> 番目から <span class="mysyn">end</span>$\,-1$ 番目までの成分を逆順に並べたベクタを新たに作成して返します．<span class="mysyn">start</span> を省略したときには 0 に設定されます．<span class="mysyn">end</span> を省略したときにはベクタ（<span class="mysyn">vec</span>）の長さ（成分数）に設定されます．
+次の点に注意して下さい．
+<ul>
+<li>
+ベクタの長さを $\ell$ とするとき，
+開始位置（<span class="mysyn">start</span>）と
+終了位置（<span class="mysyn">end</span>）は
+<div class="dstyle">
+$0 \leq$ <span class="mysyn">start</span> $\leq$ <span class="mysyn">end</span>$\leq \ell$
+</div>
+を満たさなければいけません．
+<li>
+<span class="mysyn">start</span> $=$ <span class="mysyn">end</span> だったり <span class="mysyn">start</span> がベクタ（<span class="mysyn">vec</span>）の長さに等しい場合，空ベクタを生成します．エラーは発生しません．
+</ul>
+
+<p class="short"></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(0 10 20 30 40 50 60))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 10 20 30 40 50 60)
+guile&gt; <span class="mycmd">(vector-reverse-copy vec)</span>
+<span>&#36;</span>2 = #(60 50 40 30 20 10 0)
+guile&gt; <span class="mycmd">(vector-reverse-copy vec 2)</span>
+<span>&#36;</span>3 = #(60 50 40 30 20)
+guile&gt; <span class="mycmd">(vector-reverse-copy vec 2 5)</span>
+<span>&#36;</span>4 = #(40 30 20)
+guile&gt; <span class="mycmd">(vector-reverse-copy vec 2 2)</span>
+<span>&#36;</span>5 = #()
+guile&gt; <span class="mycmd">(vector-reverse-copy vec 7)</span>
+<span>&#36;</span>6 = #()
+guile&gt; <span class="mycmd">(vector-reverse-copy vec 7 7)</span>
+<span>&#36;</span>7 = #()
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="5">vector-append ― ベクタの連結</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-append</b> <span class="mysyn">vec</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，0個以上のベクタ <span class="mysyn">vec</span> ... を連結したベクタを新たに作成して返します． <span class="mysyn">vec</span> を1つも指定しなかったときには空ベクタを返します．
+
+<p></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(vector-append #(10 20 30) #(40 50 60) #(70 80))</span>
+<span>&#36;</span>1 = #(10 20 30 40 50 60 70 80)
+guile&gt; <span class="mycmd">(vector-append)</span>
+<span>&#36;</span>2 = #()
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="6">vector-concatenate ― ベクタの連結</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-concatenate</b> <span class="mysyn">list-of-vecs</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">list-of-vecs</span></td> 
+<td>ベクタのリスト</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，<span class="mysyn">list-of-vecs</span> に属するベクタを連結したベクタを新たに作成して返します． <span class="mysyn">list-of-vecs</span> が空リストのときには空ベクタを返します．これは，
+<div class="dstyle">
+   (apply vector-append <span class="mysyn">list-of-vecs</span>)
+</div>
+と等価です．
+
+
+<p></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(vector-concatenate '( #(10 20 30) #(40 50 60) #(70 80) ))</span>
+<span>&#36;</span>1 = #(10 20 30 40 50 60 70 80)
+guile&gt; <span class="mycmd">(vector-concatenate '())</span>
+<span>&#36;</span>2 = #()
+</pre>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="7">ベクタの検査</h3>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="8">vector-empty? ― 空ベクタの検査</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-empty?</b> <span class="mysyn">vec</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ブール値</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，<span class="mysyn">vec</span> が空ベクタのときには #t を返し，空でないときには #f を返します．<span class="mysyn">vec</span> はベクタでなければいけません．
+
+<p></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(vector-empty? #(10 20 30))</span>
+<span>&#36;</span>1 = #f
+guile&gt; <span class="mycmd">(vector-empty? #())</span>
+<span>&#36;</span>2 = #t
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="9">vector= ― ベクタの同等性判定</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector=</b> <span class="mysyn">pred?</span> <span class="mysyn">vec</span> ...)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">pred?</span></td> 
+<td>述語</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ブール値</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+<p></p>
+vector= の実引数として$n$個のベクタを指定したとき，<span class="mysyn">pred?</span> は$n$個の引数を受け取る述語でなければいけません．このとき．vector= は，ベクタ <span class="mysyn">vec</span> ... が同じ長さを持っていて，かつ，各成分が「等しい」とき #t を返し，そうでないとき #f を返します．ただし，各成分が「等しい」か否かは <span class="mysyn">pred?</span> を使って判定します．ベクタを1つも指定しなかったときや1つしか指定しなかったときには， pred? を無視して #t を返します．
+
+<p></p>
+<a class="noline" href="
+https://www.gnu.org/software/guile/manual/html_node/SRFI_002d43-Predicates.html
+">Guile[7.5.30.2 SRFI-43 Predicates]</a>は，<span class="mysyn">pred?</span> に関して
+<div class="dstyle">
+if (eq? a b) returns true, then (pred? a b) must also return true
+</div>
+という条件を満たさなければならないと述べています．
+しかし，これは意味論的な整合性を堅持すべしというモラルを述べているだけで，
+述語であれば何でも利用できます．
+
+<p></p>
+<span class="myhead">具体例</span>
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(vector= equal? #("a" "b" "c") #("a" "b" "c"))</span>
+<span>&#36;</span>1 = #t
+guile&gt; <span class="mycmd">(vector= equal? #("a" "b" "c") #("a" "X" "c"))</span>
+<span>&#36;</span>2 = #f
+</pre>
+<span class="mysyn">pred?</span> は述語であれば何でも利用できます．
+以下の pred? は，
+第1ベクタの成分がシンボルの Guile かどうかだけを検査していて，
+第2ベクタを無視しています．この pred? は上で述べている条件を満たしていません．
+例えば，(eq? 'Scheme 'Scheme) は真ですが，(pred? 'Scheme 'Scheme) は #f になります．でも，何の問題もなく機能します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define (pred? x y) (eq? x 'Guile))</span>
+guile&gt; <span class="mycmd">(vector= pred? #(Guile Guile Guile) #("a" "X" "c"))</span>
+<span>&#36;</span>3 = #t
+guile&gt; <span class="mycmd">(vector= pred? #(Guile Scheme Guile) #("a" "X" "c"))</span>
+<span>&#36;</span>4 = #f
+</pre>
+なお，ベクタを1つしか指定しなかったときには pred? を無視して，常に #t を返します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector= pred? #(Scheme Scheme Scheme))</span>
+<span>&#36;</span>5 = #t
+</pre>
+それから，#f をけっして返すことのない手続きも利用できますが，
+比較結果は常に真値になるので無意味です．
+
+<p></p>
+<span class="myhead">「述語」について</span>
+Schemeの仕様書は，「述語」をブール値を返す手続きのことと定義しています．
+その一方で，#f 以外のすべての値を真値として解釈すると定めています．
+そのため，上記の pred? は厳密な意味での「述語」でなくてもかまいません．
+そればかりか，あらゆる手続きを指定できます．
+従って，「述語でなければいけません」という記述はモラルを述べているだけのことです．
+以後の説明に登場するすべての「述語」についても同様です．
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="10">ベクタに対する繰り返し</h3>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="11">vector-fold ― ベクタの畳み込み（left fold）</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-fold</b> <span class="mysyn">kons</span> <span class="mysyn">knil</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">kons</span></td> 
+<td>畳み込みを行う手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">knil</span></td> 
+<td>累積値（下記参照）の初期値．</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>畳み込んだ値</td>
+</tr>
+</table>
+</div>
+   
+<p></p>
+この手続きの呼び出しは，一般に，次の形式をしています．
+<div class="dstyle">
+   (<b>vector-fold</b> $f$ $a$ $vec_1$ ... $vec_n$)
+</div>
+ここで，$f$ は <span class="mysyn">kons</span> を，$a$ は <span class="mysyn">knil</span> を，$vec_1$ ... $vec_n$ は <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... を表しています．
+このとき，$f$ は$n+2$個の引数を受け取り1つの値を返す手続きでなければいけません．
+その第1引数はベクタの添字$i$が渡され，
+第2引数は累積値（下記の$s$）が渡され，
+残りの$n$個の引数は各ベクタの第$i$成分 $vec_1[i]$ ... $vec_n[i]$ が渡されます．$f$の返り値は計算途中の累積値（下記の$s$）または vector-fold の返り値として使われます．
+
+<p></p>
+上記の vector-fold の呼び出しは次のような計算を行います．
+以下の $\ell_{min}$ は，もっとも短いベクタの長さを表します．
+
+<ol>
+<li> $s \leftarrow a$
+<li> $i=0,1, ..., \ell_{min}-1$ に対して（この順に）以下の計算を繰り返します．
+   <ul>
+   <li> $s \leftarrow f(i,s,vec_1[i],..,vec_n[i])$
+   </ul>
+<li> 最後に求まった $s$ を返します．
+</ol>
+
+これは，ベクタの左（先頭）の成分から順に$f$の適用結果を累積していって最終的な累積値を返しています．関数型プログラミングでは，このような計算構造のことを（左からの）<em>畳み込み</em>（left fold とか left folding）と呼んでいるようです．
+
+<p></p>
+ベクタの長さは不揃いでもかまいません．不揃いの場合，上の計算が示しているように，もっとも短いベクタに合わせて畳み込みが行われます．
+
+<p></p>
+<span class="myhead">具体例</span>
+以下の実行例は数値ベクタ vec の総和を求めています．下記のラムダ式は，$i-1$ 番目までの成分の総和 $s$ と $i$ 番目の成分 $v$ から，$i$ 番目までの成分の総和 $s+v$ を求めています．
+このlambda式の計算を先頭の成分から繰り返すことによってベクタ全体の総和を求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(1 2 3 4 5))</span>
+guile&gt; <span class="mycmd">(vector-fold (lambda (i s v) (+ s v)) 0 vec)</span>
+<span>&#36;</span>1 = 15
+</pre>
+<p class="short"></p>
+以下の実行例は数値ベクタ vec の最大値を求めています．ただし，ベクタの各成分が非負の数値であることを仮定しています．以下のlambda式は，$i-1$ 番目の成分までの最大値 $s$ と$i$ 番目の成分 $v$ から，$i$ 番目の成分までの最大値を求めています．
+このlambda式の計算を先頭の成分から繰り返すことによってベクタ全体の最大値を求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec #(4 2 5 1 3))</span>
+guile&gt; <span class="mycmd">(vector-fold (lambda (i s v) (if (&gt; s v) s v)) 0 vec)</span>
+<span>&#36;</span>2 = 5
+</pre>
+ちなみに，以下の実行例のように，最大値候補の初期値をベクタの第0成分にすれば，
+ベクタに対して何も仮定する必要はなくなります．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec #(-4 -2 -5 -1 -3))</span>
+guile&gt; <span class="mycmd">(vector-fold (lambda (i s v) (if (&gt; s v) s v)) (vector-ref vec 0) vec)</span>
+<span>&#36;</span>4 = -1
+</pre>
+
+<p></p>
+<span class="myhead">具体例</span>
+以下の実行例は2つの数値ベクタの内積（各成分の積の総和）を求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec1 #(1 2 3 4 5))</span>
+guile&gt; <span class="mycmd">(define vec2 #(5 4 3 2 1))</span>
+guile&gt; <span class="mycmd">(vector-fold (lambda (i s v1 v2) (+ s (* v1 v2))) 0 vec1 vec2)</span>
+<span>&#36;</span>1 = 35
+</pre>
+
+
+<p></p>
+<span class="myhead">具体例</span>
+最終的な結果は，単純な値に限らず，リストにすることもできます．
+例えば，以下の実行例は，シンボルからなるベクタに対して，'Guile という成分の添字のリストを求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(Scheme Guile Common Lisp Clojure Guile))</span>
+guile&gt; <span class="mycmd">(vector-fold (lambda (i s v) (if (eq? v 'Guile) (cons i s) s)) '() vec)</span>
+<span>&#36;</span>1 = (5 1)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="12">vector-fold-right ― ベクタの畳み込み（right fold）</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-fold-right</b> <span class="mysyn">kons</span> <span class="mysyn">knil</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">kons</span></td> 
+<td>畳み込みを行う手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">knil</span></td> 
+<td>累積値（下記参照）の初期値．</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>畳み込んだ値</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+vector-fold-right は，ベクタの右（最後）の成分から順に累積値を求める点を除けば，vector-fold と類似の処理を行います．以下の説明は，vector-fold の説明をコピー＆ペーストして少し変更したものです．下記の 2. のところでベクタの右（最後）の成分から順に計算していることに注意して下さい．
+
+<p></p>
+この手続きの呼び出しは，一般に，次の形式をしています．
+<div class="dstyle">
+   (<b>vector-fold-right</b> $f$ $a$ $vec_1$ ... $vec_n$)
+</div>
+ここで，$f$ は <span class="mysyn">kons</span> を，$a$ は <span class="mysyn">knil</span> を，$vec_1$ ... $vec_n$ は <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... を表しています．
+このとき，$f$ は$n+2$個の引数を受け取り1つの値を返す手続きでなければいけません．
+その第1引数はベクタの添字$i$が渡され，
+第2引数は累積値（下記の$s$）が渡され，
+残りの$n$個の引数は各ベクタの第$i$成分 $vec_1[i]$ ... $vec_n[i]$ が渡されます．$f$の返り値は計算途中の累積値（下記の$s$）または vector-fold-right の返り値として使われます．
+
+<p></p>
+上記の vector-fold-right の呼び出しは次のような計算を行います．
+以下の $\ell_{min}$ は，もっとも短いベクタの長さを表します．
+
+<ol>
+<li> $s \leftarrow a$
+<li> $i=\ell_{min}-1,\ell_{min}-1,...,0$ に対して（この順に）以下の計算を繰り返します．
+   <ul>
+   <li> $s \leftarrow f(i,s,vec_1[i],..,vec_n[i])$
+   </ul>
+<li> 最後に求まった $s$ を返します．
+</ol>
+
+これは，ベクタの右（最後）の成分から順に$f$の適用結果を累積していって最終的な累積値を返しています．関数型プログラミングでは，このような計算構造のことを（右からの）<em>畳み込み</em>（right fold とか right folding）と呼んでいるようです．
+
+<p></p>
+ベクタの長さは不揃いでもかまいません．不揃いの場合，上の計算が示しているように，もっとも短いベクタに合わせて畳み込みが行われます．
+
+
+<p></p>
+<span class="myhead">具体例</span>
+vector-fold を使ってベクタからリストを作ると，リストの要素の並びがベクタの成分の並びとは逆順になります．一方，vector-fold-right を使うと同じ順に並びます．
+以下は，vector-fold の項で示した最後の実行例を vector-fold-right を使って実行し直しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(Scheme Guile Common Lisp Clojure Guile))</span>
+guile&gt; <span class="mycmd">(vector-fold-right (lambda (i s v) (if (eq? v 'Guile) (cons i s) s)) '() vec)</span>
+<span>&#36;</span>1 = (1 5)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="13">vector-map ― ベクタの変換</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-map</b> <span class="mysyn">proc</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">proc</span></td> 
+<td>変換を行う手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>変換後のベクタ</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きの呼び出しは，一般に，次の形式をしています．
+<div class="dstyle">
+   (<b>vector-map</b> $f$ $vec_1$ ... $vec_n$)
+</div>
+ここで，$f$ は <span class="mysyn">proc</span> を表し，$vec_1$,...,$vec_n$ は <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... を表しています．このとき，$f$ は$n+1$個の引数を受け取って1個の値を返す手続きでなければいけません．その第1引数はベクタの添字が渡され，残りの引数には各ベクタの第$i$成分が渡されます．返り値は新たなベクタの第$i$成分として使われます．
+
+<p></p>
+上記の手続き呼び出しは，次のように定義される $v_0$,...,$v_{\ell_{min}-1}$ を成分とする新たなベクタを作成して返します．ここで，$\ell_{min}$ はもっとも短いベクタの長さを表しています．
+<p class="short"></p>
+<div class="dstyle">
+$v_i = f(i,vec_1[i],...,vec_n[i])$ &emsp;（$0 \leq i \leq \ell_{min}-1$）
+</div>
+<p class="short"></p>
+ただし，$v_0$,...,$v_{\ell_{min}-1}$ を求める順番は不定（unspecified）です．従って，<span class="mysyn">proc</span>の中で評価順序を期待するような副作用を伴った操作（例えば，添字の小さい順に成分を表示するなど）を行うべきではないでしょう．
+そのような副作用を目的とする操作は，
+一般に，後述する vector-for-each を使って行います．
+
+<p></p>
+ベクタの長さは不揃いでもかまいません．
+不揃いの場合，上の計算が示しているように，
+もっとも短いベクタに合わせて変換が行われます．
+
+<p></p>
+<span class="myhead">具体例</span>
+以下は，ベクタの各成分を2乗したベクタを生成しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(1 2 3 4 5))</span>
+guile&gt; <span class="mycmd">(vector-map (lambda (i v) (* v v)) vec)</span>
+\DOL1 = #(1 4 9 16 25)
+</pre>
+以下は，2つのベクタに対して，各成分の小さい方を成分とするベクタを生成しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(define vec1 #(13 25 31 48 54))</span>
+guile&gt; <span class="mycmd">(define vec2 #(14 22 39 43 56))</span>
+guile&gt; <span class="mycmd">(vector-map (lambda (i v1 v2) (if (&lt; v1 v2) v1 v2)) vec1 vec2)</span>
+<span>&#36;</span>2 = #(13 22 31 43 54)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="14">vector-map! ― ベクタの改変</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-map!</b> <span class="mysyn">proc</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">proc</span></td> 
+<td>変換を行う手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+vector-map のところで定義した $v_0$,...,$v_{\ell_{min}-1}$ を求めて <span class="mysyn">vec1</span> に保存します．<span class="mysyn">vec1</span> が $\ell_{min}$ よりも長い場合，残りの成分は変更されません．
+
+<p></p>
+<span class="mysyn">proc</span> は vector-map の場合と同様の手続きでなければいけません．さらに，vec1 は変更可能（mutable）でなければいけません．また，各成分を求める順番は不定（unspecified）です．
+
+<p></p>
+<span class="myhead">具体例</span>
+以下は，2つのベクタの各成分ごとの積を求めて第1ベクタに保存しています．
+第1ベクタは変更可能（mutable）でなければいけないので，vector 手続きを使って定義しています．一方，第2ベクタはどちらでもよいのでベクタ定数として定義しています．
+それから，第1ベクタを第2ベクタより長くしていて，
+第1ベクタの残りの成分が変化しないことを確認しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec1 (vector 2 2 2 2 2 2 2 2))</span>
+guile&gt; <span class="mycmd">vec1</span>
+<span>&#36;</span>1 = #(2 2 2 2 2 2 2 2)
+guile&gt; <span class="mycmd">(define vec2 #(1 2 3 4 5))</span>
+guile&gt; <span class="mycmd">vec2</span>
+<span>&#36;</span>2 = #(1 2 3 4 5)
+guile&gt; <span class="mycmd">(vector-map! (lambda (i v1 v2) (* v1 v2)) vec1 vec2)</span>
+guile&gt; <span class="mycmd">vec1</span>
+<span>&#36;</span>3 = #(2 4 6 8 10 2 2 2)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="15">vector-for-each ― ベクタに関する繰り返し</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-for-each</b> <span class="mysyn">proc</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">proc</span></td> 
+<td>繰り返しの本体を実行する手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きの呼び出しは，一般に，次の形式をしています．
+<div class="dstyle">
+   (<b>vector-for-each</b> $f$ $vec_1$ ... $vec_n$)
+</div>
+ここで，$f$ は <span class="mysyn">proc</span> を表し，$vec_1$,...,$vec_n$ は <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... を表しています．このとき，$f$ は$n+1$個の引数を受け取る手続きでなければいけません．第1の引数はベクタの添字が渡され，残りの引数には各ベクタの第$i$成分が渡されます．$f$ は何らかの値を返してもかまいませんが棄却されます．
+
+<p></p>
+上記の手続き呼び出しは，
+各成分に対して左（先頭）から右（最後）に向かって $f$ を適用します．つまり，
+<div class="dstyle">
+   $f(0,vec_1[0],...,vec_n[0])$ <br>
+   $f(1,vec_1[1],...,vec_n[1])$ <br>
+   &emsp;&emsp;... <br>
+   $f(\ell_{min}-1,vec_1[\ell_{min}-1],...,vec_n[\ell_{min}-1])$ <br>
+</div>
+といった順に $f$ を実行します．
+ここで，$\ell_{min}$ はもっとも短いベクタの長さを表しています．
+
+<p></p>
+各成分に対する評価順序を前提とする副作用を伴う処理は，一般に，vector-for-each を使って処理します．
+
+
+<p></p>
+<span class="myhead">具体例</span>
+以下は，ベクタの各成分を添字の小さい順に表示しています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(1 2 3 4 5))</span>
+guile&gt; <span class="mycmd">(vector-for-each (lambda (i v) (display v) (newline)) vec)</span>
+1
+2
+3
+4
+5
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="16">vector-count ― 成分のカウント</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-count</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">pred?</span></td> 
+<td>述語</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td><span class="mysyn">pred?</span> が真となる成分の個数</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+実引数として指定したベクタの個数を$n$とおくとき，<span class="mysyn">pred?</span> は$n+1$個の引数を受け取る述語でなければいけません．その第1引数はベクタの添字$i$が渡され，残りの$n$個の引数には各ベクタの第$i$成分が渡されます．
+
+<p></p>
+vector-count は <span class="mysyn">pred?</span> が真となる添字の個数を返します．
+
+<p></p>
+<span class="myhead">具体例</span>
+以下は，2つのベクタに対して，（eqv?の意味で）同じ値の成分の個数を求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec1 #(Scheme Guile Common Lisp Clojure Guile Scheme))</span>
+guile&gt; <span class="mycmd">(define vec2 #(Scheme Guile Guile Scheme Scheme Guile Scheme))</span>
+guile&gt; <span class="mycmd">(vector-count (lambda (i v1 v2) (eqv? v1 v2)) vec1 vec2)</span>
+<span>&#36;</span>1 = 4
+</pre>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="17">ベクタの探索</h3>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="18">vector-index{-right}，vector-skip{-right} ― 添字を探索</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-index</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+(<b>vector-index-right</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+(<b>vector-skip</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+(<b>vector-skip-right</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">pred?</span></td> 
+<td>述語</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>添字</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+実引数として指定したベクタの個数を $n$ とおくとき，<span class="mysyn">pred?</span> は $n$ 個の引数を受け取る述語でなければいけません．$n$個の引数は各ベクタの成分が渡されます．
+
+<p></p>
+もっとも短いベクタの長さを $\ell_{min}$，<span class="mysyn">pred?</span> を$p$，
+実引数として指定してベクタを $vec_1$,...,$vec_n$ とおくとき，vector-index は，$i=0,1,...,\ell_{min}-1$ の順に
+<div class="dstyle">
+   $p(vec_1[i],...,vec_n[i])$ <br>
+</div>
+を求めていって，初めて真となる添字（つまり，真となる最小の添字）を返します．vector-index-right は，逆に，添字の大きい順（$i=\ell_{min}-1,...,1,0$の順）に求めていって，初めて真となる添字（つまり，真となる最大の添字）を返します．真となる添字が見つからないときには，両方とも #f を返します．
+
+<p></p>
+vector-skip と vector-skip-right は，それぞれ，<span class="mysyn">pred?</span> が偽となる最小の添字と最大の添字を返します．そういった添字がないときには #f を返します．
+
+<p></p>
+上記のどの手続きについても，ベクタの長さは不揃いでもかまいません．
+
+
+<p></p>
+<span class="myhead">具体例</span>
+以下では，2つの数値ベクタ vec1 と vec2 に対して，vec1$[i]$ $<$ vec2$[i]$ を満たす最小の添字（以下の2）と最大の添字（以下の3）を求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec1 #(3 5 4 1 5 9 2))</span>
+guile&gt; <span class="mycmd">(define vec2 #(2 1 7 8 2))</span>
+guile&gt; <span class="mycmd">vec1</span>
+<span>&#36;</span>1 = #(3 5 4 1 5 9 2)
+guile&gt; <span class="mycmd">vec2</span>
+<span>&#36;</span>2 = #(2 1 7 8 2)
+guile&gt; <span class="mycmd">(vector-index &lt; vec1 vec2)</span>
+<span>&#36;</span>3 = 2
+guile&gt; <span class="mycmd">(vector-index-right &lt; vec1 vec2)</span>
+<span>&#36;</span>4 = 3
+</pre>
+以下では，上記のベクタ vec1 に対して，奇数ではない成分の最小の添字と最大の添字を求めています．
+<pre class="shell">
+guile&gt; <span class="mycmd">(vector-skip odd? vec1)</span>
+<span>&#36;</span>5 = 2
+guile&gt; <span class="mycmd">(vector-skip-right odd? vec1)</span>
+<span>&#36;</span>6 = 6
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="19">vector-any，vector-every ― ベクタ版の or 形式と and 形式</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-any</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+(<b>vector-every</b> <span class="mysyn">pred?</span> <span class="mysyn">vec1</span> <span class="mysyn">vec2</span> ... )
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">pred?</span></td> 
+<td>述語</td>
+</tr>
+<tr>
+<td><span class="mysyn">vec$k$</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>成分の値</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+実引数として指定したベクタの個数を $n$ とおくとき，<span class="mysyn">pred?</span> は $n$ 個の引数を受け取る述語でなければいけません．$n$個の引数は各ベクタの成分が渡されます．
+
+<p></p>
+もっとも短いベクタの長さを $\ell_{min}$，<span class="mysyn">pred?</span> を$p$，
+実引数として指定してベクタを $vec_1$,...,$vec_n$ とおくとき，vector-any は，
+$p(vec_1[i],...,vec_n[i])$が真となる最小の添字 $i$（$0 \leq i < \ell_{min}$）を求めて，$p(vec_1[i],...,vec_n[i])$ の値を返します．真となる添字が1つもないときには #f を返します．直感的に言うと，ベクタ版の or 形式と言えます．
+
+<p></p>
+一方，vector-every は，すべての添字 $i$（$0 \leq i < \ell_{min}$）に対して $p(vec_1[i],...,vec_n[i])$ が真だったとき，$p(vec_1[\ell_{min}-1],...,vec_n[\ell_{min}-1])$ の値を返します．ある添字で偽になったときには #f を返します．直感的に言うと，ベクタ版の and 形式と言えます．
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="20">vector-binary-search ― ベクタの二分探索</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-binary-search</b> <span class="mysyn">vec</span> <span class="mysyn">val</span> <span class="mysyn">cmp</span>)
+(<b>vector-binary-search</b> <span class="mysyn">vec</span> <span class="mysyn">val</span> <span class="mysyn">cmp</span> <span class="mysyn">start</span>)
+(<b>vector-binary-search</b> <span class="mysyn">vec</span> <span class="mysyn">val</span> <span class="mysyn">cmp</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">val</span></td> 
+<td>適当な値</td>
+</tr>
+<tr>
+<td><span class="mysyn">cmp</span></td> 
+<td>手続き</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>ベクタの添字．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>ベクタの添字．省略時はベクタの長さに設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタの添字</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+<span class="mysyn">cmp</span> は2つの引数を受け取って，
+数値を返す手続きでなければいけません．
+ただし，その返り値に対して zero? が適用されるので，
+一般的には正確数を返す手続きにしたほうがよいでしょう．
+
+<p></p>
+<span class="mysyn">vec</span>，<span class="mysyn">val</span>，<span class="mysyn">cmp</span> をそれぞれ，
+$vec$，$val$，$cmp$ とおき，次の条件(*)が成り立っていると仮定します．
+<table class="param">
+<tr>
+<td>(*)</td>
+<td>
+添字 $p_1,p_2$（<span class="mysyn">start</span> $ \leq p_1 \leq p_2 <$ <span class="mysyn">end</span>）
+が存在して，
+   <ol type="a">
+   <li> <span class="mysyn">start</span> $\leq i < p_1$ を満たす添字 $i$ に対して $cmp(vec[i],val)<0$，かつ
+   <li> $p_1 \leq i \leq p_2$ を満たす添字 $i$ に対して $cmp(vec[i],val)=0$，かつ
+   <li> $p_2 < i <$ <span class="mysyn">end</span> を満たす添字 $i$ に対して $cmp(vec[i],val)>0$
+   </ol>
+</td>
+</tr>
+</table>
+このとき，vector-binary-search 手続きは，二分探索法を使って，
+上の条件(*)のb.を満たす添字 $i$（$p_1 \leq i  \leq p_2$） を返します．
+ただし，(srfi srfi-43) モジュールが実装している二分探索アルゴリズムは，
+条件(*)のb.を満たす添字 $i$ が見つかったら直ちにそれを返すようにしていて，
+条件(*)に示した$p_1$や$p_2$を求めようとはしていません．そのため．
+$p_1$〜$p_2$のどの添字を返すかは探索範囲（<span class="mysyn">start</span>と<span class="mysyn">end</span>）に依存していて，一般的なことは何も言えません．
+
+<p></p>
+条件(*)は二分探索法が合理的に動作し，かつ，
+目的とする添字が発見できる条件を示しています．
+二分探索法が合理的に動作する条件は次のようになります．
+<table class="param">
+<tr>
+<td>(+)</td>
+<td>
+添字 $p$（<span class="mysyn">start</span> $ \leq p \leq$ <span class="mysyn">end</span>）
+が存在して，
+   <ol type="a">
+   <li> <span class="mysyn">start</span> $\leq i < p$ を満たす添字 $i$ に対して $cmp(vec[i],val) \leq 0$，かつ
+   <li> $p \leq i <$ <span class="mysyn">end</span> を満たす添字 $i$ に対して $cmp(vec[i],val) \geq 0$
+   </ol>
+</td>
+</tr>
+</table>
+vector-binary-search は，
+この条件を満たし目的とする添字が見つからないときには #f を返します．
+一方，この条件を満たさないとき，何を返すかは一般に不明です．
+運良く(*)のb.を満たす添字 $i$ を返すかも知れませんし，#f を返すかも知れません．
+
+<p></p>
+<span class="myhead">補足</span>
+<span class="mysyn">vec</span>，<span class="mysyn">val</span>，<span class="mysyn">cmp</span> は条件(*)を満たせば何でもかまいません．
+それから，<span class="mysyn">val</span> は（クロージャとして）<span class="mysyn">cmp</span> 手続きに組み込めるので，引数として指定する必要はなかったと思います．例えば，以下の具体例では <span class="mysyn">val</span> を使いません．
+
+<p></p>
+<span class="myhead">具体例</span>
+下記の generate-cmp は，2つの文字 c1,c2 を受け取って，
+次のように動作する手続きを返します．
+<ul>
+<li> 文字列 str が c1 を含み c2 を含まないときには -1 を返し，
+c1 を含まず c2 を含むときには 1 を返し，
+どちらでもないときには 0 を返す．
+なお，val は vector-binary-search の仕様に合わせているだけのダミーの引数であって，使いません．
+</ul>
+<pre class="list">
+;; vector.scm
+(define (generate-cmp c1 c2)
+  (lambda (str val)
+    (let ((i1 (string-index str c1))
+          (i2 (string-index str c2)))
+      (cond
+       ((and i1 (not i2)) -1)
+       ((and (not i1) i2)  1)
+       (else  0)))))
+</pre>
+これによって生成される手続きを使って二分探索を行ってみることにします．
+以下では，文字列を成分とするベクタ（vec）に対して，文字 a と z を含まない成分の添字を求めています．なお，vector-binary-search の <span class="mysyn">val</span> は使用しないので空文字列 "" を指定しています．また，下記の vec と cmp （と ""）は条件(*)を満たしています．
+<pre class="shell">
+guile> (load "vector.scm")
+guile> (use-modules (srfi srfi-43))
+guile> (define cmp (generate-cmp #\a #\z))
+guile> (define vec #("ab" "#a#" "binary" "search" "###" "vector" "+++" "xyz" "#z#")) 
+guile> (vector-binary-search vec "" cmp)
+$1 = 4
+</pre>
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="21">ベクタの改変</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="22">vector-swap! ― 成分の交換</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-swap!</b> <span class="mysyn">vec</span> <span class="mysyn">i</span> <span class="mysyn">j</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">i</span>，<span class="mysyn">j</span></td>
+<td>ベクタの添字</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+これは，<span class="mysyn">vec</span> の第$i$成分と第$j$成分を交換します．
+<span class="mysyn">vec</span> は変更可能（mutable）でなければいけません．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec (vector 0 1 2 3 4 5))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 1 2 3 4 5)
+guile&gt; <span class="mycmd">(vector-swap! vec 1 3)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(0 3 2 1 4 5)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="23">vector-reverse! ― ベクタの反転</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-reverse!</b> <span class="mysyn">vec</span>)
+(<b>vector-reverse!</b> <span class="mysyn">vec</span> <span class="mysyn">start</span>)
+(<b>vector-reverse!</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span>
+<td>ベクタの添字．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span>
+<td>ベクタの添字．省略時はベクタの長さに設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+これは，<span class="mysyn">vec</span> の <span class="mysyn">start</span>〜<span class="mysyn">end</span>$\,-1$ の部分を反転します．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec (vector 0 1 2 3 4 5 6 7 8 9))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 1 2 3 4 5 6 7 8 9)
+guile&gt; <span class="mycmd">(vector-reverse! vec 2 7)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(0 1 6 5 4 3 2 7 8 9)
+</pre>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="24">vector-reverse-copy! ― ベクタの反転</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector-reverse-copy!</b> <span class="mysyn">dst</span> <span class="mysyn">at</span> <span class="mysyn">src</span>)
+(<b>vector-reverse-copy!</b> <span class="mysyn">dst</span> <span class="mysyn">at</span> <span class="mysyn">src</span> <span class="mysyn">start</span>)
+(<b>vector-reverse-copy!</b> <span class="mysyn">dst</span> <span class="mysyn">at</span> <span class="mysyn">src</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">dst</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">at</span></td> 
+<td>ベクタ（<span class="mysyn">dst</span>）の添字．コピーを保存する先頭の位置．</td>
+</tr>
+<tr>
+<td><span class="mysyn">src</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>ベクタ（<span class="mysyn">src</span>）の添字．コピ―を開始する位置．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>ベクタ（<span class="mysyn">src</span>）の添字．コピーを終了する位置．省略時はベクタ（<span class="mysyn">src</span>）の長さに設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>unspecified</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+この手続きは，
+<span class="mysyn">src</span> の <span class="mysyn">start</span>〜<span class="mysyn">end</span>$\,-1$ の部分を反転したものを <span class="mysyn">dst</span> の <span class="mysyn">at</span> 以降に保存します．
+ただし，次の条件が成り立つときエラーが発生します．
+<ol type="a">
+<li> <span class="mysyn">dst</span> と <span class="mysyn">src</span> が同じベクタであって，
+<li> コピー元の範囲とコピー先の範囲が重なっていて，
+<li> <span class="mysyn">at</span> $\not=$ <span class="mysyn">start</span> が成り立つ．
+</ol>
+<span class="mysyn">at</span> $=$ <span class="mysyn">start</span> のときには vector-reverse! と同じ振る舞いをします．
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec (vector 0 1 2 3 4 5 6 7 8 9))</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>1 = #(0 1 2 3 4 5 6 7 8 9)
+guile&gt; <span class="mycmd">(vector-reverse-copy! vec 2 vec 6 9)</span>
+guile&gt; <span class="mycmd">vec</span>
+<span>&#36;</span>2 = #(0 1 8 7 6 5 6 7 8 9)
+</pre>
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="25">ベクターリスト変換</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="26">vector->list，reverse-vector->list ― ベクタからとリストへの変換</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>vector->list</b> <span class="mysyn">vec</span>)
+(<b>vector->list</b> <span class="mysyn">vec</span> <span class="mysyn">start</span>)
+(<b>vector->list</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+(<b>reverse-vector->list</b> <span class="mysyn">vec</span>)
+(<b>reverse-vector->list</b> <span class="mysyn">vec</span> <span class="mysyn">start</span>)
+(<b>reverse-vector->list</b> <span class="mysyn">vec</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">vec</span></td> 
+<td>ベクタ</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>ベクタの添字．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>ベクタの添字．省略時はベクタの長さに設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>リスト</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+vector->list は，<span class="mysyn">vec</span>の<span class="mysyn">start</span>番目から<span class="mysyn">end</span>$\,-1$番目の成分を要素とするリストを新たに作成して返します．reverse-vector->list は反転したリストを返します．
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
+guile&gt; <span class="mycmd">(define vec #(0 1 2 3 4 5 6 7 8 9))</span>
+guile&gt; <span class="mycmd">(vector->list vec 2 7)</span>
+<span>&#36;</span>1 = (2 3 4 5 6)
+guile&gt; <span class="mycmd">(reverse-vector->list vec 2 7)</span>
+<span>&#36;</span>2 = (6 5 4 3 2)
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="27">list->vector，reverse-list->vector ― リストからベクタへの変換</h4>
+<p class="short"></p>
+<div class="spec">
+procedure:
+<pre class="grammar">
+(<b>list->vector</b> <span class="mysyn">lst</span> lst)
+(<b>list->vector</b> <span class="mysyn">lst</span> <span class="mysyn">start</span>)
+(<b>list->vector</b> <span class="mysyn">lst</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+(<b>reverse-list->vector</b> <span class="mysyn">lst</span>)
+(<b>reverse-list->vector</b> <span class="mysyn">lst</span> <span class="mysyn">start</span>)
+(<b>reverse-list->vector</b> <span class="mysyn">lst</span> <span class="mysyn">start</span> <span class="mysyn">end</span>)
+</pre>
+<table class="param">
+<tr>
+<td><span class="mysyn">lst</span></td> 
+<td>真正リスト</td>
+</tr>
+<tr>
+<td><span class="mysyn">start</span></td> 
+<td>リストの添字．省略時は0に設定されます．</td>
+</tr>
+<tr>
+<td><span class="mysyn">end</span></td> 
+<td>リストの添字．省略時はリストの長さに設定されます．</td>
+</tr>
+<tr>
+<td>返り値</td> 
+<td>ベクタ</td>
+</tr>
+</table>
+</div>
+
+<p></p>
+list->vector は，<span class="mysyn">lst</span>の<span class="mysyn">start</span>番目から<span class="mysyn">end</span>$\,-1$番目の要素を成分とするベクタを新たに作成して返します．reverse-list->vector は反転したベクタを返します．
+
+<pre class="shell">
+guile&gt; <span class="mycmd">(define lst '(0 1 2 3 4 5 6 7 8 9))</span>
+guile&gt; <span class="mycmd">(list->vector lst 2 7)</span>
+<span>&#36;</span>3 = #(2 3 4 5 6)
+guile&gt; <span class="mycmd">(reverse-list->vector lst 2 7)</span>
+<span>&#36;</span>4 = #(6 5 4 3 2)
+</pre>
+
+
+   
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
+<!-- 
+<p></p>
+<div class="grammar">
+<table class="grammar">
+<tr>
+<td>
+<span style="margin-left:50px;"></span>
+(<b>list->vector</b> <span class="mysyn">lst</span> lst)
+</td>
+</tr>
+</table>
+</div>
+-->
+
+
+
