@@ -74,16 +74,18 @@ Guile基礎／ベクタ（SRFI-43）
 このノートは，ベクタについて勉強したことを記録しています．
 ベクタに関する手続きはコアモジュールと (srfi srfi-43) モジュールによって提供されています．このノートは (srfi srfi-43) モジュールが提供する機能について説明します．
 <li>
-コアモジュールと重複している以下の手続きは省略しています．
+<a class="noline" href="vector.html">コアモジュール</a>と重複している以下の手続きは省略しています．
 <div class="dstyle">
 make-vector，vector， vector?，vector-ref，vector-set!，<br>
 vector-length，vector-fill!，vector-copy!
 </div>
+(srfi srfi-43) モジュールはこれらの手続きを独自に実装することはなく，コアモジュールの手続きを #:re-export しています．
 <li>
 次の手続きはコアモジュールのものを機能的に拡張しています．
 <div class="dstyle">
 vector-copy，list->vector，vector->list
 </div>
+(srfi srfi-43) モジュールは，これらの手続きを #:replace します．
 </ul>
 
 <ul>
@@ -93,55 +95,54 @@ vector-copy，list->vector，vector->list
 </ul>
 </div>
 
-$\lt$ $\gt$
-
 
 
 <!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="contents">
 <h4 class="hdln">目 次</h4>
-<p class="short"></p>
+<p class="sshort"></p>
 
 <ul class="menu">
-<li class="menu"><a class="noline" href="#0">ベクタの作成</a>
+<li class="menu"><a class="noline" href="#0">モジュールのロード</a>
+<li class="menu"><a class="noline" href="#1">ベクタの作成</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#1">vector-unfold ― ベクタの展開生成（left-to-right）</a>
-   <li class="menu"><a class="noline" href="#2">vector-unfold-right ― ベクタの展開生成（right-to-left）</a>
-   <li class="menu"><a class="noline" href="#3">vector-copy ― ベクタのコピー</a>
-   <li class="menu"><a class="noline" href="#4">vector-reverse-copy ― ベクタの逆順コピー</a>
-   <li class="menu"><a class="noline" href="#5">vector-append ― ベクタの連結</a>
-   <li class="menu"><a class="noline" href="#6">vector-concatenate ― ベクタの連結</a>
+   <li class="menu"><a class="noline" href="#2">vector-unfold ― ベクタの展開生成（left-to-right）</a>
+   <li class="menu"><a class="noline" href="#3">vector-unfold-right ― ベクタの展開生成（right-to-left）</a>
+   <li class="menu"><a class="noline" href="#4">vector-copy ― ベクタのコピー</a>
+   <li class="menu"><a class="noline" href="#5">vector-reverse-copy ― ベクタの逆順コピー</a>
+   <li class="menu"><a class="noline" href="#6">vector-append ― ベクタの連結</a>
+   <li class="menu"><a class="noline" href="#7">vector-concatenate ― ベクタの連結</a>
    </ul>
-<li class="menu"><a class="noline" href="#7">ベクタの検査</a>
+<li class="menu"><a class="noline" href="#8">ベクタの検査</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#8">vector-empty? ― 空ベクタの検査</a>
-   <li class="menu"><a class="noline" href="#9">vector= ― ベクタの同等性判定</a>
+   <li class="menu"><a class="noline" href="#9">vector-empty? ― 空ベクタの検査</a>
+   <li class="menu"><a class="noline" href="#10">vector= ― ベクタの同等性判定</a>
    </ul>
-<li class="menu"><a class="noline" href="#10">ベクタに対する繰り返し</a>
+<li class="menu"><a class="noline" href="#11">ベクタに対する繰り返し</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#11">vector-fold ― ベクタの畳み込み（left fold）</a>
-   <li class="menu"><a class="noline" href="#12">vector-fold-right ― ベクタの畳み込み（right fold）</a>
-   <li class="menu"><a class="noline" href="#13">vector-map ― ベクタの変換</a>
-   <li class="menu"><a class="noline" href="#14">vector-map! ― ベクタの改変</a>
-   <li class="menu"><a class="noline" href="#15">vector-for-each ― ベクタに関する繰り返し</a>
-   <li class="menu"><a class="noline" href="#16">vector-count ― 成分のカウント</a>
+   <li class="menu"><a class="noline" href="#12">vector-fold ― ベクタの畳み込み（left fold）</a>
+   <li class="menu"><a class="noline" href="#13">vector-fold-right ― ベクタの畳み込み（right fold）</a>
+   <li class="menu"><a class="noline" href="#14">vector-map ― ベクタの変換</a>
+   <li class="menu"><a class="noline" href="#15">vector-map! ― ベクタの改変</a>
+   <li class="menu"><a class="noline" href="#16">vector-for-each ― ベクタに関する繰り返し</a>
+   <li class="menu"><a class="noline" href="#17">vector-count ― 成分のカウント</a>
    </ul>
-<li class="menu"><a class="noline" href="#17">ベクタの探索</a>
+<li class="menu"><a class="noline" href="#18">ベクタの探索</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#18">vector-index{-right}，vector-skip{-right} ― 添字を探索</a>
-   <li class="menu"><a class="noline" href="#19">vector-any，vector-every ― ベクタ版の or 形式と and 形式</a>
-   <li class="menu"><a class="noline" href="#20">vector-binary-search ― ベクタの二分探索</a>
+   <li class="menu"><a class="noline" href="#19">vector-index{-right}，vector-skip{-right} ― 添字を探索</a>
+   <li class="menu"><a class="noline" href="#20">vector-any，vector-every ― ベクタ版の or 形式と and 形式</a>
+   <li class="menu"><a class="noline" href="#21">vector-binary-search ― ベクタの二分探索</a>
    </ul>
-<li class="menu"><a class="noline" href="#21">ベクタの改変</a>
+<li class="menu"><a class="noline" href="#22">ベクタの改変</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#22">vector-swap! ― 成分の交換</a>
-   <li class="menu"><a class="noline" href="#23">vector-reverse! ― ベクタの反転</a>
-   <li class="menu"><a class="noline" href="#24">vector-reverse-copy! ― ベクタの反転</a>
+   <li class="menu"><a class="noline" href="#23">vector-swap! ― 成分の交換</a>
+   <li class="menu"><a class="noline" href="#24">vector-reverse! ― ベクタの反転</a>
+   <li class="menu"><a class="noline" href="#25">vector-reverse-copy! ― ベクタの反転</a>
    </ul>
-<li class="menu"><a class="noline" href="#25">ベクターリスト変換</a>
+<li class="menu"><a class="noline" href="#26">ベクタとリストの相互変換</a>
    <ul class="menu">
-   <li class="menu"><a class="noline" href="#26">vector->list，reverse-vector->list ― ベクタからとリストへの変換</a>
-   <li class="menu"><a class="noline" href="#27">list->vector，reverse-list->vector ― リストからベクタへの変換</a>
+   <li class="menu"><a class="noline" href="#27">vector->list，reverse-vector->list ― ベクタからリストへの変換</a>
+   <li class="menu"><a class="noline" href="#28">list->vector，reverse-list->vector ― リストからベクタへの変換</a>
    </ul>
 </ul>
 
@@ -233,12 +234,27 @@ Guile
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<h3 class="section" id="0">ベクタの作成</h3>
+<h3 class="section" id="0">モジュールのロード</h3>
+
+<p></p>
+このノートで説明する手続きを利用するためには，以下に示すように (srfi srfi-43) モジュールをロードする必要があります．
+
+<pre class="list">
+(use-modules (srfi srfi-43))
+</pre>
+
+
+
+
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="1">ベクタの作成</h3>
 
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="1">vector-unfold ― ベクタの展開生成（left-to-right）</h4>
+<h4 class="hdln" id="2">vector-unfold ― ベクタの展開生成（left-to-right）</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -352,7 +368,7 @@ guile&gt; <span class="mycmd">(suffix-vector "abcdef")</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="2">vector-unfold-right ― ベクタの展開生成（right-to-left）</h4>
+<h4 class="hdln" id="3">vector-unfold-right ― ベクタの展開生成（right-to-left）</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -482,7 +498,7 @@ guile&gt; <span class="mycmd">(suffix-vector "abcdef")</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="3">vector-copy ― ベクタのコピー</h4>
+<h4 class="hdln" id="4">vector-copy ― ベクタのコピー</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -586,7 +602,7 @@ guile&gt; <span class="mycmd">(vector-copy vec 6)</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="4">vector-reverse-copy ― ベクタの逆順コピー</h4>
+<h4 class="hdln" id="5">vector-reverse-copy ― ベクタの逆順コピー</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -656,7 +672,7 @@ guile&gt; <span class="mycmd">(vector-reverse-copy vec 7 7)</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="5">vector-append ― ベクタの連結</h4>
+<h4 class="hdln" id="6">vector-append ― ベクタの連結</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -692,7 +708,7 @@ guile&gt; <span class="mycmd">(vector-append)</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="6">vector-concatenate ― ベクタの連結</h4>
+<h4 class="hdln" id="7">vector-concatenate ― ベクタの連結</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -733,12 +749,12 @@ guile&gt; <span class="mycmd">(vector-concatenate '())</span>
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<h3 class="section" id="7">ベクタの検査</h3>
+<h3 class="section" id="8">ベクタの検査</h3>
 
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="8">vector-empty? ― 空ベクタの検査</h4>
+<h4 class="hdln" id="9">vector-empty? ― 空ベクタの検査</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -773,7 +789,7 @@ guile&gt; <span class="mycmd">(vector-empty? #())</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="9">vector= ― ベクタの同等性判定</h4>
+<h4 class="hdln" id="10">vector= ― ベクタの同等性判定</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -852,12 +868,12 @@ Schemeの仕様書は，「述語」をブール値を返す手続きのこと�
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<h3 class="section" id="10">ベクタに対する繰り返し</h3>
+<h3 class="section" id="11">ベクタに対する繰り返し</h3>
 
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="11">vector-fold ― ベクタの畳み込み（left fold）</h4>
+<h4 class="hdln" id="12">vector-fold ― ベクタの畳み込み（left fold）</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -965,7 +981,7 @@ guile&gt; <span class="mycmd">(vector-fold (lambda (i s v) (if (eq? v 'Guile) (c
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="12">vector-fold-right ― ベクタの畳み込み（right fold）</h4>
+<h4 class="hdln" id="13">vector-fold-right ― ベクタの畳み込み（right fold）</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1039,7 +1055,7 @@ guile&gt; <span class="mycmd">(vector-fold-right (lambda (i s v) (if (eq? v 'Gui
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="13">vector-map ― ベクタの変換</h4>
+<h4 class="hdln" id="14">vector-map ― ベクタの変換</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1105,7 +1121,7 @@ guile&gt; <span class="mycmd">(vector-map (lambda (i v1 v2) (if (&lt; v1 v2) v1 
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="14">vector-map! ― ベクタの改変</h4>
+<h4 class="hdln" id="15">vector-map! ― ベクタの改変</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1156,7 +1172,7 @@ guile&gt; <span class="mycmd">vec1</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="15">vector-for-each ― ベクタに関する繰り返し</h4>
+<h4 class="hdln" id="16">vector-for-each ― ベクタに関する繰り返し</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1220,7 +1236,7 @@ guile&gt; <span class="mycmd">(vector-for-each (lambda (i v) (display v) (newlin
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="16">vector-count ― 成分のカウント</h4>
+<h4 class="hdln" id="17">vector-count ― 成分のカウント</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1263,12 +1279,12 @@ guile&gt; <span class="mycmd">(vector-count (lambda (i v1 v2) (eqv? v1 v2)) vec1
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<h3 class="section" id="17">ベクタの探索</h3>
+<h3 class="section" id="18">ベクタの探索</h3>
 
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="18">vector-index{-right}，vector-skip{-right} ― 添字を探索</h4>
+<h4 class="hdln" id="19">vector-index{-right}，vector-skip{-right} ― 添字を探索</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1339,7 +1355,7 @@ guile&gt; <span class="mycmd">(vector-skip-right odd? vec1)</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="19">vector-any，vector-every ― ベクタ版の or 形式と and 形式</h4>
+<h4 class="hdln" id="20">vector-any，vector-every ― ベクタ版の or 形式と and 形式</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1377,7 +1393,7 @@ $p(vec_1[i],...,vec_n[i])$が真となる最小の添字 $i$（$0 \leq i \lt \el
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="20">vector-binary-search ― ベクタの二分探索</h4>
+<h4 class="hdln" id="21">vector-binary-search ― ベクタの二分探索</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1506,11 +1522,11 @@ $1 = 4
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<h3 class="section" id="21">ベクタの改変</h3>
+<h3 class="section" id="22">ベクタの改変</h3>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="22">vector-swap! ― 成分の交換</h4>
+<h4 class="hdln" id="23">vector-swap! ― 成分の交換</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1549,7 +1565,7 @@ guile&gt; <span class="mycmd">vec</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="23">vector-reverse! ― ベクタの反転</h4>
+<h4 class="hdln" id="24">vector-reverse! ― ベクタの反転</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1592,7 +1608,7 @@ guile&gt; <span class="mycmd">vec</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="24">vector-reverse-copy! ― ベクタの反転</h4>
+<h4 class="hdln" id="25">vector-reverse-copy! ― ベクタの反転</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1653,11 +1669,11 @@ guile&gt; <span class="mycmd">vec</span>
 
 
 <!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-<h3 class="section" id="25">ベクターリスト変換</h3>
+<h3 class="section" id="26">ベクタとリストの相互変換</h3>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="26">vector->list，reverse-vector->list ― ベクタからとリストへの変換</h4>
+<h4 class="hdln" id="27">vector->list，reverse-vector->list ― ベクタからリストへの変換</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
@@ -1705,7 +1721,7 @@ guile&gt; <span class="mycmd">(reverse-vector->list vec 2 7)</span>
 
 <p></p>
 <!-- ===head line================================== -->
-<h4 class="hdln" id="27">list->vector，reverse-list->vector ― リストからベクタへの変換</h4>
+<h4 class="hdln" id="28">list->vector，reverse-list->vector ― リストからベクタへの変換</h4>
 <p class="short"></p>
 <div class="spec">
 procedure:
