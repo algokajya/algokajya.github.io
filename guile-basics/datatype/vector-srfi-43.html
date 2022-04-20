@@ -65,7 +65,6 @@ Guile基礎／ベクタ（SRFI-43）
 </ul>
 </div>
 
-
 <!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="abstract">
 <p></p>
@@ -93,6 +92,10 @@ vector-copy，list->vector，vector->list
 ちなみに，2022.3.1時点の最新版は 3.0.8 です．
 </ul>
 </div>
+
+$\lt$ $\gt$
+
+
 
 <!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <div id="contents">
@@ -1311,7 +1314,7 @@ vector-skip と vector-skip-right は，それぞれ，<span class="mysyn">pred?
 
 <p></p>
 <span class="myhead">具体例</span>
-以下では，2つの数値ベクタ vec1 と vec2 に対して，vec1$[i]$ $<$ vec2$[i]$ を満たす最小の添字（以下の2）と最大の添字（以下の3）を求めています．
+以下では，2つの数値ベクタ vec1 と vec2 に対して，vec1$[i]$ $\lt$ vec2$[i]$ を満たす最小の添字（以下の2）と最大の添字（以下の3）を求めています．
 <pre class="shell">
 guile&gt; <span class="mycmd">(use-modules (srfi srfi-43))</span>
 guile&gt; <span class="mycmd">(define vec1 #(3 5 4 1 5 9 2))</span>
@@ -1366,10 +1369,10 @@ procedure:
 <p></p>
 もっとも短いベクタの長さを $\ell_{min}$，<span class="mysyn">pred?</span> を$p$，
 実引数として指定してベクタを $vec_1$,...,$vec_n$ とおくとき，vector-any は，
-$p(vec_1[i],...,vec_n[i])$が真となる最小の添字 $i$（$0 \leq i < \ell_{min}$）を求めて，$p(vec_1[i],...,vec_n[i])$ の値を返します．真となる添字が1つもないときには #f を返します．直感的に言うと，ベクタ版の or 形式と言えます．
+$p(vec_1[i],...,vec_n[i])$が真となる最小の添字 $i$（$0 \leq i \lt \ell_{min}$）を求めて，$p(vec_1[i],...,vec_n[i])$ の値を返します．真となる添字が1つもないときには #f を返します．直感的に言うと，ベクタ版の or 形式と言えます．
 
 <p></p>
-一方，vector-every は，すべての添字 $i$（$0 \leq i < \ell_{min}$）に対して $p(vec_1[i],...,vec_n[i])$ が真だったとき，$p(vec_1[\ell_{min}-1],...,vec_n[\ell_{min}-1])$ の値を返します．ある添字で偽になったときには #f を返します．直感的に言うと，ベクタ版の and 形式と言えます．
+一方，vector-every は，すべての添字 $i$（$0 \leq i \lt \ell_{min}$）に対して $p(vec_1[i],...,vec_n[i])$ が真だったとき，$p(vec_1[\ell_{min}-1],...,vec_n[\ell_{min}-1])$ の値を返します．ある添字で偽になったときには #f を返します．直感的に言うと，ベクタ版の and 形式と言えます．
 
 
 <p></p>
@@ -1424,12 +1427,12 @@ $vec$，$val$，$cmp$ とおき，次の条件(*)が成り立っていると仮�
 <tr>
 <td>(*)</td>
 <td>
-添字 $p_1,p_2$（<span class="mysyn">start</span> $ \leq p_1 \leq p_2 <$ <span class="mysyn">end</span>）
+添字 $p_1,p_2$（<span class="mysyn">start</span> $ \leq p_1 \leq p_2 \lt$ <span class="mysyn">end</span>）
 が存在して，
    <ol type="a">
-   <li> <span class="mysyn">start</span> $\leq i < p_1$ を満たす添字 $i$ に対して $cmp(vec[i],val)<0$，かつ
+   <li> <span class="mysyn">start</span> $\leq i \lt p_1$ を満たす添字 $i$ に対して $cmp(vec[i],val) \lt 0$，かつ
    <li> $p_1 \leq i \leq p_2$ を満たす添字 $i$ に対して $cmp(vec[i],val)=0$，かつ
-   <li> $p_2 < i <$ <span class="mysyn">end</span> を満たす添字 $i$ に対して $cmp(vec[i],val)>0$
+   <li> $p_2 \lt i \lt$ <span class="mysyn">end</span> を満たす添字 $i$ に対して $cmp(vec[i],val) \gt 0$
    </ol>
 </td>
 </tr>
@@ -1452,8 +1455,8 @@ $p_1$〜$p_2$のどの添字を返すかは探索範囲（<span class="mysyn">st
 添字 $p$（<span class="mysyn">start</span> $ \leq p \leq$ <span class="mysyn">end</span>）
 が存在して，
    <ol type="a">
-   <li> <span class="mysyn">start</span> $\leq i < p$ を満たす添字 $i$ に対して $cmp(vec[i],val) \leq 0$，かつ
-   <li> $p \leq i <$ <span class="mysyn">end</span> を満たす添字 $i$ に対して $cmp(vec[i],val) \geq 0$
+   <li> <span class="mysyn">start</span> $\leq i \lt p$ を満たす添字 $i$ に対して $cmp(vec[i],val) \leq 0$，かつ
+   <li> $p \leq i \lt$ <span class="mysyn">end</span> を満たす添字 $i$ に対して $cmp(vec[i],val) \geq 0$
    </ol>
 </td>
 </tr>
