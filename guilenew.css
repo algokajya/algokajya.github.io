@@ -436,8 +436,8 @@ table.grammar {
 
 table.grammar td {
     vertical-align: top;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 3px;
+    padding-right: 3px;
     border: none;
 }
 
@@ -445,6 +445,9 @@ td.right {
     text-align: right; 
 }
 
+td.nobr {
+    white-space: nowrap; 
+}
 
 table.symbol {
     /* width: 95%; */
