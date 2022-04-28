@@ -519,6 +519,24 @@ table.equation td {
 }
 
 
+table.misc {
+    /* width: 100%;   */
+    /* margin-top: 5px; */
+    /* margin-bottom: 5px; */
+    border-collapse: collapse; 
+    border: none;
+    /* background-color:  #f0f0f0; */
+}
+
+table.misc td {
+    vertical-align: top;
+  /*  padding-left:  3px; */
+  /*  padding-right: 2px; */
+    border: none;
+    padding-bottom: 3px;
+}
+
+
 .ref{
     margin-left: 10%;
     color: blue;
@@ -615,6 +633,9 @@ span.myrx {
 
 myred { color: red; }
 span.myred { color: red; }
+
+mygray { color: #a0a0a0; }
+span.mygray { color: #a0a0a0; }
 
 mytt { font-family: monospace; }
 span.mytt { font-family: monospace; }
