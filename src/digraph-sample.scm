@@ -1,0 +1,26 @@
+;; digraph-sample.scm
+
+(add-to-load-path (getcwd))
+(use-modules (adjlist))
+
+(set! *random-state* (random-state-from-platform))
+
+(define (gen-digraph n)
+  (define adj (make-vector n '()))
+  (define nedges 0)
+  (define (random-weight lb ub) (+ lb (random (- ub lb))))
+  (define (ecode u v) (+ (* n u) v))
+  (define selected (make-bitvector (* n n) #f))
+  (let loop ((u 0))
+    (when (< u n)
+      (bitvector-set-bit! selected (ecode u u))
+      (loop (1+ u))))
+  (define ntrials (* 2 n))
+  (let loop ((k 0) (u (random n)) (v (random n)))
+    (when (< k ntrials)
+      (when (bitvector-bit-clear? selected (ecode u v))
+        (add-directed-edge adj u v (random-weight 1 10))
+        (bitvector-set-bit! selected (ecode u v))
+        (set! nedges (1+ nedges)))
+      (loop (1+ k) (random n) (random n))))
+  (make-graph n nedges 'directed 0 adj))
