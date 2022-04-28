@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya Guile基礎／グラフアルゴリズムの基礎</title>
+   <link rel="stylesheet" type="text/css" href="../../guilenew.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="../index.html">[Up]</a>
+&ensp; 
+<a class="noline" href="../../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+Guile基礎／グラフアルゴリズムの基礎
+</div>
+
+
+<!-- %%% change log %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<p></p>
+<div id="revise">
+<h4 class="revise">変更履歴</h4>
+<ul class="revise">
+<li class="revise">
+<span class="mydate">2022.4.28</span>：初出
+</ul>
+</div>
+
+
+<!-- %%% abstract %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="abstract">
+<p></p>
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+プログラミング学習の題材として，各種アルゴリズムの実装を試してみようと思います．
+とりあえず，グラフのアルゴリズムを実装してみようと思います．
+そこで，このノートは筆者が利用するグラフのデータ構造について説明します．
+<li>
+以下では，グラフに関して次のような用語や記法を使用します．
+<ul>
+<li>
+任意のグラフを $G = (V,E)$ で表します．
+ここで，$V$ は $G$ の頂点（vertex）の集合を表し，$E$ は$G$ の辺（edge）の集合を表します．
+<li>
+頂点 $u$ と $v$ を結ぶ無向辺を $\{u,v\}$ で表し，
+有向辺を $(u,v)$ で表すことにします．
+<li>
+$n$個の頂点からなるグラフの各頂点は $0 \sim n-1$ の番号によって表現します．
+従って，$n$頂点グラフの頂点集合は $V = \{0,1, ..., n-1\}$ となります．
+</ul>
+</ul>
+
+<ul>
+<li>
+筆者は Debian 11(bullseye) を使っていて，Guile は Debian 11 が配布するパッケージを使っています．そのバージョンは 3.0.5 です．
+ちなみに，2022.3.1時点の最新版は 3.0.8 です．
+</ul>
+</div>
+
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+<h4 class="hdln">目 次</h4>
+<p class="short"></p>
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">グラフのデータ構造</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#1">グラフのレコード型</a>
+   <li class="menu"><a class="noline" href="#2">グラフレコードの手続き</a>
+   <li class="menu"><a class="noline" href="#3">モジュール</a>
+   </ul>
+<li class="menu"><a class="noline" href="#4">具体例</a>
+   <ul class="menu">
+   <li class="menu"><a class="noline" href="#5">辺に重みのない無向グラフの具体例</a>
+   <li class="menu"><a class="noline" href="#6">辺重み付き有向グラフの具体例</a>
+   </ul>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="references">
+<h4 class="hdln">参考資料</h4>
+<ul>
+<li>
+Guile
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://www.gnu.org/software/guile/manual/">
+   GNU Guile Reference Manual（最新版）
+   </a><br>
+   <a class="noline" href="
+   https://www.gnu.org/software/guile/manual/html_node/Optional-Arguments.html
+   ">[6.7.4 Optional Arguments]
+   </a> 
+   <li class="menu"> 
+   <a class="noline" href="
+   https://raw.githubusercontent.com/algokajya/Scheme-Guile/Scheme/guile-manual-3.0.5.pdf
+   ">
+   GNU Guile Reference Manual, Edition 3.0.5, revision 1
+   </a>  (for Debian 11)
+   </ul>
+<div style="line-height:1.2em">
+<small>
+（注）Guileのマニュアルは常に最新版を参照しています．少し困ったことに，バージョン番号の3桁目が変化しただけでも，マニュアルの編成が大きく変化することがあります．実際，3.0.5 と 3.0.8 はかなり違っています．Guile のバージョンが上がることによって，上記のマニュアルの参照（特に，節番号）は古くなるかも知れません．ただ，リンク先の名前に節番号は入っていないので，リンクが途切れることはないだろうと期待します．それから，現在使用中のシステム（例えば，Debian 11 の 3.0.5）については，info形式のオンラインマニュアルが参照できます．
+</small>
+</div>
+
+<li> Scheme
+   <ul class="menu">
+   <li class="menu">
+   <a class="noline" href="https://small.r7rs.org/
+   ">small.r7rs.org</a>：
+   Revised<sup>7</sup> Report on the Algorithmic Language Scheme（略号：R<sup>7</sup>RS）<br>
+   <a class="noline" href="
+   https://small.r7rs.org/attachment/r7rs.pdf
+   ">英語版</a>
+   <a class="noline" href="
+   http://milkpot.sakura.ne.jp/scheme/r7rs.pdf
+   ">日本語版 </a>
+   <li class="menu">
+   R. Kent Dybvig: 
+   <a class="noline" href="https://www.scheme.com/tspl4/
+   ">The Scheme Programming Language, Fourth Edition, 2009.</a>（略号：TSPL）
+   <li class="menu">
+   <a class="noline" href="
+   http://www.r6rs.org/
+   ">www.r6rs.org
+   </a>：Revised<sup>6</sup> Report on the Algorithmic Language Scheme
+（略号：R<sup>6</sup>RS）
+   <a class="noline" href="http://www.r6rs.org/final/r6rs.pdf">英語版</a>
+   <a class="noline" href="
+   http://practical-scheme.net/wiliki/wiliki.cgi?R6RS%3a%E7%BF%BB%E8%A8%B3
+   ">日本語版 </a>
+   </ul>
+</ul>
+<ul>
+   <li class="menu"> 
+   このノートはMathJaxを使用しています．
+   <ul class="menu">
+   <li class="menu"> 
+   <a class="noline" href="
+   https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html
+   ">奥村晴彦先生のMathJaxのページ</a>
+   <li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax本家</a>
+   </ul>      
+</ul>
+</div>
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">グラフのデータ構造</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="1">グラフのレコード型</h4>
+<p class="short"></p>
+グラフを扱うためのデータ構造として，以下のように定義されるレコードを使用します．
+<pre class="list">
+(define-record-type &lt;graph&gt;
+  (make-graph number-of-nodes   ;; 頂点数
+              number-of-edges   ;; 辺数
+              type              ;; 無向（&apos;undirected） か 有向（&apos;directed）
+              root              ;; グラフの根
+              adj)              ;; 隣接リスト構造
+  graph?
+  (number-of-nodes get-num-nodes  set-num-nodes!)
+  (number-of-edges get-num-edges  set-num-edges!)
+  (type            get-type       set-type!)
+  (root            get-root       set-root!)
+  (adj             get-adj-vector set-adj-vector!))
+</pre>
+ここで：
+<ul>
+<li>
+type はグラフのタイプ（無向グラフか有向グラフ）を保持するフィールドです．
+無向グラフのときには &apos;undirected を指定し，
+有向グラフのときには &apos;directed を指定します．
+<li>
+root はグラフの根を保持するためのフィールドです．
+おもに根付き有向木を扱うときに使用します．
+<li>
+adj は隣接リストを保持するためのベクタです．
+頂点数（number-of-nodes）を$n$とするとき，
+このベクタは$n$個の成分を持ち，第$u$番目の成分は頂点$u$の隣接情報を保持していて，
+次のようなリストに束縛されます．
+<div class="dstyle">
+   ( ($v_1$ . $w_1$)  ($v_2$ . $w_2$) ... ($v_k$ . $w_k$) )
+</div>
+ここで，$v_1$〜$v_k$ は頂点$u$の隣接頂点を表し，各$w_i$は$u$と$v_i$を結ぶ辺の重みを表しています．ただし，有向グラフの場合，頂点$u$を始点とする有向辺の終点とその有向辺の重みを保持します．
+<li>
+以後，上記のペア ($v_i$ . $w_i$) のことを頂点$u$の<em>隣接点ペア</em>と呼び，
+上記のリストを頂点$u$の<em>隣接リスト</em>と呼ぶことにします．
+さらに，adj のことを<em>隣接リストベクタ</em>と呼ぶことにします．
+<li>
+辺の重みは整数値とします．辺に重みのないグラフを扱うときには，辺の重みを便宜的に #f に設定します． 
+</ul>
+以後，このレコードを<em>グラフレコード</em>と呼ぶことにします．
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="2">グラフレコードの手続き</h4>
+<p class="short"></p>
+上記の各フィールドのアクセッサやモディファイアに加えて，
+グラフレコードに関して次のようなマクロを利用します．
+これらをマクロにしているのは，今後の実験において100万頂点や1000万頂点のグラフを扱うつもりなので，手続き呼び出しのオーバーヘッドを少しでも減らすためです．
+<pre class="list">
+<span class="mygray">;; G が無向グラフのとき #t を返し，有向グラフのとき #f を返す．</span>
+(define-syntax-rule (undirected? G) 
+  (eq? (get-type G) 'undirected))
+
+<span class="mygray">;; G が有向グラフのとき #t を返し，無向グラフのとき #f を返す．</span>
+(define-syntax-rule (directed? G) 
+  (eq? (get-type G) 'directed))
+
+<span class="mygray">;; 頂点uの隣接リスト adj[u] に隣接点ペア (v . weight) を追加する．</span>
+(define-syntax-rule (add-directed-edge adj u v weight)
+  (vector-set! adj u (cons (cons v weight) (vector-ref adj u))))
+
+<span class="mygray">;; 頂点uの隣接リスト adj[u] に隣接点ペア (v . weight) を追加し，</span>
+<span class="mygray">;; 頂点vの隣接リスト adj[v] に隣接点ペア (u . weight) を追加する．</span>
+(define-syntax-rule (add-undirected-edge adj u v weight)
+  (begin 
+    (vector-set! adj u (cons (cons v weight) (vector-ref adj u)))
+    (vector-set! adj v (cons (cons u weight) (vector-ref adj v)))))
+</pre>
+これらに加えて，これ以後の実行例の中で次のようなユーティリティも使用します．
+<pre class="list">
+<span class="mygray">;; グラフGの隣接リストベクタを適当な形式で表示する．</span>
+(define* (show-graph G #:optional (print-neighbors #t))
+   ...... 詳細略 ......
+)
+
+<span class="mygray">;; Graphvizを利用してグラフGの画像データを生成する．</span>
+(define (make-graphviz G fname)
+   ...... 詳細略 ......
+)
+</pre>
+
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="3">モジュール</h4>
+<p class="short"></p>
+グラフレコードの定義と各種手続きをまとめて adjlist という名前のモジュールにしています．そのため，今後の実行例では，
+上記の定義や手続きを使うためにこのモジュールを次のようにロードします．
+<pre class="list">
+(use-modules (adjlist))
+</pre>
+このモジュールは 
+<a class="noline" href="
+https://github.com/algokajya/algokajya.github.io/blob/main/src/adjlist.scm
+">ajdlist.scm</a>
+にあります．
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="4">具体例</h3>
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="5">辺に重みのない無向グラフの具体例</h4>
+<p class="short"></p>
+以下の gen-graph は辺に重みのない$n$頂点の無向グラフを適当に生成します．以下の2番目のループは次のような計算を$2 \times n$回繰り返します．
+<ol>
+<li>
+頂点$u$と$v$の組をランダムに生成します．
+<li>
+$u\not=v$かつ辺$\{u,v\}$がまだ生成されていないとき，
+辺$\{u,v\}$を隣接リストベクタ adj に登録します．
+そうでないときには何もしません．
+</ol>
+
+<pre class="list">
+;; ugraph-sample.scm
+
+(add-to-load-path (getcwd))
+(use-modules (adjlist))
+
+(set! *random-state* (random-state-from-platform))
+
+(define (gen-ugraph n)
+  (define adj (make-vector n &apos;()))
+  (define nedges 0)
+  (define (ecode u v) (+ (* n u) v))
+  (define selected (make-bitvector (* n n) #f))
+  (let loop ((u 0))
+    (when (&lt; u n)
+      (bitvector-set-bit! selected (ecode u u))
+      (loop (1+ u))))
+  (define ntrials (* 2 n))
+  (let loop ((k 0) (u (random n)) (v (random n)))
+    (when (&lt; k ntrials)
+      (when (bitvector-bit-clear? selected (ecode u v))
+        (add-undirected-edge adj u v #f)
+        (bitvector-set-bit! selected (ecode u v))
+        (bitvector-set-bit! selected (ecode v u))
+        (set! nedges (1+ nedges)))
+      (loop (1+ k) (random n) (random n))))
+  (make-graph n nedges &apos;undirected 0 adj))
+</pre>
+以下の実行例は$10$頂点の無向グラフを生成していて，
+隣接リストベクタには14本の辺が登録されています．
+この例の場合，根は意味を持ちません．
+右側の図は Gaphviz を使って生成したものです．
+<div style="text-align:center">
+<table>
+<tr>
+<td>
+<pre class="shell" style="text-align:left">
+<span>&#36;</span> <span class="mycmd">guile -l ugraph-sample.scm</span>
+   ...... コンパイルメッセージ＆起動メッセージ ......
+guile&gt; <span class="mycmd">(define G (gen-ugraph 10))</span>
+guile&gt; <span class="mycmd">(show-graph G)</span>
+The # of nodes:10
+The # of edges:14
+graph type:undirected
+The root:0
+adj[0] -- ((7 . #f) (6 . #f))
+adj[1] -- ((6 . #f) (4 . #f) (2 . #f) (8 . #f))
+adj[2] -- ((3 . #f) (1 . #f) (8 . #f))
+adj[3] -- ((2 . #f) (4 . #f))
+adj[4] -- ((7 . #f) (8 . #f) (1 . #f) (3 . #f) (5 . #f))
+adj[5] -- ((4 . #f))
+adj[6] -- ((8 . #f) (1 . #f) (0 . #f))
+adj[7] -- ((4 . #f) (0 . #f))
+adj[8] -- ((4 . #f) (6 . #f) (9 . #f) (1 . #f) (2 . #f))
+adj[9] -- ((8 . #f))
+guile&gt; <span class="mycmd">(make-graphviz G "graph1")</span>
+<span>&#36;</span>1 = 0
+</pre>
+</td>
+<td></td>
+<td>
+<img src="graph1.png" width="220" alt="undirected tree">
+</td>
+</tr>
+</table>
+</div>
+
+
+<p></p>
+<!-- ===head line================================== -->
+<h4 class="hdln" id="6">辺重み付き有向グラフの具体例</h4>
+<p class="short"></p>
+以下の gen-digraph も前述した手続きとほぼ同じ処理を行っています．
+違いは，有向グラフを生成しているうこと，1以上10未満の整数をランダムに生成して辺の重みにしていることです．
+<pre class="list">
+;; digraph-sample.scm
+
+(add-to-load-path (getcwd))
+(use-modules (adjlist))
+
+(set! *random-state* (random-state-from-platform))
+
+(define (gen-digraph n)
+  (define adj (make-vector n '()))
+  (define nedges 0)
+  (define (random-weight lb ub) (+ lb (random (- ub lb))))
+  (define (ecode u v) (+ (* n u) v))
+  (define selected (make-bitvector (* n n) #f))
+  (let loop ((u 0))
+    (when (&lt; u n)
+      (bitvector-set-bit! selected (ecode u u))
+      (loop (1+ u))))
+  (define ntrials (* 2 n))
+  (let loop ((k 0) (u (random n)) (v (random n)))
+    (when (&lt; k ntrials)
+      (when (bitvector-bit-clear? selected (ecode u v))
+        (add-directed-edge adj u v (random-weight 1 10))
+        (bitvector-set-bit! selected (ecode u v))
+        (set! nedges (1+ nedges)))
+      (loop (1+ k) (random n) (random n))))
+  (make-graph n nedges &apos;directed 0 adj))
+</pre>
+以下の実行例は8頂点の辺重み付き有向グラフを生成しています．
+この例の場合も根（root）は意味を持ちません．
+<div style="text-align:center">
+<table>
+<tr>
+<td>
+<pre class="shell" style="text-align:left">
+<span>&#36;</span> <span class="mycmd">guile -l digraph-sample.scm</span>
+   ...... コンパイルメッセージ＆起動メッセージ ......
+guile&gt; <span class="mycmd">(define G (gen-digraph ))</span>
+guile&gt; <span class="mycmd">(show-graph G)</span>
+The # of nodes:8
+The # of edges:13
+graph type:directed
+The root:0
+adj[0] -> ((1 . 7) (5 . 3))
+adj[1] -> ((2 . 9) (3 . 5) (7 . 8))
+adj[2] -> ((0 . 1) (3 . 7) (5 . 8))
+adj[3] -> ((6 . 6) (7 . 2))
+adj[4] -> ((0 . 9) (6 . 7))
+adj[5] -> ((6 . 6))
+adj[6] -> ()
+adj[7] -> ()
+guile&gt; <span class="mycmd">(make-graphviz G "graph2")</span>
+<span>&#36;</span>1 = 0
+</pre>
+</td>
+<td>&emsp;</td>
+<td>
+<img src="graph2.png" width="180" alt="undirected tree">
+</td>
+</tr>
+</table>
+</div>
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+
