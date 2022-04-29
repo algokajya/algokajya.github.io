@@ -150,6 +150,7 @@
       (let ((lb (car weight-interval)) 
             (ub (cdr weight-interval)))
         (lambda (adj u v) 
-          (add-undirected-edge adj u v (get-random-weight lb ub))))
+          (let ((w (get-random-weight lb ub)))
+            (add-undirected-edge adj u v w))))
       (lambda (adj u v) (add-undirected-edge adj u v #f))))
 
