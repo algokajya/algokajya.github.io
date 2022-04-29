@@ -19,6 +19,7 @@
             show-neighbors
             show-graph
             make-graphviz
+            add-edge-proc
             ))
 
 ;;
@@ -105,4 +106,50 @@
       (format port "}\n")
       ))
   (system (string-append "dot -Tpng " gv-file " -o " png-file)))
+
+
+(define-syntax-rule (get-random-weight lb ub)
+  (+ lb (random (- ub lb))))
+
+;;
+;; Produce a procedure for adding an edge to adjecency vector.
+;;   directed 
+;;     = #t ==> add directed edges 
+;;     = #f ==> add undirected edges
+;;   reverse
+;;     = #t ==> add directed edges with direction toward the root
+;;     = #f ==> add directed edges with direction away from the root.  
+;;     If directed=#f, this is ignored.
+;;   weight-interval 
+;;     = #f ==> every edge has no weight. 
+;;     = a pair (lb . ub) of integers such that lb < ub
+;;          ==> every edge has an integer weight which is chosen randomly 
+;;              between lb(inclusive) and ub(exclusive).
+;;
+
+(define (add-edge-proc directed reverse weight-interval)
+  (if directed 
+      (directed-edge-proc weight-interval reverse)
+      (undirected-edge-proc weight-interval)))
+
+(define (directed-edge-proc weight-interval reverse)
+  (if weight-interval
+      (let ((lb (car weight-interval)) 
+            (ub (cdr weight-interval)))
+        (if reverse 
+            (lambda (adj u v) 
+              (add-directed-edge adj v u (get-random-weight lb ub)))
+            (lambda (adj u v) 
+              (add-directed-edge adj u v (get-random-weight lb ub)))))
+      (if reverse 
+          (lambda (adj u v) (add-directed-edge adj v u #f))
+          (lambda (adj u v) (add-directed-edge adj u v #f)))))
+
+(define (undirected-edge-proc weight-interval)
+  (if weight-interval
+      (let ((lb (car weight-interval)) 
+            (ub (cdr weight-interval)))
+        (lambda (adj u v) 
+          (add-undirected-edge adj u v (get-random-weight lb ub))))
+      (lambda (adj u v) (add-undirected-edge adj u v #f))))
 
