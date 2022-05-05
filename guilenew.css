@@ -184,11 +184,12 @@ ul {
     margin-bottom: 0.5em; 
 }
 
-/*
+
 ul li {
-    padding-bottom: 0.2em;
+    padding-bottom: 0.3em;
 }
 
+/*
 */
 
 ul.menu {
@@ -219,7 +220,11 @@ ul.item {
 }
 
 ul.item li {
-    margin-top: 1%;
+    margin-top: 1%; 
+}
+
+ul.misc li {
+    padding-bottom: 0.3em;
 }
 
 ul.none {
