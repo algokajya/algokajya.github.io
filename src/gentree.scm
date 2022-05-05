@@ -10,8 +10,6 @@
 
 (add-to-load-path (getcwd))
 (use-modules (adjlist))
-(use-modules (statprof))
-(use-modules (time-utils))
 
 (set! *random-state* (random-state-from-platform))
 
