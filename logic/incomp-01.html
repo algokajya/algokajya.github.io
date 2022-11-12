@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya 算術（自然数論の形式的体系）</title>
+   <link rel="stylesheet" type="text/css" href="logic.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<span class="nolink">[Prev]</span>
+&ensp; 
+<a class="noline" href="incomp.html">[Up]</a>
+&ensp; 
+<a class="noline" href="incomp-02.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+1. 算術（自然数論の形式的体系）
+</div>
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">算術の構文</a>
+<li class="menu"><a class="noline" href="#1">算術の標準モデル</a>
+<li class="menu"><a class="noline" href="#2">算術</a>
+</ul>
+
+
+</div>
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">算術の構文</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 1.1</span><br>
+述語論理で使用する論理記号（論理演算を表す記号や量化記号），等号 $=$，
+補助記号としての丸括弧 $($,$)$ が言語基盤として用意されていると仮定します．
+この仮定の上で，次の記号からなる集合（非論理的記号の集合）を <span class="mydef">算術の言語</span> と呼び，<span class="mydef">$\mathcal{L}_A$</span> で表します．
+<ul>
+<li> 定数記号 $\bar{0}$
+<li> 関数記号 $s$
+<li> 加算記号 $+$
+<li> 乗算記号 $\times$ 
+<li> 不等号 $\leq$ 
+</ul>
+なお，$\bar{0}$ の上線は「自然数の$0$」という意味を剥奪した単なる記号であることを強調しています．これはLisp系言語のシンボルと同じです．のちほど「標準モデル」と呼ばれる名前空間にインターンしますが，そのことによって「自然数の$0$」という意味に束縛されることになります．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 1.2</span><br>
+<span class="mydef">数項</span> を次のように再帰的に定義します．
+<ol class="anum">
+<li> $\bar{0}$ は数項です．
+<li> $\alpha$ が数項ならば，$(s ~ \alpha)$ も数項です．
+</ol>
+例えば，$\bar{0}$，$(s ~ \bar{0})$，$(s ~ (s ~ \bar{0}))$ などが数項です．
+なお，関数記号 $s$ の適用に関して前置記法を採用しています．
+
+<p class="short"></p>
+さらに，任意の自然数 $n$ に対して，数項
+<span class="mydef">$\lceil n \rceil$</span>
+を次のように再帰的に定義します．
+<div class="dstyle">
+\(
+   \lceil n \rceil = 
+      \begin{cases}
+         \bar{0} & \text{if $n=0$} \\
+         (s ~ \lceil n-1 \rceil) & \text{if $n \gt 0$} \\
+      \end{cases}
+\)   
+</div> 
+例えば，
+$\lceil 0 \rceil = \bar{0}$，
+$\lceil 1 \rceil = (s ~ \bar{0})$ ，
+$\lceil 2 \rceil = (s ~ (s ~ \bar{0}))$ などとなります．
+算術の標準モデルにおいて $\lceil n \rceil$ は自然数の $n$ を表すことになります．
+■
+
+<p class="short"></p>
+<b><u>補足</u></b>
+上の定義では，関数記号 $s$ の適用に関して前置記法を使用しています．
+これは筆者がLisp系言語に対して好ましい感情を頂いているためで，
+他意はありません．これ以後に出現する前置記法についても同様です．
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 1.3</span><br>
+算術における <span class="mydef">対象変数</span> を次のように再帰的に定義します．
+<ol class="anum">
+<li> ドル記号 $\$$ は対象変数です．
+<li> $\alpha$ が対象変数ならば，$\alpha\bar{0}$ も対象変数です．
+</ol>
+これは，ドル記号およびドル記号のうしろに有限個の$\bar{0}$を連接した記号列が対象変数であると定義しています．例えば，$\$$，$\$\bar{0}$，$\$\bar{0}\bar{0}$ などが対象変数です．以後，対象変数を単に <span class="mydef">変数</span> と略すことにします．■
+
+<p></p>
+<b><u>補足</u></b>
+上の定義は，
+<ul>
+<li>
+「対象変数」の全体を記号列の集合として見たとき，その集合が計算可能であること（言い換えると，記号列としての「対象変数」が字句解析できること）
+</ul>
+を保証するためのもので，他意はありません．従って，この条件さえ満たせば，対象変数をどのように定義してもかまいません．例えば，一般的なプログラミング言語における変数の構文を採用してもかまいません．
+
+<p class="short"></p>
+<b><u>記法</u></b>
+以後の議論において上記の形式の変数をそのまま素直に使うのは忍びないので，
+以下では，変数を $x,y,z$ などで表すことにします．
+正確に言うと，$x,y,z$ は上記の変数を値とするメタ変数になります．
+さらに，変数の列 $x_1, \ldots, x_n$ を $\vec{x}$ によって表したりします．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 1.4</span><br>
+数項，変数，加算記号，乗算記号によって構成される <span class="mydef">算術式</span> を再帰的に次のように定義します．
+<ol class="anum">
+<li> 数項と変数は算術式です．
+<li> $\alpha$ と $\beta$ が算術式ならば，$(+ ~ \alpha ~ \beta)$ と $(\times ~ \alpha ~ \beta)$ も算術式です．
+</ol>
+なお，加算記号や乗算記号の適用に関して前置記法を採用しています．
+
+<p class="short"></p>
+上記の算術式は，一般的な数学で言うところの多項式の形式をしています．この点に加えて，以後の議論ではディオファントス方程式（整数係数の多変数多項式 $t(\vec{x})$ を用いて $t(\vec{x})=0$ と表される方程式）に関わることになるので，
+算術式のことををあえて <span class="mydef">多項式</span> と呼ぶことにします．
+■
+
+<p class="short"></p>
+<b><u>記法</u></b>
+以後の議論において，
+多項式を $p,q,r$ などのメタ変数（多項式を値とする変数）で表します．さらに，$n$個の変数 $x_1, \ldots, x_n$ を使用している多項式を $p(x_1, \ldots, x_n)$ や $p(\vec{x})$ によって表したりします．さらに，多項式内の変数を２つのグループに分けて議論することがあり，そのような場合には，多項式を $p(\vec{x},\vec{y})$ などと表したりします．■
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 1.5</span><br>
+言語 $\mathcal{L}_A$ の <span class="mydef">論理式</span> （算術の論理式）を再帰的に次のように定義します．
+<ol class="anum">
+<li> $\alpha$ と $\beta$ が算術式ならば次の式は論理式です．
+   <div class="dstyle">
+   <table>
+   <tr>
+   <td>$(= ~~\alpha ~~\beta)$</td>
+   </tr>
+   <tr>
+   <td>$(\leq ~~\alpha ~~\beta)$</td>
+   </tr>
+   </table>
+   </div>
+<li>
+   $\alpha$ と $\beta$ が論理式ならば次の式は論理式です．
+   <div class="dstyle">
+   <table>
+   <tr>
+   <td>$(\neg ~~\alpha)$</td>
+   </tr>
+   <tr>
+   <td>$(\lor ~~\alpha ~~\beta)$</td>
+   </tr>
+   <tr>
+   <td>$(\land ~~\alpha ~~\beta)$</td>
+   </tr>
+   <tr>
+   <td>$(\rightarrow ~~\alpha ~~\beta)$</td>
+   </tr>
+   <tr>
+   <td>$(\leftrightarrow ~~\alpha ~~\beta)$</td>
+   </tr>
+   </table>
+   </div>
+<li>
+$\alpha$ が論理式で $x_1, \ldots, x_n$ が変数ならば次の式は論理式です．
+   <div class="dstyle">
+   <table>
+   <tr>
+   <td>$(\exists ~~(x_1 ~ \cdots ~x_n) ~~\alpha)$</td>
+   </tr>
+   <tr>
+   <td>$(\forall ~~(x_1 ~ \cdots ~x_n) ~~\alpha)$</td>
+   </tr>
+   </table>
+   </div>
+なお，上記の最初の論理式は「$x_1, \ldots, x_n$が存在して $\alpha$ が成り立つ」ことを表現しています．二番目のものも同様です．
+</ol>
+自由変数や束縛変数の定義は省略しますが，
+自由変数を含まない論理式のことを <span class="mydef">文</span> と言います．
+<!--
+$\mathcal{L}_A$ の文全体を <span class="mydef">$\mathcal{S}_A$</span> で表すことにします．
+-->
+■
+
+<p class="short"></p>
+<b><u>補足</u></b>
+上の定義では，筆者の単なる嗜好のために前置記法を使用していますが，
+数学的な議論の中では中置記法を使うことにします．
+■
+
+<p></p>
+<b><u>補足</u></b>
+上記の数項，変数，算術式，論理式は，次の条件を満たせば，
+どのように定義してもかまいません．
+<ul>
+<li>
+自然数係数の多変数多項式をもれなく表現できること．
+<li>
+記号列としての論理式全体が計算可能な集合であること．
+言い換えると，論理式を記号列として見たとき，
+それを字句解析および構文解析できること．
+</ul>
+例えば，上の定義では著者の嗜好のために前置記法を採用していますが，中置記法や後置記法を採用してもかまいません．また，数項や変数についても，一般的なプログラミング言語における構文を採用してもかまいません．ただ，上のような前置記法を採用すると，Lisp系言語のread関数を利用することによって字句解析・構文解析の大部分を端折ることができるので，とってもお得です．
+■
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="1">算術の標準モデル</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義1.6</span><br>
+自然数全体を $\mathbb{N}$ で表し，自然数上の後者関数，加算，乗算，不等号を，それぞれ $s^\mathbb{N}$，$+^\mathbb{N}$，$\times^\mathbb{N}$，$\leq^\mathbb{N}$ で表すことにします．
+なお，後者関数 $s^\mathbb{N}$ は，任意の自然数 $n \in \mathbb{N}$ に対して $s^\mathbb{N}(n)=n +^\mathbb{N} 1$ によって定義されます．
+
+<p class="short"></p>
+言語 $\mathcal{L}_A$ の対象領域（変数が取りうる値の集合）を $\mathbb{N}$ とし，
+言語 $\mathcal{L}_A$ の記号 $\bar{0}$，$s$，$+$，$\times$，$\leq$ を，それぞれ，
+自然数の$0$，$s^\mathbb{N}$，$+^\mathbb{N}$，$\times^\mathbb{N}$，$\leq^\mathbb{N}$ と解釈して得られる$\mathcal{L}_A$-構造を算術の <span class="mydef">標準モデル</span> と呼びます．以後，この標準モデルを <span class="mydef">$\mathcal{N}$</span> で表すことにします．■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義1.7</span><br>
+言語 $\mathcal{L}_A$ における文 $\varphi$ が標準モデル $\mathcal{N}$ において真であることを
+<div class="dstyle">
+   $\mathcal{N} \models \varphi$
+</div>
+で表し，偽であることを
+<div class="dstyle">
+   $\mathcal{N} \not\models \varphi$
+</div>
+で表します．■
+
+<p></p>
+<b><u>補足</u></b>
+上記の真偽の定義は示しませんが，その定義のことを <span class="mydef">真理条件の定義 </span> と呼ぶことがあります．真偽の定義については述語論理の教科書などを参照して下さい．
+■
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="2">算術</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義1.8</span><br>
+算術とは，述語論理の適当な公理体系に自然数論固有の公理（言語 $\mathcal{L}_A$ の文）を追加して得られる形式的な公理体系のことです．
+このノートでは，
+述語論理の適当な公理体系が基盤としてすでに用意されていると仮定して，
+自然数論固有の公理からなる集合のことを <span class="mydef">算術</span> と呼ぶことにします．
+■
+
+<p></p>
+<b><u>補足</u></b>
+このノートでは，算術 $T$ の要素（自然数論固有の公理）を特定することなく議論を進めていきます．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義1.9</span><br>
+言語 $\mathcal{L}_A$ における任意の文 $\varphi$ に対して，$\varphi$ が算術 $T$ において <span class="mydef">証明可能</span> であることを
+<div class="dstyle">
+   $T \vdash \varphi$
+</div>
+で表し，<span class="mydef">証明不可能</span> であることを
+<div class="dstyle">
+   $T \not\vdash \varphi$
+</div>
+で表します．■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義1.10</span><br>
+算術 $T$ が <span class="mydef">意味論的に不完全</span> であるということを，
+<ul>
+<li>
+言語 $\mathcal{L}_A$ における文 $\varphi$ が存在して
+$\mathcal{N} \models \varphi$ かつ $T \not\vdash \varphi$ 
+</ul>
+が成り立つこととします．
+
+<p class="short"></p>
+一方，算術 $T$ が <span class="mydef">構文論的に不完全</span> であるということを，
+<ul>
+<li>
+言語 $\mathcal{L}_A$ における文 $\varphi$ が存在して
+$T \not\vdash \varphi$ かつ $T \not\vdash \neg\varphi$ 
+</ul>
+が成り立つこととします．■
+
+<p></p>
+<b><u>補足</u></b>
+言語 $\mathcal{L}_A$ における任意の文 $\varphi$ に対して $\mathcal{N} \models \varphi$ または $\mathcal{N} \models \neg\varphi$ が成り立つので，算術 $T$ が構文論的に不完全ならば意味論的に不完全です．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義1.11</span><br>
+算術 $T$ が記号列の集合として計算的枚挙可能であるとき，
+$T$ は <span class="mydef">計算的枚挙可能</span> であると言います．
+■
+
+<p></p>
+<u><b>補足</b></u>
+計算的枚挙可能ではない算術の中には意味論的に完全（従って，構文論的にも完全）なものがあります．例えば，
+<div class="dstyle">
+   $T = \{ \varphi \in \mathcal{S}_A \mid \mathcal{N} \models \varphi \}$
+</div>
+と定義される $T$ は意味論的に完全な算術であり，「真の算術」と呼ばれています．
+ただし，$\mathcal{S}_A$ は $\mathcal{L}_A$ の文全体を表しています．
+■
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

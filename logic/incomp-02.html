@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya MRDP定理</title>
+   <link rel="stylesheet" type="text/css" href="logic.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="incomp-01.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="incomp.html">[Up]</a>
+&ensp; 
+<a class="noline" href="incomp-03.html">[Next]</a>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+2. MRDP定理
+</div>
+
+
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">D方程式（ディオファントス方程式）</a>
+<li class="menu"><a class="noline" href="#1">MRDP定理とその系</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">D方程式（ディオファントス方程式）</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 2.1</span><br>
+記号列としての多項式全体を <span class="mydef">$\mathcal{P}$</span> で表すことにします．
+さらに，任意の多項式 $p \in \mathcal{P}$ に対して，$p$ に含まれる変数の集合を <span class="mydef">$var(p)$</span> で表すことにします． このとき，多項式の順序対からなる集合 <span class="mydef">$\mathcal{D}$</span> を次のように定義します．
+<div class="dstyle">
+   $\mathcal{D} = \{ \langle p, q \rangle \mid p \in \mathcal{P}, q \in \mathcal{P}, var(p)=var(q) \}$
+</div>
+$\mathcal{D}$ の要素 $\langle p, q \rangle$ を <span class="mydef">D方程式</span> と呼ぶことにします．
+
+<p class="short"></p>
+さらに，D方程式を多項式内の変数を明記して $\langle p(\vec{x}), q(\vec{x}) \rangle$ などと表したり，変数を２つのグループに分けて議論とするときには $\langle p(\vec{x},\vec{y}), q(\vec{x},\vec{y}) \rangle$ などと表したりします．
+■
+
+
+<p></p>
+<b><u>補足</u></b>
+「D方程式」はディオファントス方程式を略したものです．一般に，ディオファントス方程式は整数係数の多変数多項式 $t(\vec{x})$ を使って $t(\vec{x})=0$ と表される方程式のことです．一方，この方程式は，$t(\vec{x})$ における負の積項を右辺に移項することによって，自然数係数の多変数多項式 $p(\vec{x})$ と $q(\vec{x})$ を使って $p(\vec{x}) = q(\vec{x})$ と表すことができます．上記の $\mathcal{D}$ はこのような方程式をすべて集めた集合です．このノートでは，記法上の混乱を避けるために，D方程式を等号を使って表さずに，上のような順序対によって表すことにします．
+
+<p class="short"></p>
+厳密に言うと，上記のD方程式の両辺 $p,q$（$t(\vec{x})$ における負の積項を右辺に移項して得られる２つの多項式）は一般に同じ変数を持っているとは限りません．一方，$0$ を係数とする積項を（便宜的に）追加することによって両辺を同じ変数を持つようにできます．従って，両辺が同一の変数を持つと仮定しても一般性を失うことはありません．
+
+<p class="short"></p>
+ただ，D方程式の両辺が同じ変数を持つかどうかは本当はどうでもよいことです．このノートでは，D方程式の両辺が異なる変数を持ったときの表記法がうまく思いつかなかったので，両辺が同じ変数を持つような方程式だけを扱うことにしています．上記の「$var(p)=var(q)$」という条件は単に表記法に関する都合でしかありません．
+■
+
+<p></p>
+<a class="noline" href="incomp-01.html">前節</a>の多項式の定義から，
+次の命題は明らかと言っても怒られることはないでしょう．
+以後の議論では，この命題を暗黙的に利用します．
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">命題 2.2</span><br>
+$\mathcal{P}$ は計算可能です．
+従って，$\mathcal{D}$ も計算可能です．■
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="1">MRDP定理とその系</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定理 2.3（MRDP定理）</span><br>
+任意の計算的枚挙可能な集合 $A \subseteq \mathbb{N}^n$ に対して，D方程式 $\langle p(\vec{x},\vec{y}),q(\vec{x},\vec{y}) \rangle \in \mathcal{D}$ が存在して，
+<div class="ddstyle">
+   $A = \{ \vec{a} \in \mathbb{N}^n \mid 
+      \mathcal{N} \models \exists{\vec{y}}(p(\lceil \vec{a} \rceil,\vec{y}) = q(\lceil \vec{a} \rceil,\vec{y})) \}$ 
+</div>
+が成り立ちます．ここで，$\vec{a}$ は自然数列 $a_1, a_2, \ldots, a_n$ の省略記法であり，$\lceil \vec{a} \rceil$ は数項列 $\lceil a_1 \rceil, \lceil a_2 \rceil, \ldots, \lceil a_n \rceil$ の省略記法です．さらに，$\vec{y}$ は変数列 $y_1, \ldots, y_m$ の省略記法であり，「$\exists{\vec{y}}$」は「$\exists{y_1}\exists{y_2} \cdots \exists{y_m}$」の省略記法です．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 2.4</span><br>
+$\mathcal{D}$ の部分集合
+$\mathcal{D}^\mathcal{N}_\exists$ 
+と 
+$\mathcal{D}^\mathcal{N}_\forall$ 
+を次のように定義します．
+<div class="dstyle">
+   $\mathcal{D}^\mathcal{N}_\exists$ $=$ 
+      $\{ \langle p, q \rangle \in \mathcal{D} \mid 
+          \mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \}$ <br>
+   $\mathcal{D}^\mathcal{N}_\forall$ $=$ 
+      $\{ \langle p, q \rangle \in \mathcal{D} \mid 
+          \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \}$ 
+</div>
+ここで，$\vec{x}$は変数列 $x_1, x_2, \ldots, x_n$ の省略記法であり，
+「$\exists{\vec{x}}$」は「$\exists{x_1}\exists{x_2} \cdots \exists{x_n}$」の省略記法です．「$\forall{\vec{x}}$」も「$\forall{x_1}\forall{x_2}\cdots\forall{x_n}$」の省略記法です．
+$\mathcal{D}^\mathcal{N}_\exists$ は自然数解を持つD方程式の集合であり，
+$\mathcal{D}^\mathcal{N}_\forall$ は自然数解を持たないD方程式の集合です．
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">系 2.5</span><br>
+上で定義した２つの集合に対して次が成り立ちます．
+<ol class="pnum">
+<li> 
+$\mathcal{D}^\mathcal{N}_\exists$ は計算的枚挙可能ですが計算不可能です．
+<li>
+$\mathcal{D}^\mathcal{N}_\forall$ は計算的枚挙可能ですらありません．
+</ol>
+<b><u>証明</u></b>
+(1)
+$\mathcal{D}^\mathcal{N}_\exists$ が計算的枚挙可能であることは明らかと言っても怒られないと期待します．そこで，$K \subseteq \mathbb{N}$ を適当な計算不可能な計算的枚挙可能集合（例えば，停止性判定問題）とします．このとき，MRDP定理と $\mathcal{D}^\mathcal{N}_\exists$ の定義より，D方程式 $\langle p(x,\vec{y}),q(x,\vec{y}) \rangle \in \mathcal{D}$ が存在して，
+任意の自然数 $a \in \mathbb{N}$ に対して
+<div class="dstyle">
+\(
+   a \in K \iff 
+   \mathcal{N} \models \exists{\vec{y}}(p(\lceil a \rceil,\vec{y}) = q(\lceil a \rceil,\vec{y})) \iff
+   \langle p(x,\vec{y}),q(x,\vec{y}) \rangle \in \mathcal{D}^\mathcal{N}_\exists
+\)
+</div>
+が成り立ちます．これは，$K$ が $\mathcal{D}^\mathcal{N}_\exists$ に還元可能（many-one reducible）であることを示しています．従って，$\mathcal{D}^\mathcal{N}_\exists$ は計算不可能です．<br>
+&emsp;(2) 
+$\mathcal{D}^\mathcal{N}_\exists$ と $\mathcal{D}^\mathcal{N}_\forall$ の定義から，
+$\mathcal{D} = 
+   \mathcal{D}^\mathcal{N}_\exists \cup \mathcal{D}^\mathcal{N}_\forall$ 
+かつ
+$\mathcal{D}^\mathcal{N}_\exists \cap\mathcal{D}^\mathcal{N}_\forall = \emptyset$ 
+が成り立ちます．さらに，$\mathcal{D}$ は計算可能です．つまり，
+$\mathcal{D}^\mathcal{N}_\exists$ と $\mathcal{D}^\mathcal{N}_\forall$ は計算可能集合を全体集合とする補集合の関係にあります．この事実より，$\mathcal{D}^\mathcal{N}_\forall$ が計算的枚挙可能であると仮定すると，$\mathcal{D}^\mathcal{N}_\exists$ が計算可能となってしまって(1)に反します．よって，$\mathcal{D}^\mathcal{N}_\forall$ は計算的枚挙可能ではありません．■
+
+
+<p></p>
+<b><u>補足</u></b>&emsp;
+<a class="noline" href="incomp-03.html">次節</a>以降の議論では，$\mathcal{D}^\mathcal{N}_\forall$ が計算的枚挙可能でないという事実を利用します．
+■
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

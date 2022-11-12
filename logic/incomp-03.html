@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya 不完全性の十分条件</title>
+   <link rel="stylesheet" type="text/css" href="logic.css">
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+
+
+<body>
+
+<!-- %%% header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- <span class="nolink">[Next]</span> -->
+<div id="header">
+<a class="noline" href="incomp-02.html">[Prev]</a>
+&ensp; 
+<a class="noline" href="incomp.html">[Up]</a>
+&ensp; 
+<!-- 
+<a class="noline" href="incomp-04.html">[Next]</a>
+-->
+<span class="nolink">[Next]</span>
+&ensp; 
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+3. 不完全性の十分条件
+</div>
+
+<ul>
+<li>
+<a class="noline" href="https://www.amazon.co.jp/dp/432011096X">[Kik2014]</a>
+には，算術の不完全性が成り立つための様々な十分条件が示されています．
+それを手がかりに，MRDP定理に基づく十分条件を調べてみます．
+</ul>
+
+<p class="short"></p>
+<!-- %%% contents %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="contents">
+
+<ul class="menu">
+<li class="menu"><a class="noline" href="#0">準備</a>
+<li class="menu"><a class="noline" href="#1">$\Pi_1^\mathcal{D}$-健全性</a>
+<li class="menu"><a class="noline" href="#2">$\Delta_0^\mathcal{D}$-完全性 ＆ 無矛盾性</a>
+<li class="menu"><a class="noline" href="#3">$\Delta_0^\mathcal{D}$-完全性 ＆ $\Sigma_1^\mathcal{D}$-健全性</a>
+<li class="menu"><a class="noline" href="#4">$\Delta_0^\mathcal{D}$-完全性 ＆ $\omega^\mathcal{D}$-無矛盾性</a>
+<li class="menu"><a class="noline" href="#5">十分条件のまとめ</a>
+</ul>
+
+
+</div>
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%% main contents %%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="0">準備</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.1</span><br>
+任意の算術 $T$ に対して，$\mathcal{D}$ の部分集合
+$\mathcal{D}^T_\exists$ 
+と
+$\mathcal{D}^T_\forall$
+を次のように定義します．
+<div class="dstyle">
+\(
+   \mathcal{D}^T_\exists
+      = 
+   \{ \langle p,q \rangle \in \mathcal{D} \mid 
+         T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \}
+\)
+<br>
+\(
+   \mathcal{D}^T_\forall 
+      = 
+   \{ \langle p,q \rangle \in \mathcal{D} \mid 
+         T \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \}
+\)      
+</div>
+$\mathcal{D}^T_\exists$
+は自然数解を持つことが $T$ において証明可能なD方程式の集合であり，
+$\mathcal{D}^T_\forall$
+は自然数解を持たないことが $T$ において証明可能なD方程式の集合です．■
+
+<p></p>
+上記の集合に対して次の命題が成り立ちます．
+この命題は直感的に明らかだと言ったっら少し叱られるようにも思われますが，
+詳細な証明は省略いたします．
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">命題 3.2</span><br>
+計算的枚挙可能な任意の算術 $T$ に対して，
+$\mathcal{D}^T_\exists$
+と
+$\mathcal{D}^T_\forall$
+はともに計算的枚挙可能です．
+<p class="sshort"></p>
+<b><u>略証</u></b>&emsp;
+以下，$\mathcal{D}^T_\forall$
+を受理するTM（チューリング機械）の概要を示します．$\mathcal{D}^T_\exists$
+についても同様です．概要を示すための前提として，$T$ は計算的枚挙可能であるとします．
+さらに，記号列としての「$T$ における証明」を構成する記号からなる集合を $\mathcal{X}$ で表し，$\mathcal{X}$ 上の記号列全体を $\mathcal{X}^*$ で表します．
+
+<p class="short"></p>&emsp;
+まず最初に，算術の基盤にある述語論理を具体的に定め（例えば，自然演繹やヒルベルトの公理体系などを選び），「$T$ における証明」の構文を適切に定義すれば，$T$ を受理するTMを利用して次のようなTM $M_0$ が存在することを示せます．
+<ul>
+<li>
+$M_0$ はD方程式 $\langle p,q \rangle \in \mathcal{D}$ と記号列 $\alpha \in \mathcal{X}^*$ からなる順序3組 $\langle p,q,\alpha \rangle$ を入力として受け取って，次のように動作します．
+   <ol class="anum">
+   <li>
+   $\alpha$ は
+   $\langle p,q \rangle \in \mathcal{D}^T_\forall$ であること（つまり，$T \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$であること）の「$T$における証明」を表す記号列である 
+   <br>&emsp;&emsp;&emsp;&emsp;
+   $\Longrightarrow$ $M_0$ は停止する．
+   <li>
+   上記以外の場合，つまり $\alpha$ が $T \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$ であることの「$T$における証明」を表す記号列でない
+   <br>&emsp;&emsp;&emsp;&emsp;
+   $\Longrightarrow$ $M_0$ は無限実行する．
+   </ol>
+</ul>
+この $M_0$ は $T \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$ であることの「$T$ における証明」を構文的に解析するプログラムを示しています．
+その詳細は難しくはないと思いますが面倒なので省略いたします．
+
+
+<p class="short"></p>
+次に，この $M_0$ を使って次のようなTM $M_1$ を作ることができます．
+<ul>
+<li>
+$M_1$ はD方程式 $\langle p,q \rangle \in \mathcal{D}$ と記号列 $\alpha \in \mathcal{X}^*$ と自然数 $t \in \mathbb{N}$ からなる順序4組 $\langle p,q,\alpha,t \rangle$ を入力として受け取って，次のように動作します．
+   <ol class="anum">
+   <li>
+   $M_0$ が入力 $\langle p,q,\alpha \rangle$ に対して $t$ ステップ以内に停止する
+   <br>&emsp;&emsp;&emsp;&emsp;
+      $\Longrightarrow$ $M_1$ は入力 $\langle p,q,\alpha,t \rangle$ をacceptして停止する．
+   <li>
+   $M_0$ が入力 $\langle p,q,\alpha \rangle$ に対して $t$ ステップ以内に停止しない
+   <br>&emsp;&emsp;&emsp;&emsp;
+      $\Longrightarrow$ $M_1$ は入力 $\langle p,q,\alpha,t \rangle$ をrejectして停止する．
+   </ol>
+</ul>
+これは $M_0$ にタイマーを組み込めばよいだけのことです．
+なお，「ステップ」とは計算状況の遷移回数のことです．
+
+<p class="short"></p>
+最後に，$\alpha_1, \alpha_2, \ldots $ を $\mathcal{X}^*$ に属する記号列の計算可能な列挙（例えば，適当な辞書式順序に基づく列挙）として，$M_1$ を使って次のようなTM $M_2$ を作ります．
+<ul>
+<li>
+$M_2$ はD方程式 $\langle p,q \rangle \in \mathcal{D}$ を入力として受け取って，
+$t=1,2,\ldots$ に対して次の処理を繰り返します．
+   <ul>
+   <li> <b><u>for</u></b> $i=1,2, \ldots, t$:
+      <ul>
+      <li> <b><u>if</u></b> $M_1$ が入力 $\langle p,q,\alpha_i,t \rangle$ に対してacceptして停止する <b><u>then</u></b> $M_2$も停止する
+      </ul>
+   </ul>
+</ul>
+この $M_2$ と任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<ul>
+<li>
+$\langle p,q \rangle \in \mathcal{D}^T_\forall$ ならば，その「$T$における証明」 $\alpha_j \in \mathcal{X}^*$ が存在します．従って，自然数 $k \in \mathbb{N}$ が存在して，$M_1$ は入力 $\langle p,q,\alpha_j,k \rangle$ をacceptして停止します．従ってまた，$t'=\max\{j,k\}$ とおくと，上記の $t$ に関するループは $t=t'$ のときに停止します．
+<li>
+一方，$\langle p,q \rangle \not\in \mathcal{D}^T_\forall$ ならば，$\langle p,q \rangle \in \mathcal{D}^T_\forall$ であることの「$T$における証明」は存在しないので，上記のforループ内の $M_1$ がacceptして停止することはありません．そのため，$M_2$も停止することはありません．つまり，上記の $t$ に関するループは無限実行します．
+</ul>
+以上より，$M_2$ は $\mathcal{D}^T_\forall$ を受理するので，$\mathcal{D}^T_\forall$ は計算的枚挙可能です．
+■
+
+
+<p></p>
+<b><u>補足</u></b>
+MRDP定理の系より $\mathcal{D}^\mathcal{N}_\forall$ は計算的枚挙可能ではありません．
+これと上記の命題より，
+$\mathcal{D}^\mathcal{N}_\forall \not= \mathcal{D}^T_\forall$
+が成り立ちます．
+つまり，計算的枚挙可能な算術については，D方程式の解の非存在性に関して真理条件と証明可能性の間に必ずズレが生じます．
+以下の議論では，このズレを使って不完全性の証拠を見つけていきます．
+
+
+
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="1">$\Pi_1^\mathcal{D}$-健全性</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.3</span><br>
+算術 $T$ が <span class="mydef">$\Pi_1^\mathcal{D}$-健全</span> であるということを，
+<ul>
+<li>
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して 
+<div class="dstyle">
+\(
+   T \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+      \Longrightarrow 
+   \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))
+\)
+</div>
+</ul>
+が成り立つこととします．この条件は
+<div class="ddstyle">
+\(
+  \mathcal{D}^T_\forall \subseteq \mathcal{D}^\mathcal{N}_\forall
+\)
+</div>
+が成り立つことと等価です．
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定理 3.4</span><br>
+$T$ を計算的枚挙可能で$\Pi_1^\mathcal{D}$-健全な算術とします．
+このとき，D方程式 $\langle p,q \rangle \in \mathcal{D}$ が存在して，
+<div class="dstyle">
+   $\mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$
+      かつ
+   $T \not\vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$
+</div>
+が成り立ちます．つまり，$T$ は意味論的に不完全です．<br>
+<p class="sshort"></p>
+<b><u>証明</u></b>&nbsp;
+$\Pi_1^\mathcal{D}$-健全性より，$\mathcal{D}^T_\forall \subseteq \mathcal{D}^\mathcal{N}_\forall$ が成り立ちます．さらに，$\mathcal{D}^T_\forall$ は計算的枚挙可能であり，MRDP定理の系より $\mathcal{D}^\mathcal{N}_\forall$ は計算的枚挙可能ではないので，$\mathcal{D}^T_\forall \not= \mathcal{D}^\mathcal{N}_\forall$ が成り立ちます．
+従って，$\langle p,q \rangle \in \mathcal{D}^\mathcal{N}_\forall$ かつ
+$\langle p,q \rangle \not\in \mathcal{D}^T_\forall$
+を満たすD方程式 $\langle p,q \rangle \in \mathcal{D}$ が存在します．
+このD方程式は上で述べた条件を満たします．■
+
+<p></p>
+<b><u>補足 3.4.1</u></b>&nbsp;
+上記の算術 $T$ に対して，差集合 
+$\mathcal{D}^\mathcal{N}_\forall - \mathcal{D}^T_\forall$ 
+が有限集合だったと仮定すると，$\mathcal{D}^T_\forall$
+は計算的枚挙可能なので
+$\mathcal{D}^\mathcal{N}_\forall = \mathcal{D}^T_\forall \cup (\mathcal{D}^\mathcal{N}_\forall - \mathcal{D}^T_\forall)$ 
+も計算的枚挙可能になってしまいます．これはMRDP定理の系に反します．
+従って，
+差集合 
+$\mathcal{D}^\mathcal{N}_\forall - \mathcal{D}^T_\forall$ 
+は無限集合です．
+つまり，上の定理の条件を満たすD方程式は無数に存在します．
+
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="2">$\Delta_0^\mathcal{D}$-完全性 ＆ 無矛盾性</h3>
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.5</span><br>
+算術 $T$ が <span class="mydef">$\Delta_0^\mathcal{D}$-完全</span> であるということを
+<ul>
+<li> 
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ と 任意の自然数列 $\vec{a} \in \mathbb{N}^n$ に対して
+   <ol class="anum">
+   <li>
+   $\mathcal{N} \models p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil)
+      \Longrightarrow 
+    T \vdash p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil)$
+   &emsp;かつ
+   <li>
+   $\mathcal{N} \models \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))
+      \Longrightarrow 
+    T \vdash \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))$
+   </ol>
+</ul>
+が成り立つこととします．ここで，$\vec{a}$ は自然数列 $a_1, \ldots, a_n$ の省略記法であり，$\lceil \vec{a} \rceil$ は数項列 $\lceil a_1 \rceil, \ldots, \lceil a_n \rceil$ の省略記法です（以下も同様です）．■
+
+<p class="short"></p>
+<b><u>補足</u></b>
+$\Delta^\mathcal{D}_0$-完全性は，算術 $T$ が数値的な計算（変数を含まない等式や非等式の証明）を正しく遂行できることの必要条件と言えます．従って，$\Delta^\mathcal{D}_0$-完全性は，自然な（あるいは，合理的な）算術が満たすべき最低限の性質であると言っても言い過ぎではないように思います．
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.6</span><br>
+算術 $T$ が <span class="mydef">$\Sigma_1^\mathcal{D}$-完全</span> であるということを
+<ul>
+<li> 
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して
+   <div class="dstyle">
+   $\mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+      \Longrightarrow 
+    T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
+   </div>
+</ul>
+が成り立つこととします．この条件は
+<div class="ddstyle">
+\(
+  \mathcal{D}^\mathcal{N}_\exists \subseteq \mathcal{D}^T_\exists
+\)
+</div>
+が成り立つことと等価です．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.7</span><br>
+算術 $T$ が <span class="mydef">無矛盾</span> であるということを，
+<ul>
+<li>
+   $\mathcal{L}_A$ の任意の文 $\varphi$ に対して 
+   $T \not\vdash \varphi$ または $T \not\vdash \neg\varphi$
+</ul>
+が成り立つこととします．
+■
+
+<p class="short"></p>
+<b><u>補足</u></b>
+$T$ が矛盾しているとき，$\mathcal{L}_A$のすべての文 $\varphi$ に対して $T \vdash \varphi$ となります．従って，$\mathcal{L}_A$のある文 $\varphi$ に対して $T \not\vdash \varphi$ ならば $T$ は無矛盾です．一般に，無矛盾性の証明はこの事実を使用します．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">補題 3.8</span><br>
+任意の算術 $T$ に対して
+<div class="ddstyle">
+   $T$ は $\Delta_0^\mathcal{D}$-完全 $\Longrightarrow$ 
+   $T$ は $\Sigma_1^\mathcal{D}$-完全
+</div>
+が成り立ちます．
+<p class="sshort"></p>
+<b><u>証明</u></b>&emsp;
+$T$ が$\Delta_0^\mathcal{D}$-完全だったとします．このとき，
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<p class="short"></p>
+<div class="ddstyle">
+\(
+   \begin{array}{lll}
+      &\mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\[2pt]
+   \Longrightarrow 
+      &\mathcal{N} \models p(\lceil\vec{a}\rceil)=q(\lceil\vec{a}\rceil))
+            ~~\text{for some $\vec{a} \in \mathbb{N}^n$} 
+      & \text{(真理条件の定義)} \\[2pt]
+   \Longrightarrow 
+      & T \vdash p(\lceil\vec{a}\rceil)=q(\lceil\vec{a}\rceil))
+            ~~\text{for some $\vec{a} \in \mathbb{N}^n$} 
+      & \text{($\Delta_0^\mathcal{D}$-完全性)} \\[2pt]
+   \Longrightarrow 
+      & T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+      & \text{($\exists$-導入)} \\
+   \end{array}
+\)
+</div>
+<p class="short"></p>
+よって，$T$ は$\Sigma_1^\mathcal{D}$-完全です．■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定理 3.9</span><br>
+任意の算術 $T$ に対して次が成り立ちます．
+<ol class="pnum">
+<li> $T$ は$\Pi_1^\mathcal{D}$-健全である $\Longrightarrow$ $T$ は無矛盾である
+<li> $T$ は$\Delta_0^\mathcal{D}$-完全かつ無矛盾である $\Longrightarrow$ $T$ は$\Pi_1^\mathcal{D}$-健全である
+</ol>
+<p class="sshort"></p>
+従ってまた，$\Delta_0^\mathcal{D}$-完全な任意の算術 $T$ に対して，
+無矛盾性と$\Pi_1^\mathcal{D}$-健全性は等価な条件であることが分かります．
+<p class="sshort"></p>
+<b><u>証明</u></b>&emsp;(1)
+$T$ が$\Pi_1^\mathcal{D}$-健全だったとします．
+このとき，
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<p class="short"></p>
+<div class="ddstyle">
+\(
+   \begin{array}{lll}
+      &\mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\[2pt]
+   \Longrightarrow 
+      &\mathcal{N} \not\models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+      & \text{(真理条件の定義)} \\[2pt]
+   \Longrightarrow 
+      & T \not\vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+      & \text{($\Pi_1^\mathcal{D}$-健全性)} \\[2pt]
+   \end{array}
+\)
+</div>
+<p class="short"></p>
+これはD方程式 $\langle p,q \rangle \in \mathcal{D}$ が自然数解を持つとき，
+「それが自然数解を持たない」ということを $T$ が証明できないことを示しています．
+従って，例えば， D方程式 $x=x$ は明らかに自然数解を持つので，
+<div class="ddstyle">
+   $T \not\vdash \forall{x}\neg(x=x)$ 
+</div>
+が成り立ちます．よって，$T$ は無矛盾です．
+
+
+<p class="sshort"></p>&emsp;(2)
+$T$ が$\Delta_0^\mathcal{D}$-完全かつ無矛盾だったとします．このとき，
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<p class="short"></p>
+<div class="ddstyle">
+\(
+   \begin{array}{lll}
+      &\mathcal{N} \not\models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \\[2pt]
+   \Longrightarrow 
+      &\mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+      & \text{(真理条件の定義)} \\[2pt]
+   \Longrightarrow 
+      & T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+      & \text{($\Sigma_1^\mathcal{D}$-完全性 via 補題3.8)} \\[2pt]
+   \Longrightarrow 
+      & T \not\vdash \neg\exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+      & \text{(無矛盾性)} \\[2pt]
+   \Longrightarrow 
+      & T \not\vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))
+      & \text{(ド・モルガンの法則)} \\[2pt]
+   \end{array}
+\)
+</div>
+<p class="short"></p>
+この対偶を取ることによって
+<div class="ddstyle">
+\(
+   T \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))
+      \Longrightarrow 
+   \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \\[2pt]
+\)
+</div>
+が得られます．よって，$T$ は$\Pi_1^\mathcal{D}$-健全です．
+■
+
+<p class="short"></p>
+<b><u>補足</u></b>
+上記の「ド・モルガンの法則」は，
+算術 $T$ における証明の中で述語論理のド・モルガンの法則を利用することによって
+   $\forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$
+から
+   $\neg\exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
+が演繹できることを示しています．上ではこれの対偶を利用しています．
+■
+
+<p></p>
+上の定理と定理3.4から次の系が直ちに得られます．
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">系 3.9.1</span><br>
+計算的枚挙可能かつ$\Delta_0^\mathcal{D}$-完全かつ無矛盾な算術は意味論的に不完全です．
+■
+
+
+<p></p>
+<b><u>補足</u></b>&emsp;
+上記の条件を満たす算術が「構文論的に」不完全なのかどうかは筆者には分かりません．
+<!--
+ただし，議論の基礎となるD方程式の集合を変更し，
+上記の条件に加えて少し条件を課すことによって構文論的な不完全性を示すことができます．
+これについては<a class="noline" href="incomp-04.html">別のノート</a>に記録します．
+-->
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="3">$\Delta_0^\mathcal{D}$-完全性 ＆ $\Sigma_1^\mathcal{D}$-健全性</h3>
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.10</span><br>
+算術 $T$ が <span class="mydef">$\Sigma_1^\mathcal{D}$-健全</span> であるということを，
+<ul>
+<li>
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して 
+<div class="dstyle">
+\(
+   T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) 
+      \Longrightarrow 
+   \mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+\)
+</div>
+</ul>
+が成り立つこととします．この条件は
+<div class="ddstyle">
+\(
+   \mathcal{D}^T_\exists \subseteq \mathcal{D}^\mathcal{N}_\exists 
+\)
+</div>
+が成り立つことと等価です．
+
+■
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定理 3.11</span><br>
+$\Delta_0^\mathcal{D}$-完全かつ$\Sigma_1^\mathcal{D}$-健全な任意の算術 $T$ に対して次が成り立ちます．
+<ol class="pnum">
+<li>
+$T$ は無矛盾です．従ってまた，$T$ は $\Pi_1^\mathcal{D}$-健全でもあります．
+<li>
+$
+\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T 
+   = \mathcal{D}-(\,\mathcal{D}^T_\exists \cup \mathcal{D}^T_\forall\,)$
+<p class="sshort"></p>
+&emsp;&emsp;&emsp;&emsp;&nbsp;
+$   = \{ \langle p,q \rangle \in \mathcal{D} \mid 
+         T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) ~\text{かつ}~
+         T \not\vdash \neg\exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \} 
+$
+</ol>
+<p class="sshort"></p>
+<b><u>証明</u></b>&emsp;
+(1)
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<p class="sshort"></p>
+<div class="ddstyle">
+\(
+   \begin{array}{lll}
+      & \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \\
+   \Longrightarrow 
+      & \mathcal{N} \not\models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\
+   \Longrightarrow 
+      & T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) 
+         & \text{（$\Sigma_1^\mathcal{D}$-健全性）}\\
+   \end{array}
+\)
+</div>
+<p class="sshort"></p>
+つまり，任意のD方程式
+$\langle p,q \rangle \in \mathcal{D}_\forall^\mathcal{N}$
+に対して
+$T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
+が成り立ちます．従って，例えば
+$\langle x,x+\lceil 1 \rceil \rangle \in  \mathcal{D}_\forall^\mathcal{N}$
+なので，
+$T \not\vdash \exists{x}(x = x + \lceil 1 \rceil)$
+が成り立ちます，よって，$T$ は無矛盾です．
+従ってまた，定理3.9より $T$ は $\Pi_1^\mathcal{D}$-健全でもあります．
+<p class="sshort"></p>
+&emsp;(2)
+$\Sigma^\mathcal{D}_1$-完全性（補題3.8）と$\Sigma^\mathcal{D}_1$-健全性より
+<ul>
+<li>
+$\mathcal{D}^T_\exists = \mathcal{D}^\mathcal{N}_\exists$ 
+</ul>
+が成り立ちます．
+さらに，$\mathcal{D}^\mathcal{N}_\exists$ と $\mathcal{D}^\mathcal{N}_\forall$ の定義より
+$\mathcal{D} = \mathcal{D}^\mathcal{N}_\exists \cup \mathcal{D}^\mathcal{N}_\forall$ 
+かつ 
+$\mathcal{D}^\mathcal{N}_\exists \cap \mathcal{D}^\mathcal{N}_\forall = \emptyset$
+なので
+<ul>
+<li>
+$\mathcal{D}_\forall^\mathcal{N} = \mathcal{D}-\mathcal{D}^\mathcal{N}_\exists$ 
+</ul>
+が成り立ちます．これらの事実から
+<p class="sshort"></p>
+<div class="ddstyle">
+\(
+\begin{array}{lcl}
+\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}^T_\forall 
+   &=& (\mathcal{D}-\mathcal{D}^\mathcal{N}_\exists) - \mathcal{D}^T_\forall \\
+   &=& \mathcal{D} - (\mathcal{D}^\mathcal{N}_\exists \cup \mathcal{D}^T_\forall) \\
+   &=& \mathcal{D}-(\,\mathcal{D}^T_\exists \cup \mathcal{D}^T_\forall\,) 
+\end{array}
+\)
+</div>
+<p class="sshort"></p>
+が得られます．従って，
+$\mathcal{D}^T_\exists$ と $\mathcal{D}^T_\forall$ の定義（とド・モルガンの法則）から
+<p class="sshort"></p>
+<div class="ddstyle">
+\(
+\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T 
+   = \{ \langle p,q \rangle \in \mathcal{D} \mid 
+         T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) ~\text{かつ}~
+         T \not\vdash \neg\exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \} 
+\)
+</div>
+<p class="sshort"></p>
+となります．
+■
+
+<p class="short"></p>
+<b><u>余談</u></b>
+上記の(2)は次のように形式的に証明することもできます．
+任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して：
+<p class="sshort"></p>
+<div class="dstyle">
+\(
+   \begin{array}{lll}
+      & \langle p,q \rangle \in \mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T \\ 
+   \iff 
+      & \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+            ~\text{かつ}~
+        T \not\vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（各集合の定義）} \\
+   \iff 
+      & \mathcal{N} \not\models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) 
+            ~\text{かつ}~
+        T \not\vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（真理条件の定義）} \\
+   \iff 
+      & T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) 
+            ~\text{かつ}~
+        T \not\vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（$\Sigma_1^\mathcal{D}$-健全性と$\Sigma_1^\mathcal{D}$-完全性）} \\
+   \iff 
+      & T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) 
+            ~\text{かつ}~
+        T \not\vdash \neg\exists{\vec{x}}(p(\vec{x})=q(\vec{x})) 
+         & \text{（ド・モルガンの法則）} \\
+   \end{array}
+\)
+</div>
+<p class="sshort"></p>
+なお，上記の$\Sigma_1^\mathcal{D}$-完全性は補題3.8によります．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">系 3.11.1</span><br>
+計算的枚挙可能かつ$\Delta_0^\mathcal{D}$-完全かつ$\Sigma_1^\mathcal{D}$-健全な算術
+$T$
+は構文論的に不完全です．
+<p class="sshort"></p>
+<b><u>証明</u></b>&emsp;
+系2.5より
+$\mathcal{D}_\forall^\mathcal{N}$
+は計算的枚挙可能ではありません．
+一方，$T$ が計算的枚挙可能なので $\mathcal{D}_\forall^T$ は計算的枚挙可能です．
+従って，
+$\mathcal{D}_\forall^\mathcal{N} \not= \mathcal{D}_\forall^T$ 
+が成り立ちます．更に，定理3.11(1)より $T$ は$\Pi_1^\mathcal{D}$-健全なので，
+$\mathcal{D}_\forall^T \subseteq \mathcal{D}_\forall^\mathcal{N}$ が成り立ちます．
+よって，
+$\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T \not= \emptyset$
+が成り立ちます．
+これと定理3.11(2)より $T$ は構文論的に不完全であることが分かります．
+■
+
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="4">$\Delta_0^\mathcal{D}$-完全性 ＆ $\omega^\mathcal{D}$-無矛盾性</h3>
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定義 3.12</span><br>
+算術 $T$ が <span class="mydef">$\omega^\mathcal{D}$-矛盾</span> であるということを
+<ul>
+<li> D方程式 $\langle p,q \rangle \in \mathcal{D}$ が存在して
+   <ol class="anum">
+   <li> $T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
+         かつ
+   <li> $T \vdash \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))$ 
+         for all $\vec{a} \in \mathbb{N}$ 
+   </ol>
+</ul>
+が成り立つこととします．$T$ が$\omega^\mathcal{D}$-矛盾でないとき，$T$ は <span class="mydef">$\omega^\mathcal{D}$-無矛盾</span> であると言います．参考までに言うと，$T$ が$\omega^\mathcal{D}$-無矛盾であるとは，
+<ul>
+<li> 任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して
+   <ol class="anum">
+   <li> $T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
+         または
+   <li> $T \not\vdash \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))$ 
+         for some $\vec{a} \in \mathbb{N}^n$ 
+   </ol>
+</ul>
+が成り立つときを言います．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">定理 3.13</span><br>
+$\Delta_0^\mathcal{D}$-完全な任意の算術 $T$ に対して次が成り立ちます．
+<div class="ddstyle">
+   $T$ は$\Sigma_1^\mathcal{D}$-健全である 
+         $\iff$
+   $T$ は$\omega^\mathcal{D}$-無矛盾である
+</div>
+<p class="sshort"></p>
+<b><u>証明</u></b>&emsp;
+($\Longrightarrow$)&emsp;
+$T$ を$\Sigma_1^\mathcal{D}$-健全とします．
+このとき，任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<p class="sshort"></p>
+<div class="dstyle">
+\(
+   \begin{array}{lll}
+      & T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\
+   \Longrightarrow 
+      & \mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+         & \text{（$\Sigma_1^\mathcal{D}$-健全性）} \\
+   \Longrightarrow 
+      & \mathcal{N} \models p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil)
+            ~~\text{for some $\vec{a} \in \mathbb{N}^n$}
+         & \text{（真理条件の定義）} \\
+   \Longrightarrow 
+      & T \vdash p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil)
+            ~~\text{for some $\vec{a} \in \mathbb{N}^n$}
+         & \text{（$\Delta_0^\mathcal{D}$-完全性）} \\
+   \Longrightarrow 
+      & T \not\vdash \neg(p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil))
+            ~~\text{for some $\vec{a} \in \mathbb{N}^n$}
+         & \text{（ 無矛盾性 via 定理3.11(1) ）} \\
+   \end{array}
+\)
+</div>
+<p class="sshort"></p>
+よって，$T$ は$\omega^\mathcal{D}$-無矛盾です．
+
+<p class="short"></p>
+&emsp;($\Longleftarrow$)&emsp;
+$T$ を$\omega^\mathcal{D}$-無矛盾とします．
+このとき，任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ に対して次が成り立ちます．
+<p class="sshort"></p>
+<div class="dstyle">
+\(
+   \begin{array}{lll}
+      & \mathcal{N} \not\models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\
+   \Longrightarrow 
+      & \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（真理条件の定義）} \\
+   \Longrightarrow 
+      & \mathcal{N} \models \neg(p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil))
+            ~~\text{for all $\vec{a} \in \mathbb{N}^n$}
+         & \text{（真理条件の定義）} \\
+   \Longrightarrow 
+      & T \vdash \neg(p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil))
+            ~~\text{for all $\vec{a} \in \mathbb{N}^n$}
+         & \text{（$\Delta_0^\mathcal{D}$-完全性）} \\
+   \Longrightarrow 
+      & T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+         & \text{（$\omega^\mathcal{D}$-無矛盾性）} \\
+   \end{array}
+\)
+</div>
+<p class="sshort"></p>
+この対偶を取ることによって
+<p class="sshort"></p>
+<div class="dstyle">
+\(
+   T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
+      \Longrightarrow 
+   \mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\
+\)
+</div>
+<p class="sshort"></p>
+が得られます．
+よって，$T$ は$\Sigma_1^\mathcal{D}$-健全です．
+■
+
+
+<p></p>
+この定理と系3.11.1より次の系が直ちに得られます．
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">系 3.13.1</span><br>
+計算的枚挙可能かつ$\Delta_0^\mathcal{D}$-完全かつ$\omega^\mathcal{D}$-無矛盾な算術
+$T$
+は構文論的に不完全です．
+■
+
+
+<p></p>
+<!-- %%% section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<h3 class="section" id="5">十分条件のまとめ</h3>
+
+<p></p>
+$\Delta_0^\mathcal{D}$-完全な算術に関して，
+これまで扱ってきた諸条件の関係性をまとめると次のようになります．
+<p class="short"></p>
+<div class="ddstyle">
+\(
+   \begin{array}{clcr}
+      & \text{$\Pi_1^\mathcal{D}$-健全性} 
+   ~\iff~
+       \text{無矛盾性} &~~~~& \cdots\cdots(1) \\
+   \Longleftarrow 
+      & \text{$\Sigma_1^\mathcal{D}$-健全性} 
+   ~\iff~
+       \text{$\omega^\mathcal{D}$-無矛盾性} &~~~~& \cdots\cdots(2) \\
+   \end{array}
+\)
+</div>
+
+
+<p></p>
+下記の命題は，上の条件(1)から条件(2)が導けないことを示しています．
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">命題 3.14（無矛盾だが$\omega^\mathcal{D}$-矛盾な算術）</span><br>
+$T$ を計算的枚挙可能かつ$\Delta_0^\mathcal{D}$-完全かつ$\Pi_1^\mathcal{D}$-健全な算術とします．このとき，定理3.4より$\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T \not= \emptyset$ が成り立ちます．そこで，D方程式 $\langle p,q \rangle \in \mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T$ を任意に取ってきて
+<div class="ddstyle">
+$T_1 = T \cup \{ \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \}$
+</div>
+とおきます．このとき，$T_1$ は無矛盾だが$\omega^\mathcal{D}$-矛盾な算術になります．
+<p class="sshort"></p>
+<b><u>証明</u></b>&emsp;
+$T_1$ と上記のD方程式 $\langle p,q \rangle \in \mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T$ に対して次が成り立ちます．
+<p class="sshort"></p>
+<div class="dstyle">
+\(
+   \begin{array}{lll}
+      & T_1 \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \\
+   \Longrightarrow
+      & T \cup \{ \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \} \vdash \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（$T_1$ の定義）}\\
+   \Longrightarrow
+      & T \vdash  \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \rightarrow \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（演繹定理）} \\
+   \Longrightarrow
+      & T \vdash  \neg\exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \lor \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（含意の定義）} \\
+   \Longrightarrow
+      & T \vdash  \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
+         & \text{（ド・モルガンの法則や$\lor$-除去）} \\
+   \end{array}
+\)
+</div>
+<p class="sshort"></p>
+一方，
+$\langle p,q \rangle \not\in \mathcal{D}_\forall^T$
+なので
+$T \not\vdash  \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$ 
+が成り立ちます．これと上記の対偶から，
+$T_1 \not\vdash  \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$ 
+が得られます．よって，
+$T_1$
+は無矛盾です．
+
+<p class="sshort"></p>&emsp;
+次に，
+<div class="dstyle">
+(a)&nbsp;
+$T_1 \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
+</div>
+が成り立つことは明らかです．さらに 
+$\langle p,q \rangle \in \mathcal{D}_\forall^\mathcal{N}$
+なので
+<div class="dstyle">
+$\mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$
+</div>
+が成り立ち，その上さらに
+<div class="dstyle">
+\(
+   \begin{array}{lll}
+      & \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \\
+   \Longrightarrow 
+      & \mathcal{N} \models \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil)) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
+         & \text{（真理条件の定義）} \\
+   \Longrightarrow 
+      & T \vdash \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil)) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
+         & \text{（$\Delta_0^\mathcal{D}$-完全性）} \\
+   \Longrightarrow 
+      & T_1 \vdash \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil)) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
+         & \text{（自明）} \\
+   \end{array}
+\)
+</div>
+が成り立つので，
+<div class="dstyle">
+(b)&nbsp;
+$T_1 \vdash \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil))$ for all $\vec{a} \in \mathbb{N}^n$
+</div>
+が成り立ちます．よって，$T_1$ は$\omega^\mathcal{D}$-矛盾です．
+■
+
+
+<p></p>
+<!-- ============================================= -->
+<span class="hdln">D方程式の窓から見た景色</span><br>
+数値的な計算（変数を含まない等式や非等式の証明）が正しく行えて，無矛盾な算術のことを，仮に，「合理的な算術」と呼ぶことにします．$\Delta^\mathcal{D}_0$-完全性は数値的な計算が正しく行えることの必要条件と考えることができます．従って，ここで言う合理的な算術は$\Delta^\mathcal{D}_0$-完全であると言えます．従って，補題3.8より，合理的な算術は$\Sigma^\mathcal{D}_1$-完全でもあります．
+さらに，無矛盾性より，$\Pi^\mathcal{D}_1$-健全でもあります．
+
+<p class="short"></p>
+以上をまとめると，D方程式全体 $\mathcal{D}$ と合理的な算術 $T$ に関して次が成り立つことになります．
+<ul>
+<li>
+$\mathcal{D} = \mathcal{D}^\mathcal{N}_\forall \cup \mathcal{D}^\mathcal{N}_\exists$，
+$\mathcal{D}^\mathcal{N}_\forall \cap \mathcal{D}^\mathcal{N}_\exists = \emptyset$ 
+<li>
+$\mathcal{D}^T_\forall \subsetneq \mathcal{D}^\mathcal{N}_\forall$
+<li>
+$\mathcal{D}^\mathcal{N}_\exists \subseteq \mathcal{D}^T_\exists$
+</ul>
+これらの関係性を図示すると次のようになります．
+この図は，D方程式という窓から合理的な算術を眺めたときの景色を示しています．
+<p class="short"></p>
+<div class="dstyle">
+<img src="incomp-03a.jpg" width="500" alt="D方程式の見取り図">
+</div>
+D方程式に基づく意味論的不完全性は
+$\mathcal{D}^T_\forall \subsetneq \mathcal{D}^\mathcal{N}_\forall$
+であることから必ず成り立つと言えます．一方，構文論的不完全性（注：あくまでD方程式に基づく構文論的不完全性）は，上図の斜線部が空でないときに成立します．言い方を変えると，
+$\mathcal{D}^T_\exists$
+は
+$\mathcal{D}^\mathcal{N}_\forall - \mathcal{D}^T_\forall$
+の領域へその勢力を伸ばしていく可能性があるのですが，その勢力を途中で抑えることができれば構文論的な不完全性が成立することになります．その勢力を抑える一つの条件は
+$\Sigma^\mathcal{D}_1$-健全性または$\omega^\mathcal{D}$-無矛盾性です．
+これらの条件は
+$\mathcal{D}^T_\exists$
+の勢力を
+$\mathcal{D}^\mathcal{N}_\exists$（上図の赤枠）
+の中に閉じ込めてしまいます．それゆえに構文論的不完全性が成立します．
+しかしながら，少なくとも筆者にはこれら以外の条件は分かりません．
+計算理論的な観点から言えば，
+$\mathcal{D}^T_\forall$
+や
+$\mathcal{D}^T_\exists$
+や
+$\mathcal{D}^T_\forall \cup \mathcal{D}^T_\exists$
+など（の一つ）が計算不可能であることが示せればよいのですが，そういったことが示せるのかどうかも分かりません．こういったことを理解すべく，勉強を続けていこうと思います．
+
+
+
+
+
+
+</div> <!-- END of main division -->
+
+<div id="thatsall">(おしまい)</div>
+
+</body>
+</html>
+

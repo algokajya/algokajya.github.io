@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>AlgoKajya 算術の不完全性</title>
+   <link rel="stylesheet" type="text/css" href="logic.css">
+   <!-- %%% date %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+   <!-- 
+   <style>
+      .date0:before{ content: "2022.mm.dd"; }
+   </style>
+   -->
+   <!-- %%% MathJax %%% -->
+   <!--
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   -->
+   <script>
+   MathJax = {
+      chtml: {
+         matchFontHeight: false
+      },
+      tex: {
+         inlineMath: [['$', '$'],['\\(', '\\)']]
+      }
+   };
+   </script>
+   <!--
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+   -->
+   <script id="MathJax-script" async 
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+   </script>
+</head>
+<body>
+
+<div id="header">
+<a class="noline" href="../index.html">ホーム</a><br>
+</div>
+
+
+<!-- %%% title %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="title">
+算術の不完全性
+</div>
+
+
+<!-- %%% main %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<div id="main">
+
+<!-- ============================================= -->
+<h4 class="hdln">概 要</h4>
+<ul>
+<li>
+自然数論の形式的体系（以下，単に「算術」と呼びます）の不完全性を証明する一つの方法は計算不可能性の結果を利用することです．特に，MRDP定理（ディオファントス方程式に対する可解性判定問題の計算不可能性）を利用することによって，
+各種記号列の符号化（ゲーデル数化）や対角線論法をMRDP定理の背後に隠蔽できるので，
+不完全性の証明はぐっと簡単になります．これは，言うなれば，MRDP定理という窓を通して算術の世界を眺めるようなもので，算術の世界に足を踏み入れているとは言えないと思います．そのため，不完全性の深層にたどり着くことはないでしょう．でも，一般的な不完全性の証明が難しいと感じている筆者にとっては，深層へと向かうための端緒にはなり得ると感じています．
+
+<li>
+このノートは，算術の不完全について，MRDP定理を通して理解したことを記録しています．
+特に，不完全性をもたらす十分条件の間の関係性を理解することを目的にしています．
+なお，このノートは，第1階述語論理とチューリング機械に基づく計算理論に関する初歩的な知識を仮定しています．
+
+</ul>
+
+
+<!-- ============================================= -->
+<h4 class="hdln">目 次</h4>
+<p class="sshort"></p>
+
+<ol>
+<li>
+<a class="noline" href="incomp-01.html">算術（自然数論の形式的体系）</a>
+<li>
+<a class="noline" href="incomp-02.html">MRDP定理</a>
+<li>
+<a class="noline" href="incomp-03.html">不完全性の十分条件</a>
+</ol>
+
+
+<!-- ============================================= -->
+<h4 class="hdln">参 考</h4>
+<ul>
+
+<li class="menu"> 
+以下の文献を参考にしています．
+   <ul>
+   <li>
+   <a class="noline" href="https://www.amazon.co.jp/dp/4622075695">
+   トルケル・フランセーン (著), 田中 一之 (翻訳) ：「ゲーデルの定理――利用と誤用の不完全ガイド」，みすず書房，2011年．
+   </a>
+   <li>
+   <a class="noline" href="https://www.amazon.co.jp/dp/432011096X">
+   菊池誠（著）：「不完全性定理」，共立出版，2014年．
+   </a>
+   <li>
+   <a class="noline" href="https://iopscience.iop.org/article/10.1070/RM2010v065n05ABEH004703/meta">
+Lev D. Beklemishev: "Gödel incompleteness theorems and the limits of their applicability. I", Russian Mathematical Surveys, Volume 65, Number 5, 2010. 
+   </a><br>
+   <small>
+   ※この文献については，著者自身がホームページ上で公開している
+   <a class="noline" href="https://homepage.mi-ras.ru/~bekl/Papers/goedel-en.pdf">ドラフト</a>
+   を参照しています．ちなみに，"II" は存在しないと思われます．おそらく，Gödelを真似ているのだろうと推察します．
+   </small>
+   </ul>
+
+<li class="menu"> 
+   <a class="noline" href="https://www.mathjax.org/">MathJax</a> を利用しています．
+   <a class="noline" href="https://oku.edu.mie-u.ac.jp/~okumura/javascript/mathjax.html">奥村晴彦氏のMathJaxのページ</a>を参考にしています．
+
+   </ul>      
+
+
+
+</div><!-- END of main division -->
+
+</body>
+</html>
+
+
