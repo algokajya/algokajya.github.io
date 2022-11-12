@@ -120,9 +120,9 @@ $\mathcal{P}$ は計算可能です．
 任意の計算的枚挙可能な集合 $A \subseteq \mathbb{N}^n$ に対して，D方程式 $\langle p(\vec{x},\vec{y}),q(\vec{x},\vec{y}) \rangle \in \mathcal{D}$ が存在して，
 <div class="ddstyle">
    $A = \{ \vec{a} \in \mathbb{N}^n \mid 
-      \mathcal{N} \models \exists{\vec{y}}(p(\lceil \vec{a} \rceil,\vec{y}) = q(\lceil \vec{a} \rceil,\vec{y})) \}$ 
+      \mathcal{N} \models \exists{\vec{y}}(p(\widehat{\vec{a}},\vec{y}) = q(\widehat{\vec{a}},\vec{y})) \}$ 
 </div>
-が成り立ちます．ここで，$\vec{a}$ は自然数列 $a_1, a_2, \ldots, a_n$ の省略記法であり，$\lceil \vec{a} \rceil$ は数項列 $\lceil a_1 \rceil, \lceil a_2 \rceil, \ldots, \lceil a_n \rceil$ の省略記法です．さらに，$\vec{y}$ は変数列 $y_1, \ldots, y_m$ の省略記法であり，「$\exists{\vec{y}}$」は「$\exists{y_1}\exists{y_2} \cdots \exists{y_m}$」の省略記法です．
+が成り立ちます．ここで，$\vec{a}$ は自然数列 $a_1, a_2, \ldots, a_n$ の省略記法であり，$\widehat{\vec{a}}$ は数項列 $\widehat{a_1}, \widehat{a_2}, \ldots, \widehat{a_n}$ の省略記法です．さらに，$\vec{y}$ は変数列 $y_1, \ldots, y_m$ の省略記法であり，「$\exists{\vec{y}}$」は「$\exists{y_1}\exists{y_2} \cdots \exists{y_m}$」の省略記法です．
 ■
 
 
@@ -165,8 +165,8 @@ $\mathcal{D}^\mathcal{N}_\exists$ が計算的枚挙可能であることは明�
 <div class="dstyle">
 \(
    a \in K \iff 
-   \mathcal{N} \models \exists{\vec{y}}(p(\lceil a \rceil,\vec{y}) = q(\lceil a \rceil,\vec{y})) \iff
-   \langle p(x,\vec{y}),q(x,\vec{y}) \rangle \in \mathcal{D}^\mathcal{N}_\exists
+   \mathcal{N} \models \exists{\vec{y}}(p(\widehat{a},\vec{y}) = q(\widehat{a},\vec{y})) \iff
+   \langle p(\widehat{a},\vec{y}),q(\widehat{a},\vec{y}) \rangle \in \mathcal{D}^\mathcal{N}_\exists
 \)
 </div>
 が成り立ちます．これは，$K$ が $\mathcal{D}^\mathcal{N}_\exists$ に還元可能（many-one reducible）であることを示しています．従って，$\mathcal{D}^\mathcal{N}_\exists$ は計算不可能です．<br>

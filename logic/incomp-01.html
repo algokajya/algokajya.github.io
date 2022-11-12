@@ -104,22 +104,23 @@
 
 <p class="short"></p>
 さらに，任意の自然数 $n$ に対して，数項
-<span class="mydef">$\lceil n \rceil$</span>
+<span class="mydef">$\widehat{n}$</span>
 を次のように再帰的に定義します．
 <div class="dstyle">
 \(
-   \lceil n \rceil = 
+   \widehat{n} = 
       \begin{cases}
          \bar{0} & \text{if $n=0$} \\
-         (s ~ \lceil n-1 \rceil) & \text{if $n \gt 0$} \\
+         (s ~~ \widehat{n-1}) & \text{if $n \gt 0$} \\
       \end{cases}
 \)   
 </div> 
 例えば，
-$\lceil 0 \rceil = \bar{0}$，
-$\lceil 1 \rceil = (s ~ \bar{0})$ ，
-$\lceil 2 \rceil = (s ~ (s ~ \bar{0}))$ などとなります．
-算術の標準モデルにおいて $\lceil n \rceil$ は自然数の $n$ を表すことになります．
+$\widehat{1} = (s ~ \bar{0})$ ，
+$\widehat{2} = (s ~ (s ~ \bar{0}))$，
+$\widehat{3} = (s ~(s ~ (s ~ \bar{0})))$，
+ などとなります．
+算術の標準モデルにおいて $\widehat{n}$ は自然数の $n$ を表すことになります．
 ■
 
 <p class="short"></p>

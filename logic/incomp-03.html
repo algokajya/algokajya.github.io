@@ -287,17 +287,17 @@ $\mathcal{D}^\mathcal{N}_\forall - \mathcal{D}^T_\forall$
 任意のD方程式 $\langle p,q \rangle \in \mathcal{D}$ と 任意の自然数列 $\vec{a} \in \mathbb{N}^n$ に対して
    <ol class="anum">
    <li>
-   $\mathcal{N} \models p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil)
+   $\mathcal{N} \models p(\widehat{\vec{a}}) = q(\widehat{\vec{a}})
       \Longrightarrow 
-    T \vdash p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil)$
+    T \vdash p(\widehat{\vec{a}}) = q(\widehat{\vec{a}})$
    &emsp;かつ
    <li>
-   $\mathcal{N} \models \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))
+   $\mathcal{N} \models \neg(p(\widehat{\vec{a}}) = q(\widehat{\vec{a}}))
       \Longrightarrow 
-    T \vdash \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))$
+    T \vdash \neg(p(\widehat{\vec{a}}) = q(\widehat{\vec{a}}))$
    </ol>
 </ul>
-が成り立つこととします．ここで，$\vec{a}$ は自然数列 $a_1, \ldots, a_n$ の省略記法であり，$\lceil \vec{a} \rceil$ は数項列 $\lceil a_1 \rceil, \ldots, \lceil a_n \rceil$ の省略記法です（以下も同様です）．■
+が成り立つこととします．ここで，$\vec{a}$ は自然数列 $a_1, \ldots, a_n$ の省略記法であり，$\widehat{\vec{a}}$ は数項列 $\widehat{a_1}, \ldots, \widehat{a_n}$ の省略記法です（以下も同様です）．■
 
 <p class="short"></p>
 <b><u>補足</u></b>
@@ -364,11 +364,11 @@ $T$ が$\Delta_0^\mathcal{D}$-完全だったとします．このとき，
    \begin{array}{lll}
       &\mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x})) \\[2pt]
    \Longrightarrow 
-      &\mathcal{N} \models p(\lceil\vec{a}\rceil)=q(\lceil\vec{a}\rceil))
+      &\mathcal{N} \models p(\widehat{\vec{a}})=q(\widehat{\vec{a}}))
             ~~\text{for some $\vec{a} \in \mathbb{N}^n$} 
       & \text{(真理条件の定義)} \\[2pt]
    \Longrightarrow 
-      & T \vdash p(\lceil\vec{a}\rceil)=q(\lceil\vec{a}\rceil))
+      & T \vdash p(\widehat{\vec{a}})=q(\widehat{\vec{a}}))
             ~~\text{for some $\vec{a} \in \mathbb{N}^n$} 
       & \text{($\Delta_0^\mathcal{D}$-完全性)} \\[2pt]
    \Longrightarrow 
@@ -557,9 +557,9 @@ $\langle p,q \rangle \in \mathcal{D}_\forall^\mathcal{N}$
 に対して
 $T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
 が成り立ちます．従って，例えば
-$\langle x,x+\lceil 1 \rceil \rangle \in  \mathcal{D}_\forall^\mathcal{N}$
+$\langle x,x+\widehat{1} \rangle \in  \mathcal{D}_\forall^\mathcal{N}$
 なので，
-$T \not\vdash \exists{x}(x = x + \lceil 1 \rceil)$
+$T \not\vdash \exists{x}(x = x + \widehat{1})$
 が成り立ちます，よって，$T$ は無矛盾です．
 従ってまた，定理3.9より $T$ は $\Pi_1^\mathcal{D}$-健全でもあります．
 <p class="sshort"></p>
@@ -682,7 +682,7 @@ $\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T \not= \emptyset$
    <ol class="anum">
    <li> $T \vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
          かつ
-   <li> $T \vdash \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))$ 
+   <li> $T \vdash \neg(p(\widehat{\vec{a}}) = q(\widehat{\vec{a}}))$ 
          for all $\vec{a} \in \mathbb{N}$ 
    </ol>
 </ul>
@@ -692,7 +692,7 @@ $\mathcal{D}_\forall^\mathcal{N} - \mathcal{D}_\forall^T \not= \emptyset$
    <ol class="anum">
    <li> $T \not\vdash \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))$
          または
-   <li> $T \not\vdash \neg(p(\lceil \vec{a} \rceil) = q(\lceil \vec{a} \rceil))$ 
+   <li> $T \not\vdash \neg(p(\widehat{\vec{a}}) = q(\widehat{\vec{a}}))$ 
          for some $\vec{a} \in \mathbb{N}^n$ 
    </ol>
 </ul>
@@ -723,15 +723,15 @@ $T$ を$\Sigma_1^\mathcal{D}$-健全とします．
       & \mathcal{N} \models \exists{\vec{x}}(p(\vec{x})=q(\vec{x}))
          & \text{（$\Sigma_1^\mathcal{D}$-健全性）} \\
    \Longrightarrow 
-      & \mathcal{N} \models p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil)
+      & \mathcal{N} \models p(\widehat{\vec{a}})=q(\widehat{\vec{a}})
             ~~\text{for some $\vec{a} \in \mathbb{N}^n$}
          & \text{（真理条件の定義）} \\
    \Longrightarrow 
-      & T \vdash p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil)
+      & T \vdash p(\widehat{\vec{a}})=q(\widehat{\vec{a}})
             ~~\text{for some $\vec{a} \in \mathbb{N}^n$}
          & \text{（$\Delta_0^\mathcal{D}$-完全性）} \\
    \Longrightarrow 
-      & T \not\vdash \neg(p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil))
+      & T \not\vdash \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}}))
             ~~\text{for some $\vec{a} \in \mathbb{N}^n$}
          & \text{（ 無矛盾性 via 定理3.11(1) ）} \\
    \end{array}
@@ -753,11 +753,11 @@ $T$ を$\omega^\mathcal{D}$-無矛盾とします．
       & \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) 
          & \text{（真理条件の定義）} \\
    \Longrightarrow 
-      & \mathcal{N} \models \neg(p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil))
+      & \mathcal{N} \models \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}}))
             ~~\text{for all $\vec{a} \in \mathbb{N}^n$}
          & \text{（真理条件の定義）} \\
    \Longrightarrow 
-      & T \vdash \neg(p(\lceil \vec{a} \rceil)=q(\lceil \vec{a} \rceil))
+      & T \vdash \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}}))
             ~~\text{for all $\vec{a} \in \mathbb{N}^n$}
          & \text{（$\Delta_0^\mathcal{D}$-完全性）} \\
    \Longrightarrow 
@@ -881,13 +881,13 @@ $\mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$
    \begin{array}{lll}
       & \mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x})) \\
    \Longrightarrow 
-      & \mathcal{N} \models \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil)) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
+      & \mathcal{N} \models \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}})) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
          & \text{（真理条件の定義）} \\
    \Longrightarrow 
-      & T \vdash \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil)) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
+      & T \vdash \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}})) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
          & \text{（$\Delta_0^\mathcal{D}$-完全性）} \\
    \Longrightarrow 
-      & T_1 \vdash \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil)) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
+      & T_1 \vdash \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}})) ~\text{for all $\vec{a} \in \mathbb{N}^n$}
          & \text{（自明）} \\
    \end{array}
 \)
@@ -895,7 +895,7 @@ $\mathcal{N} \models \forall{\vec{x}}\neg(p(\vec{x})=q(\vec{x}))$
 が成り立つので，
 <div class="dstyle">
 (b)&nbsp;
-$T_1 \vdash \neg(p(\lceil \vec{a} \rceil)=q( \lceil \vec{a} \rceil))$ for all $\vec{a} \in \mathbb{N}^n$
+$T_1 \vdash \neg(p(\widehat{\vec{a}})=q(\widehat{\vec{a}}))$ for all $\vec{a} \in \mathbb{N}^n$
 </div>
 が成り立ちます．よって，$T_1$ は$\omega^\mathcal{D}$-矛盾です．
 ■
